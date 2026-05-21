@@ -7,7 +7,7 @@
   <!-- ▲ ▲ -->
   <!-- 데모 표시 배너 (실제 사이트와 구분) -->
   <style>
-    body::before{content:"✅ v0.3.2 FINAL — 모바일 .new-gnb 숨김 + 로고 5px 우측 정렬 + 하단 위젯 specificity 강화 + JS inline fallback. 모든 이슈 해결.";
+    body::before{content:"✅ v0.3.5 FINAL — .help-pop ⓘ 툴팁 모바일 하단 sheet 전환 + 외부 탭 자동 닫힘. 셀 폭 협소로 viewport 밖 넘침 해결.";
       background:#ecfdf5 !important; border-bottom:1px solid #86efac !important; color:#15803d !important;
       display:block;background:#fff8e6;border-bottom:1px solid #ffd966;padding:10px 16px;font-size:12px;
       color:#8a6d00;line-height:1.5;font-family:'Pretendard','맑은 고딕',sans-serif;text-align:center;font-weight:500}
@@ -99,6 +99,31 @@
 			margin-top: -25px;
 			width: 50px;
 			height: 50px;
+		}
+	</style>
+
+	<!-- ===== v0.3.4 카드 너비 확장 ===== -->
+	<style id="bj-wide-cards">
+		/* 빌리조 본 사이트의 .wide-inner는 기본 1200px 정도라 카드가 좁아 보임.
+		   PC에서 1480px까지 확장, 좌우 여백은 자동. */
+		#container .wide-inner{
+			max-width:1480px !important;
+			width:100% !important;
+			margin:0 auto !important;
+			padding-left:24px !important;
+			padding-right:24px !important;
+			box-sizing:border-box !important;
+		}
+		@media (max-width:1023px){
+			#container .wide-inner{ padding-left:16px !important; padding-right:16px !important }
+		}
+		@media (max-width:600px){
+			#container .wide-inner{ padding-left:10px !important; padding-right:10px !important }
+		}
+		/* AI 카드 본체도 더 넓게 — 좌우 padding 살짝 축소 */
+		#ai-card-root .card{ padding:24px 26px 20px !important }
+		@media (max-width:600px){
+			#ai-card-root .card{ padding:18px 14px 16px !important }
 		}
 	</style>
 
@@ -346,13 +371,15 @@
 		/* 외부 컨테이너 — Step pill 그룹과 비슷한 들여쓰기·간격 유지 */
 		#ai-card-root .field.spec-compare{ margin:10px 0 12px }
 
-		/* Spec row — [라벨] [값(강조)] [▼ 다른 X와 비교] 1행 (좁으면 stack) */
+		/* Spec row — [라벨] [값(강조)] [▼ 다른 X와 비교] 1행 (좁으면 stack)
+		   min-width:0 + overflow:hidden 추가 — flex 자식이 부모 폭 초과 못 하게 (모바일 비교표 overflow 픽스 v0.3.3) */
 		#ai-card-root .spec-compare .spec-row{
 			display:flex; flex-wrap:wrap; align-items:center;
 			gap:8px 12px; padding:8px 12px;
 			background:var(--color-background-secondary);
 			border-radius:var(--border-radius-md);
 			border:0.5px solid var(--color-border-tertiary);
+			min-width:0; max-width:100%; box-sizing:border-box;
 		}
 		#ai-card-root .spec-compare .spec-label{
 			font-size:13px; font-weight:700; color:var(--color-text-secondary);
@@ -394,21 +421,26 @@
 			background:var(--color-background-info);
 		}
 
-		/* 전개 후 콘텐츠 — 같은 .spec-row 안에서 풀폭으로 펼쳐짐 */
+		/* 전개 후 콘텐츠 — 같은 .spec-row 안에서 풀폭으로 펼쳐짐
+		   min-width:0 필수 — flex item의 default min-width:auto가 자식(table)의 min-content 만큼 강제 확장하는 것 차단 */
 		#ai-card-root .spec-compare .spec-detail-toggle[open]{
 			flex:1 1 100%; margin-top:8px;
 			padding-top:10px; border-top:1px dashed var(--color-border-tertiary);
+			min-width:0; max-width:100%; box-sizing:border-box;
 		}
 		#ai-card-root .spec-compare .spec-desc{
 			font-size:12px; color:var(--color-text-secondary);
 			line-height:1.55; margin:0 0 10px;
 		}
 
-		/* 비교 테이블 (v0.2.8 표준 스타일) */
+		/* 비교 테이블 (v0.2.8 표준 스타일)
+		   min-width:0 + max-width:100% — 부모 폭 초과 안 하게. overflow-x:auto가 표 가로 스크롤 담당 */
 		#ai-card-root .filter-table-wrap{
-			overflow-x:auto; background:#fff;
+			overflow-x:auto; -webkit-overflow-scrolling:touch;
+			background:#fff;
 			border:0.5px solid var(--color-border-tertiary);
 			border-radius:var(--border-radius-md);
+			min-width:0; max-width:100%; width:100%; box-sizing:border-box;
 		}
 		#ai-card-root .filter-table{
 			width:100%; border-collapse:separate; border-spacing:0;
@@ -468,9 +500,26 @@
 			#ai-card-root .spec-compare .spec-label{ font-size:12.5px }
 			#ai-card-root .spec-compare .spec-value{ font-size:13.5px }
 			#ai-card-root .spec-compare .spec-detail-toggle summary{ font-size:11px; padding:4px 10px }
-			#ai-card-root .filter-table{ font-size:11.5px; min-width:320px }
-			#ai-card-root .filter-table th, #ai-card-root .filter-table td{ padding:7px 4px }
-			#ai-card-root .filter-table tbody th{ font-size:11px }
+			/* 모바일 비교표 — min-width 축소 + Step 들여쓰기 보정 (v0.3.3) */
+			#ai-card-root .step-details{ padding-left:14px !important; padding-right:0 !important }
+			#ai-card-root .spec-compare .spec-detail-toggle[open]{
+				margin-left:-6px; margin-right:-6px; /* spec-row padding 일부 상쇄 — 표 가용폭 확보 */
+			}
+			#ai-card-root .filter-table{
+				font-size:11px; min-width:280px;  /* 380→280 축소: iPhone SE 320px-padding에서도 안 삐져나가게 */
+			}
+			#ai-card-root .filter-table th, #ai-card-root .filter-table td{ padding:6px 3px }
+			#ai-card-root .filter-table tbody th{ font-size:10.5px }
+			#ai-card-root .filter-table thead th{ font-size:10.5px !important }
+			#ai-card-root .filter-table thead th.ft-on small,
+			#ai-card-root .filter-table thead th.ft-na small{ font-size:8.5px !important }
+			/* "이 제품"이 좁아도 줄바꿈 안 되도록 헤더 압축 */
+			#ai-card-root .filter-table thead th{ white-space:normal; line-height:1.3 }
+		}
+		/* 극협소 (≤360px) — iPhone SE 등 */
+		@media (max-width:360px){
+			#ai-card-root .filter-table{ min-width:260px; font-size:10.5px }
+			#ai-card-root .filter-table th, #ai-card-root .filter-table td{ padding:5px 2px }
 		}
 	</style>
 
@@ -766,6 +815,27 @@
 				try { obs.observe(document.documentElement, {childList:true, subtree:true}); } catch(e){}
 				setTimeout(function(){ obs.disconnect(); }, 6000);
 			}
+		})();
+	</script>
+
+	<!-- v0.3.5 — .help (ⓘ 툴팁) 외부 탭 시 자동 닫힘 + 1개만 열림 보장 -->
+	<script>
+		(function(){
+			document.addEventListener('click', function(e){
+				var opened = document.querySelectorAll('#ai-card-root details.help[open]');
+				opened.forEach(function(d){
+					if (!d.contains(e.target)) d.removeAttribute('open');
+				});
+			}, true);
+			/* 새 help 열릴 때 다른 help는 닫기 */
+			document.addEventListener('toggle', function(e){
+				var t = e.target;
+				if (t && t.tagName === 'DETAILS' && t.classList.contains('help') && t.open) {
+					document.querySelectorAll('#ai-card-root details.help[open]').forEach(function(d){
+						if (d !== t) d.removeAttribute('open');
+					});
+				}
+			}, true);
 		})();
 	</script>
 </head>
@@ -2297,7 +2367,37 @@ $(function() {
         #ai-card-root .help summary::after{content:"ⓘ"}
         #ai-card-root .help[open] summary{color:var(--color-text-info)}
         #ai-card-root .help[open] .help-pop{display:block}
-        #ai-card-root .help-pop{display:none;position:absolute;left:50%;top:140%;transform:translateX(-50%);background:#fff;border:0.5px solid var(--color-border-tertiary);border-radius:6px;padding:8px 10px;font-size:11px;color:var(--color-text-primary);width:220px;line-height:1.5;z-index:10;box-shadow:0 4px 12px rgba(0,0,0,0.08);text-align:left;font-weight:400}
+        /* PC: 아이콘 아래 absolute 팝업 (220px) */
+        #ai-card-root .help-pop{display:none;position:absolute;left:50%;top:140%;transform:translateX(-50%);background:#fff;border:0.5px solid var(--color-border-tertiary);border-radius:6px;padding:10px 12px;font-size:12px;color:var(--color-text-primary);width:240px;max-width:calc(100vw - 32px);line-height:1.6;z-index:1000;box-shadow:0 6px 18px rgba(0,0,0,0.1);text-align:left;font-weight:400;word-break:keep-all}
+        /* 모바일 (≤600px): viewport 하단 sheet — .sc 셀 폭 협소로 absolute 팝업이 화면 밖으로 넘어가는 문제 해결 */
+        @media (max-width:600px){
+          #ai-card-root .help-pop{
+            position:fixed !important;
+            left:12px !important; right:12px !important;
+            top:auto !important; bottom:96px !important;
+            transform:none !important;
+            width:auto !important; max-width:none !important;
+            padding:14px 16px !important;
+            font-size:13px !important; line-height:1.65 !important;
+            border-radius:10px !important;
+            box-shadow:0 -8px 24px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05) !important;
+            z-index:100000 !important;
+            animation:bjHelpPopIn 0.2s ease-out;
+          }
+          /* 팝업에 닫기 안내 텍스트 자동 추가 */
+          #ai-card-root .help[open] .help-pop::after{
+            content:"ⓘ 아이콘을 다시 누르면 닫힙니다";
+            display:block;
+            margin-top:10px; padding-top:10px;
+            border-top:0.5px dashed var(--color-border-tertiary);
+            font-size:11px; color:var(--color-text-tertiary);
+            text-align:center;
+          }
+        }
+        @keyframes bjHelpPopIn{
+          from{ opacity:0; transform:translateY(20px) }
+          to{ opacity:1; transform:translateY(0) }
+        }
 
         #ai-card-root .sec{padding-top:14px;margin-top:14px;border-top:0.5px solid var(--color-border-tertiary)}
         #ai-card-root .sec-t{font-size:13px;color:var(--color-text-primary);margin-bottom:10px;font-weight:700}
@@ -2345,12 +2445,22 @@ $(function() {
         #ai-card-root .field{margin:8px 0 10px}
         #ai-card-root .field-l{font-size:11.5px;color:var(--color-text-secondary);margin-bottom:6px}
 
-        #ai-card-root .gift{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 14px}
-        #ai-card-root .gift-r{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:6px 0;gap:12px}
-        #ai-card-root .gift-tag{font-size:11px;padding:4px 10px;border-radius:5px;color:var(--color-text-info);background:var(--color-background-info);font-weight:700;white-space:nowrap;line-height:1.3}
-        #ai-card-root .gift-v{color:var(--color-text-primary);text-align:right;line-height:1.5;font-size:12px}
-        #ai-card-root .gift-v strong{color:var(--color-text-info);font-weight:700}
-        #ai-card-root .gift-db{color:var(--color-text-tertiary);font-size:11px;background:#fff;border:0.5px dashed var(--color-border-tertiary);padding:3px 10px;border-radius:6px}
+        #ai-card-root .gift{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px 16px}
+        /* PC: 라벨 좌 / 값 우 (space-between). 모바일: column stack (라벨 위, 값 아래 좌측 정렬) */
+        #ai-card-root .gift-r{display:flex;justify-content:space-between;align-items:flex-start;font-size:13px;padding:8px 0;gap:12px;flex-wrap:wrap}
+        #ai-card-root .gift-r + .gift-r{border-top:0.5px dashed var(--color-border-tertiary);margin-top:2px;padding-top:10px}
+        #ai-card-root .gift-tag{font-size:12px;padding:5px 11px;border-radius:5px;color:var(--color-text-info);background:var(--color-background-info);font-weight:700;white-space:nowrap;line-height:1.3;flex-shrink:0}
+        #ai-card-root .gift-v{color:var(--color-text-primary);text-align:right;line-height:1.6;font-size:13px;word-break:keep-all;flex:1 1 auto;min-width:0}
+        #ai-card-root .gift-v strong{color:var(--color-text-info);font-weight:700;word-break:keep-all}
+        #ai-card-root .gift-db{color:var(--color-text-tertiary);font-size:12px;background:#fff;border:0.5px dashed var(--color-border-tertiary);padding:4px 11px;border-radius:6px;white-space:nowrap}
+        /* 모바일: column 레이아웃 — 라벨 위, 값 아래 좌측 정렬, 자연스러운 줄바꿈 */
+        @media (max-width:600px){
+          #ai-card-root .gift{padding:10px 12px}
+          #ai-card-root .gift-r{flex-direction:column;align-items:flex-start;gap:6px;padding:10px 0}
+          #ai-card-root .gift-tag{font-size:11.5px;padding:4px 10px}
+          #ai-card-root .gift-v{text-align:left;font-size:13px;line-height:1.65;width:100%}
+          #ai-card-root .gift-db{font-size:11.5px;padding:4px 10px}
+        }
 
         /* 모바일 (≤600px) */
         @media (max-width:600px){
