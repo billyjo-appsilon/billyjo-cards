@@ -1,11 +1,11 @@
 /*!
- * billyjo-detailcard v0.3.6 — 상세페이지 카드 클라이언트 패치
+ * billyjo-detailcard v0.3.7 — 상세페이지 카드 클라이언트 패치
  * https://github.com/billyjo-appsilon/billyjo-detailcard
  *
  * 적용 페이지: /html/dh_prod/prod_view/*  (제품 상세 페이지)
  * 의존성: 기존 billyjo-inject 스크립트 (헤더 재구성·이벤트 배너 분리 처리)가 먼저 로드된 상태를 전제로 함.
  *
- * 포함 패치 (v0.3.6 기준):
+ * 포함 패치 (v0.3.7 기준):
  *   - 절대 규칙 #14: 6-8칸 스펙요약 + ⓘ 도움말 (모바일 sheet 전환, v0.3.5)
  *   - 절대 규칙 #21: 좁은화면 헤더 (inject.js 결과 DOM 안정 클래스 부여 + 모바일 1행 정렬 + .new-gnb 숨김 + 햄버거 5px)
  *   - 절대 규칙 #22-23: Hero 재배치/Step 폰트/페르소나 폰트 (AI 카드 마크업 존재 시에만 활성)
@@ -14,6 +14,7 @@
  *   - v0.3.4: .wide-inner max-width 1480px 확장, SLOT 7 모바일 column 레이아웃
  *   - v0.3.5: .help-pop 모바일 viewport sheet 전환, 외부 탭 자동 닫힘 JS
  *   - v0.3.6: 모바일 로고 max-width 제한 + 아이콘 리스트 shrink 허용 (로고-이벤트 겹침 해결)
+ *   - v0.3.7: 모바일 검색바 명시 숨김 + 카테고리 1행 가로스크롤(룰북 #20 갱신) + 빨강→파랑 통일
  *   - 공통: 햄버거 중복 제거, 제품 썸네일 1px 회색 테두리
  *
  * AI 카드 콘텐츠 자체는 별도 backend 파이프라인에서 사전 생성되어 제품별 HTML에 주입되어야 함.
@@ -129,6 +130,56 @@
     '    display:block !important; object-fit:contain;',
     '  }',
     '  header.new-header .header__top .top__right{ display:none !important }',
+    /* v0.3.7: 검색바(.search__wrap) 모바일에서 명시 숨김 — 검색 아이콘 클릭 시 .m_search_popup으로 노출 */
+    '  header.new-header .search__wrap,',
+    '  header.new-header form .search__wrap,',
+    '  header.new-header .bj-inj-right .search__wrap{ display:none !important }',
+
+    /* v0.3.7: 모바일 카테고리 메뉴 (.category__wrap) 1행 가로 스크롤 — 절대 규칙 #20 갱신 */
+    '  .mobile__gnb .gnb__cateogry,',
+    '  .mobile__gnb .gnb__cateogry nav{ background:#fff; border-bottom:1px solid #eee }',
+    '  .mobile__gnb .gnb__cateogry{ position:relative }',
+    '  .mobile__gnb .gnb__cateogry::after{',
+    '    content:""; position:absolute; right:0; top:0; bottom:1px;',
+    '    width:24px; pointer-events:none;',
+    '    background:linear-gradient(to right, rgba(255,255,255,0), #fff);',
+    '  }',
+    '  .mobile__gnb .gnb__cateogry .category__wrap{',
+    '    display:flex !important; flex-wrap:nowrap !important;',
+    '    overflow-x:auto !important; -webkit-overflow-scrolling:touch;',
+    '    scrollbar-width:none; -ms-overflow-style:none;',
+    '    padding:8px 12px !important; gap:6px !important;',
+    '    white-space:nowrap !important; line-height:normal !important;',
+    '    height:auto !important; max-height:none !important;',
+    '  }',
+    '  .mobile__gnb .gnb__cateogry .category__wrap::-webkit-scrollbar{ display:none }',
+    '  .mobile__gnb .gnb__cateogry .category__wrap > a{',
+    '    flex:0 0 auto !important;',
+    '    display:inline-flex !important; align-items:center; justify-content:center;',
+    '    padding:6px 12px !important; font-size:12.5px !important; font-weight:600;',
+    '    color:#555; background:#f4f4f4;',
+    '    border:0.5px solid #e5e5e5; border-radius:999px !important;',
+    '    text-decoration:none !important; white-space:nowrap; line-height:1.3 !important;',
+    '    transition:background 0.15s, color 0.15s;',
+    '  }',
+    '  .mobile__gnb .gnb__cateogry .category__wrap > a:hover{',
+    '    background:#e8edff; color:#0838F8; border-color:#0838F8;',
+    '  }',
+    '  .mobile__gnb .gnb__cateogry .category__wrap > a.on,',
+    '  .mobile__gnb .gnb__cateogry .category__wrap > a:active{',
+    '    background:#0838F8 !important; color:#fff !important;',
+    '    border-color:#0838F8 !important; font-weight:700;',
+    '  }',
+    '  .mobile__gnb .gnb__cateogry .category__wrap > a.on::after,',
+    '  .mobile__gnb .gnb__cateogry .category__wrap > a::after{ display:none !important }',
+    '  .mobile__gnb .gnb__cateogry .category__wrap > a.bj-internet-cat{',
+    '    background:#f4f4f4; color:#555;',
+    '  }',
+    /* v0.3.7: 인라인 빨강(#ff1818) 강조 링크 → 브랜드 파랑(#0838F8)로 통일 */
+    '  a[style*="ff1818"],',
+    '  a[style*="FF1818"],',
+    '  a[style*="#ff1818"],',
+    '  a[style*="#FF1818"]{ color:#0838F8 !important }',
     /* v0.3.6: 아이콘 리스트 flex:0 1 auto로 shrink 허용 + min-width:0 */
     '  header.new-header .header__top > ul.inline_wrap.header_m_icon,',
     '  header.new-header .header__top > ul#bj-header-icons,',

@@ -7,7 +7,7 @@
   <!-- ▲ ▲ -->
   <!-- 데모 표시 배너 (실제 사이트와 구분) -->
   <style>
-    body::before{content:"✅ v0.3.6 FINAL — 모바일 헤더 로고-이벤트 겹침 픽스 (로고 max-width:38vw + 아이콘 리스트 flex:0 1 auto shrink 허용).";
+    body::before{content:"✅ v0.3.7 FINAL — 모바일 검색바 명시 숨김 + 카테고리 1행 가로스크롤 + 빨강(#ff1818)→파랑(#0838F8) 통일.";
       background:#ecfdf5 !important; border-bottom:1px solid #86efac !important; color:#15803d !important;
       display:block;background:#fff8e6;border-bottom:1px solid #ffd966;padding:10px 16px;font-size:12px;
       color:#8a6d00;line-height:1.5;font-family:'Pretendard','맑은 고딕',sans-serif;text-align:center;font-weight:500}
@@ -2354,7 +2354,14 @@ $(function() {
         #ai-card-root .g-B{background:var(--g-3)} #ai-card-root .g-Cplus{background:var(--g-3-5)}
         #ai-card-root .g-C{background:var(--g-4);color:#5d4d00}
         #ai-card-root .g-C small{border-left-color:rgba(93,77,0,0.4)}
-        #ai-card-root .g-d{background:var(--g-d);font-size:11px;font-weight:700;padding:4px 10px;border-radius:6px;color:#fff}
+        /* v0.3.7: .g-d 평가없음 배지 — .grade-badge와 동일 높이로 통일
+           (이전: display:inline + line-height 미지정으로 다른 배지보다 키가 컸음) */
+        #ai-card-root .g-d{
+          display:inline-flex; align-items:center; gap:6px;
+          background:var(--g-d); font-size:12px; font-weight:700;
+          padding:4px 10px; border-radius:6px; color:#fff;
+          line-height:1.2; vertical-align:middle;
+        }
 
         #ai-card-root .specs{display:grid;grid-template-columns:1fr 1fr 1fr;background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px 6px}
         #ai-card-root .sc{text-align:center;padding:8px 4px;position:relative}
@@ -2587,8 +2594,88 @@ $(function() {
             height:26px !important; width:auto !important; max-width:100% !important;
             display:block !important; object-fit:contain;
           }
-          /* 원본 .top__right(검색폼 등)는 모바일에서 숨김 */
+          /* 원본 .top__right(검색폼·전화·SNS·gnb__right 등)는 모바일에서 숨김 */
           header.new-header .header__top .top__right{ display:none !important }
+          /* v0.3.7: 검색바 명시 숨김 — .top__right 외에 다른 위치에 .search__wrap이
+             렌더될 수도 있으므로 (inject.js 변형, 외부 코드 등) 안전망. 검색은 아이콘 클릭 시 .m_search_popup으로 열림 */
+          header.new-header .search__wrap,
+          header.new-header form .search__wrap,
+          header.new-header .bj-inj-right .search__wrap{ display:none !important }
+
+          /* v0.3.7: 모바일 카테고리 메뉴 (.category__wrap) — 1행 가로 스크롤 (이전 3줄 wrap에서 변경)
+             절대 규칙 #20 갱신: 버튼형 + 1행 + overflow-x:auto + 스크롤바 숨김 */
+          .mobile__gnb .gnb__cateogry,
+          .mobile__gnb .gnb__cateogry nav{
+            background:#fff; border-bottom:1px solid #eee;
+          }
+          .mobile__gnb .gnb__cateogry .category__wrap{
+            display:flex !important;
+            flex-wrap:nowrap !important;
+            overflow-x:auto !important;
+            -webkit-overflow-scrolling:touch;
+            scrollbar-width:none;          /* Firefox */
+            -ms-overflow-style:none;       /* IE */
+            padding:8px 12px !important;
+            gap:6px !important;
+            white-space:nowrap !important;
+            line-height:normal !important;
+            height:auto !important;
+            max-height:none !important;
+          }
+          .mobile__gnb .gnb__cateogry .category__wrap::-webkit-scrollbar{
+            display:none;                  /* Chrome/Safari */
+          }
+          .mobile__gnb .gnb__cateogry .category__wrap > a{
+            flex:0 0 auto !important;
+            display:inline-flex !important;
+            align-items:center; justify-content:center;
+            padding:6px 12px !important;
+            font-size:12.5px !important;
+            font-weight:600;
+            color:#555;
+            background:#f4f4f4;
+            border:0.5px solid #e5e5e5;
+            border-radius:999px !important;
+            text-decoration:none !important;
+            white-space:nowrap;
+            line-height:1.3 !important;
+            transition:background 0.15s, color 0.15s;
+          }
+          .mobile__gnb .gnb__cateogry .category__wrap > a:hover{
+            background:#e8edff; color:#0838F8; border-color:#0838F8;
+          }
+          .mobile__gnb .gnb__cateogry .category__wrap > a.on,
+          .mobile__gnb .gnb__cateogry .category__wrap > a:active{
+            background:#0838F8 !important;
+            color:#fff !important;
+            border-color:#0838F8 !important;
+            font-weight:700;
+          }
+          /* 원본 .on::after 주황 밑줄 무력화 — 버튼 active로 대체 */
+          .mobile__gnb .gnb__cateogry .category__wrap > a.on::after,
+          .mobile__gnb .gnb__cateogry .category__wrap > a::after{
+            display:none !important;
+          }
+          /* 인터넷 카테고리 같은 특수 클래스도 동일 톤 */
+          .mobile__gnb .gnb__cateogry .category__wrap > a.bj-internet-cat{
+            background:#f4f4f4; color:#555;
+          }
+
+          /* v0.3.7: 인라인 빨강(#ff1818) 강조 링크 → 브랜드 파랑(#0838F8)로 통일
+             (예: "이벤트 / 고객센터" 등 페이지 내 산발적 빨강 강조 통일) */
+          a[style*="ff1818"],
+          a[style*="FF1818"],
+          a[style*="#ff1818"],
+          a[style*="#FF1818"]{
+            color:#0838F8 !important;
+          }
+          /* 스크롤 가능 신호 — 우측 fade (선택적) */
+          .mobile__gnb .gnb__cateogry{ position:relative }
+          .mobile__gnb .gnb__cateogry::after{
+            content:""; position:absolute; right:0; top:0; bottom:1px;
+            width:24px; pointer-events:none;
+            background:linear-gradient(to right, rgba(255,255,255,0), #fff);
+          }
           /* v0.3.6: 아이콘 리스트 — flex:0 1 auto로 shrink 허용, 폭 부족 시 자동 축소 */
           header.new-header .header__top > ul.inline_wrap.header_m_icon,
           header.new-header .header__top > ul#bj-header-icons,
