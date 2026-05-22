@@ -7,7 +7,7 @@
   <!-- ▲ ▲ -->
   <!-- 데모 표시 배너 (실제 사이트와 구분) -->
   <style>
-    body::before{content:"✅ v0.4.1 FINAL — PC 가격박스를 평가표(게이지+4지표) 하단으로 이동 + 카드 형태 시각 강화. 평가→가격 자연 시선 흐름.";
+    body::before{content:"✅ v0.4.2 FINAL — PC 가격박스 row 정렬로 변경, 박스 안 라벨-가격 세로 중앙 정렬 보장.";
       background:#ecfdf5 !important; border-bottom:1px solid #86efac !important; color:#15803d !important;
       display:block;background:#fff8e6;border-bottom:1px solid #ffd966;padding:10px 16px;font-size:12px;
       color:#8a6d00;line-height:1.5;font-family:'Pretendard','맑은 고딕',sans-serif;text-align:center;font-weight:500}
@@ -296,55 +296,71 @@
 		}
 
 		/* v0.4.1: 평가표 하단으로 이동된 PC 가격박스 — 시각적으로 평가 결과 다음 단계 표현 */
+		/* v0.4.2: 라벨+가격을 row 정렬로 변경하여 박스 안에서 세로 중앙 정렬되게 */
 		.prod_view_top .right .fix_price.hide-767.bj-fix-price-moved{
 			margin-top:16px !important;
-			padding:14px 16px !important;
+			padding:16px 20px !important;
 			background:linear-gradient(135deg, #fafbff 0%, #f0f4ff 100%) !important;
 			border:1px solid #d6e0fb !important;
 			border-radius:10px !important;
 			display:flex !important;
-			gap:14px !important;
-			align-items:stretch !important;
+			gap:18px !important;
+			align-items:center !important;       /* v0.4.2: stretch → center */
+			justify-content:center !important;   /* v0.4.2: 가로 중앙 정렬 */
 			flex-wrap:wrap !important;
 		}
 		.prod_view_top .right .fix_price.hide-767.bj-fix-price-moved .box{
 			flex:1 1 auto; min-width:140px;
-			display:flex; flex-direction:column; gap:4px;
+			display:flex !important;
+			flex-direction:row !important;       /* v0.4.2: column → row */
+			align-items:center !important;       /* v0.4.2: 세로 중앙 정렬 */
+			justify-content:space-between !important;
+			gap:10px !important;
 			padding:0 !important;
+			margin:0 !important;
 			background:transparent !important;
 			border:0 !important;
+			min-height:36px;
 		}
 		.prod_view_top .right .fix_price.hide-767.bj-fix-price-moved .box.org{
 			border-left:0.5px dashed #c8d4f0 !important;
-			padding-left:14px !important;
+			padding-left:18px !important;
 		}
 		.prod_view_top .right .fix_price.hide-767.bj-fix-price-moved .box .tit{
-			font-size:12px; font-weight:600; color:#6a6a6a;
+			font-size:12.5px; font-weight:600; color:#6a6a6a;
 			font-family:'Pretendard','맑은 고딕',sans-serif;
+			white-space:nowrap;
+			flex:0 0 auto;
+			line-height:1.2;
 		}
 		.prod_view_top .right .fix_price.hide-767.bj-fix-price-moved .box .align-r{
 			font-size:18px; font-weight:800; color:#0838F8;
-			text-align:left !important; line-height:1.2;
+			text-align:right !important; line-height:1.2;
 			font-family:'Pretendard','맑은 고딕',sans-serif;
+			flex:0 0 auto;
+			display:inline-flex; align-items:baseline; gap:2px;
 		}
 		.prod_view_top .right .fix_price.hide-767.bj-fix-price-moved .box .align-r b{
 			font-size:22px; font-weight:800; color:#0838F8;
+			line-height:1.2;
 		}
-		.prod_view_top .right .fix_price.hide-767.bj-fix-price-moved .box.org .align-r{
-			color:#16a34a;
-		}
+		.prod_view_top .right .fix_price.hide-767.bj-fix-price-moved .box.org .align-r,
 		.prod_view_top .right .fix_price.hide-767.bj-fix-price-moved .box.org .align-r b{
 			color:#16a34a;
 		}
 
 		@media (max-width:1023px){
 			.prod_view_top .right .fix_price.hide-767.bj-fix-price-moved{
-				flex-direction:column !important; gap:8px !important;
-				padding:12px 14px !important;
+				flex-direction:column !important; gap:10px !important;
+				padding:14px 16px !important;
+				align-items:stretch !important;
+			}
+			.prod_view_top .right .fix_price.hide-767.bj-fix-price-moved .box{
+				width:100%; min-height:auto;
 			}
 			.prod_view_top .right .fix_price.hide-767.bj-fix-price-moved .box.org{
 				border-left:0 !important; padding-left:0 !important;
-				border-top:0.5px dashed #c8d4f0 !important; padding-top:8px !important;
+				border-top:0.5px dashed #c8d4f0 !important; padding-top:10px !important;
 			}
 		}
 	</style>
