@@ -1,11 +1,11 @@
 /*!
- * billyjo-detailcard v0.3.7 — 상세페이지 카드 클라이언트 패치
+ * billyjo-detailcard v0.3.8 — 상세페이지 카드 클라이언트 패치
  * https://github.com/billyjo-appsilon/billyjo-detailcard
  *
  * 적용 페이지: /html/dh_prod/prod_view/*  (제품 상세 페이지)
  * 의존성: 기존 billyjo-inject 스크립트 (헤더 재구성·이벤트 배너 분리 처리)가 먼저 로드된 상태를 전제로 함.
  *
- * 포함 패치 (v0.3.7 기준):
+ * 포함 패치 (v0.3.8 기준):
  *   - 절대 규칙 #14: 6-8칸 스펙요약 + ⓘ 도움말 (모바일 sheet 전환, v0.3.5)
  *   - 절대 규칙 #21: 좁은화면 헤더 (inject.js 결과 DOM 안정 클래스 부여 + 모바일 1행 정렬 + .new-gnb 숨김 + 햄버거 5px)
  *   - 절대 규칙 #22-23: Hero 재배치/Step 폰트/페르소나 폰트 (AI 카드 마크업 존재 시에만 활성)
@@ -14,7 +14,8 @@
  *   - v0.3.4: .wide-inner max-width 1480px 확장, SLOT 7 모바일 column 레이아웃
  *   - v0.3.5: .help-pop 모바일 viewport sheet 전환, 외부 탭 자동 닫힘 JS
  *   - v0.3.6: 모바일 로고 max-width 제한 + 아이콘 리스트 shrink 허용 (로고-이벤트 겹침 해결)
- *   - v0.3.7: 모바일 검색바 명시 숨김 + 카테고리 1행 가로스크롤(룰북 #20 갱신) + 빨강→파랑 통일
+ *   - v0.3.7: 모바일 검색바 명시 숨김 + 카테고리 1행 가로스크롤(룰북 #20 갱신) + 빨강→파랑 통일 + .g-d 높이 통일
+ *   - v0.3.8: 카테고리 spacing 축소 + 자동 스크롤 정렬 + 약정/의무사용 기간 ⓘ 툴팁 동적 주입
  *   - 공통: 햄버거 중복 제거, 제품 썸네일 1px 회색 테두리
  *
  * AI 카드 콘텐츠 자체는 별도 backend 파이프라인에서 사전 생성되어 제품별 HTML에 주입되어야 함.
@@ -148,7 +149,7 @@
     '    display:flex !important; flex-wrap:nowrap !important;',
     '    overflow-x:auto !important; -webkit-overflow-scrolling:touch;',
     '    scrollbar-width:none; -ms-overflow-style:none;',
-    '    padding:8px 12px !important; gap:6px !important;',
+    '    padding:6px 10px !important; gap:4px !important;',          /* v0.3.8: 8/12·6 → 6/10·4 */
     '    white-space:nowrap !important; line-height:normal !important;',
     '    height:auto !important; max-height:none !important;',
     '  }',
@@ -156,9 +157,9 @@
     '  .mobile__gnb .gnb__cateogry .category__wrap > a{',
     '    flex:0 0 auto !important;',
     '    display:inline-flex !important; align-items:center; justify-content:center;',
-    '    padding:6px 12px !important; font-size:12.5px !important; font-weight:600;',
+    '    padding:5px 10px !important; font-size:11.5px !important; font-weight:600;',  /* v0.3.8: 6/12·12.5 → 5/10·11.5 */
     '    color:#555; background:#f4f4f4;',
-    '    border:0.5px solid #e5e5e5; border-radius:999px !important;',
+    '    border:0.5px solid #e5e5e5; border-radius:14px !important;',
     '    text-decoration:none !important; white-space:nowrap; line-height:1.3 !important;',
     '    transition:background 0.15s, color 0.15s;',
     '  }',
@@ -180,6 +181,18 @@
     '  a[style*="FF1818"],',
     '  a[style*="#ff1818"],',
     '  a[style*="#FF1818"]{ color:#0838F8 !important }',
+    /* v0.3.8: rental-terms 라벨에 ⓘ 툴팁 인라인 배치 + .g-d 평가없음 배지 높이 통일 */
+    '#ai-card-root .rt-r{ align-items:center !important }',
+    '#ai-card-root .rt-l{',
+    '  display:inline-flex !important; align-items:center !important; gap:3px !important;',
+    '}',
+    '#ai-card-root .rt-l .help{ margin-left:1px }',
+    '#ai-card-root .rt-l .help summary{ font-size:11px; color:#999; padding:0 2px; cursor:pointer }',
+    '#ai-card-root .g-d{',
+    '  display:inline-flex !important; align-items:center !important; gap:6px !important;',
+    '  line-height:1.2 !important; vertical-align:middle;',
+    '  font-size:12px !important;',
+    '}',
     /* v0.3.6: 아이콘 리스트 flex:0 1 auto로 shrink 허용 + min-width:0 */
     '  header.new-header .header__top > ul.inline_wrap.header_m_icon,',
     '  header.new-header .header__top > ul#bj-header-icons,',
@@ -609,6 +622,45 @@
     }, true);
   }
 
+  /* (d) v0.3.8: .category__wrap 자동 스크롤 정렬 — 활성(.on)을 가운데, 없으면 좌측 정렬 */
+  function alignCategoryScroll(){
+    var wrap = document.querySelector('.mobile__gnb .gnb__cateogry .category__wrap');
+    if (!wrap || wrap.dataset.bjCatAligned) return;
+    var active = wrap.querySelector('a.on');
+    if (active) {
+      var wrapRect = wrap.getBoundingClientRect();
+      var aRect = active.getBoundingClientRect();
+      var offset = (aRect.left - wrapRect.left) - (wrap.clientWidth / 2) + (active.offsetWidth / 2);
+      wrap.scrollLeft = Math.max(0, offset);
+    } else {
+      wrap.scrollLeft = 0;
+    }
+    wrap.dataset.bjCatAligned = '1';
+  }
+
+  /* (e) v0.3.8: 약정 기간·의무 사용 기간 라벨에 ⓘ 툴팁 동적 주입 (실서버에서 AI 카드 HTML에
+       해당 마크업 없을 수 있어 fallback 처리) */
+  var TERM_HELP = {
+    '약정 기간': '<strong>약정 기간</strong>은 렌탈 계약의 전체 기간입니다. 이 기간 동안 매월 렌탈료를 납부하며, 종료 시점에 제품 소유권이 이전(또는 반환)됩니다. 약정을 채워야 광고된 월 렌탈료가 유지됩니다.',
+    '의무 사용 기간': '<strong>의무 사용 기간</strong>은 위약금이 부과되는 최소 기간입니다. 이 기간이 지난 뒤 해지하면 별도 위약금 없이 자유로운 해지가 가능합니다. 약정 기간보다 짧은 게 일반적이며, 짧을수록 사용자에게 유리합니다.'
+  };
+  function addRentalTermsHelp(){
+    var rows = document.querySelectorAll('#ai-card-root .rental-terms .rt-r .rt-l');
+    rows.forEach(function(label){
+      if (label.dataset.bjHelpAdded) return;
+      var key = label.textContent.trim();
+      if (!TERM_HELP[key]) return;
+      var details = document.createElement('details');
+      details.className = 'help';
+      details.innerHTML =
+        '<summary aria-label="' + key + ' 설명"></summary>' +
+        '<div class="help-pop">' + TERM_HELP[key] + '</div>';
+      label.appendChild(document.createTextNode(' '));
+      label.appendChild(details);
+      label.dataset.bjHelpAdded = '1';
+    });
+  }
+
   // ─────────────────────────────────────────────────────────────────────────
   // 3) 오케스트레이션
   // ─────────────────────────────────────────────────────────────────────────
@@ -617,6 +669,8 @@
     tagHeaderDom();
     enhanceBottomBar();
     setupHelpClose();
+    alignCategoryScroll();
+    addRentalTermsHelp();
   }
 
   injectCSS();      // CSS 즉시 — head 있으면
