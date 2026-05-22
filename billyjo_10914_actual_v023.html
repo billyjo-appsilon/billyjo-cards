@@ -7,7 +7,7 @@
   <!-- ▲ ▲ -->
   <!-- 데모 표시 배너 (실제 사이트와 구분) -->
   <style>
-    body::before{content:"✅ v0.4.0 FINAL — 하단 위젯 fallback 콘텐츠 자체 생성 (.bb-inner 없어도 3버튼+가격 표시). inject.js 미실행/지연 안전망.";
+    body::before{content:"✅ v0.4.1 FINAL — PC 가격박스를 평가표(게이지+4지표) 하단으로 이동 + 카드 형태 시각 강화. 평가→가격 자연 시선 흐름.";
       background:#ecfdf5 !important; border-bottom:1px solid #86efac !important; color:#15803d !important;
       display:block;background:#fff8e6;border-bottom:1px solid #ffd966;padding:10px 16px;font-size:12px;
       color:#8a6d00;line-height:1.5;font-family:'Pretendard','맑은 고딕',sans-serif;text-align:center;font-weight:500}
@@ -294,6 +294,59 @@
 			.prod_view_top .right .bj-hero-summary .summary{ flex-direction:column !important; align-items:stretch !important; gap:10px !important }
 			.prod_view_top .right .bj-hero-summary svg{ width:90px !important; height:90px !important; align-self:center }
 		}
+
+		/* v0.4.1: 평가표 하단으로 이동된 PC 가격박스 — 시각적으로 평가 결과 다음 단계 표현 */
+		.prod_view_top .right .fix_price.hide-767.bj-fix-price-moved{
+			margin-top:16px !important;
+			padding:14px 16px !important;
+			background:linear-gradient(135deg, #fafbff 0%, #f0f4ff 100%) !important;
+			border:1px solid #d6e0fb !important;
+			border-radius:10px !important;
+			display:flex !important;
+			gap:14px !important;
+			align-items:stretch !important;
+			flex-wrap:wrap !important;
+		}
+		.prod_view_top .right .fix_price.hide-767.bj-fix-price-moved .box{
+			flex:1 1 auto; min-width:140px;
+			display:flex; flex-direction:column; gap:4px;
+			padding:0 !important;
+			background:transparent !important;
+			border:0 !important;
+		}
+		.prod_view_top .right .fix_price.hide-767.bj-fix-price-moved .box.org{
+			border-left:0.5px dashed #c8d4f0 !important;
+			padding-left:14px !important;
+		}
+		.prod_view_top .right .fix_price.hide-767.bj-fix-price-moved .box .tit{
+			font-size:12px; font-weight:600; color:#6a6a6a;
+			font-family:'Pretendard','맑은 고딕',sans-serif;
+		}
+		.prod_view_top .right .fix_price.hide-767.bj-fix-price-moved .box .align-r{
+			font-size:18px; font-weight:800; color:#0838F8;
+			text-align:left !important; line-height:1.2;
+			font-family:'Pretendard','맑은 고딕',sans-serif;
+		}
+		.prod_view_top .right .fix_price.hide-767.bj-fix-price-moved .box .align-r b{
+			font-size:22px; font-weight:800; color:#0838F8;
+		}
+		.prod_view_top .right .fix_price.hide-767.bj-fix-price-moved .box.org .align-r{
+			color:#16a34a;
+		}
+		.prod_view_top .right .fix_price.hide-767.bj-fix-price-moved .box.org .align-r b{
+			color:#16a34a;
+		}
+
+		@media (max-width:1023px){
+			.prod_view_top .right .fix_price.hide-767.bj-fix-price-moved{
+				flex-direction:column !important; gap:8px !important;
+				padding:12px 14px !important;
+			}
+			.prod_view_top .right .fix_price.hide-767.bj-fix-price-moved .box.org{
+				border-left:0 !important; padding-left:0 !important;
+				border-top:0.5px dashed #c8d4f0 !important; padding-top:8px !important;
+			}
+		}
 	</style>
 
 	<!-- ===== Step 폰트 확대 — Variant 2 (중폭, +35%, 권장) ===== -->
@@ -549,6 +602,17 @@
 					heroWrap.className = 'bj-hero-summary';
 					heroWrap.appendChild(summary);
 					right.appendChild(heroWrap);
+				}
+
+				/* v0.4.1: PC 가격박스(.fix_price.hide-767)를 .bj-hero-summary 다음으로 이동
+				   기존: 가격박스 → 제품명 → 게이지+4지표
+				   변경: 제품명 → 게이지+4지표 → 가격박스
+				   사용자가 평가 결과를 본 다음 가격을 확인하는 자연스러운 시선 흐름 */
+				var fixPrice = right.querySelector('.fix_price.hide-767');
+				var heroSummary = right.querySelector('.bj-hero-summary');
+				if (fixPrice && heroSummary && fixPrice.previousElementSibling !== heroSummary) {
+					fixPrice.classList.add('bj-fix-price-moved');
+					heroSummary.after(fixPrice);
 				}
 
 				right.dataset.bjHeroBuilt = '1';
