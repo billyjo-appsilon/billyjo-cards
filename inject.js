@@ -1,11 +1,11 @@
 /*!
- * billyjo-detailcard v0.3.8 — 상세페이지 카드 클라이언트 패치
+ * billyjo-detailcard v0.3.9 — 상세페이지 카드 클라이언트 패치
  * https://github.com/billyjo-appsilon/billyjo-detailcard
  *
  * 적용 페이지: /html/dh_prod/prod_view/*  (제품 상세 페이지)
  * 의존성: 기존 billyjo-inject 스크립트 (헤더 재구성·이벤트 배너 분리 처리)가 먼저 로드된 상태를 전제로 함.
  *
- * 포함 패치 (v0.3.8 기준):
+ * 포함 패치 (v0.3.9 기준):
  *   - 절대 규칙 #14: 6-8칸 스펙요약 + ⓘ 도움말 (모바일 sheet 전환, v0.3.5)
  *   - 절대 규칙 #21: 좁은화면 헤더 (inject.js 결과 DOM 안정 클래스 부여 + 모바일 1행 정렬 + .new-gnb 숨김 + 햄버거 5px)
  *   - 절대 규칙 #22-23: Hero 재배치/Step 폰트/페르소나 폰트 (AI 카드 마크업 존재 시에만 활성)
@@ -16,6 +16,7 @@
  *   - v0.3.6: 모바일 로고 max-width 제한 + 아이콘 리스트 shrink 허용 (로고-이벤트 겹침 해결)
  *   - v0.3.7: 모바일 검색바 명시 숨김 + 카테고리 1행 가로스크롤(룰북 #20 갱신) + 빨강→파랑 통일 + .g-d 높이 통일
  *   - v0.3.8: 카테고리 spacing 축소 + 자동 스크롤 정렬 + 약정/의무사용 기간 ⓘ 툴팁 동적 주입
+ *   - v0.3.9: 카테고리 텍스트 전용 스와이프 (pill 폐기) + 좌측 정렬 + 활성 굵게/파랑+밑줄
  *   - 공통: 햄버거 중복 제거, 제품 썸네일 1px 회색 테두리
  *
  * AI 카드 콘텐츠 자체는 별도 backend 파이프라인에서 사전 생성되어 제품별 HTML에 주입되어야 함.
@@ -136,46 +137,61 @@
     '  header.new-header form .search__wrap,',
     '  header.new-header .bj-inj-right .search__wrap{ display:none !important }',
 
-    /* v0.3.7: 모바일 카테고리 메뉴 (.category__wrap) 1행 가로 스크롤 — 절대 규칙 #20 갱신 */
+    /* v0.3.9: 모바일 카테고리 메뉴 (.category__wrap) — 텍스트 전용 스와이프 (이전 pill 버튼 폐기) */
     '  .mobile__gnb .gnb__cateogry,',
     '  .mobile__gnb .gnb__cateogry nav{ background:#fff; border-bottom:1px solid #eee }',
     '  .mobile__gnb .gnb__cateogry{ position:relative }',
+    /* 우측 fade */
     '  .mobile__gnb .gnb__cateogry::after{',
     '    content:""; position:absolute; right:0; top:0; bottom:1px;',
-    '    width:24px; pointer-events:none;',
-    '    background:linear-gradient(to right, rgba(255,255,255,0), #fff);',
+    '    width:32px; pointer-events:none; z-index:1;',
+    '    background:linear-gradient(to right, rgba(255,255,255,0), #fff 70%);',
+    '  }',
+    /* 좌측 fade */
+    '  .mobile__gnb .gnb__cateogry::before{',
+    '    content:""; position:absolute; left:0; top:0; bottom:1px;',
+    '    width:14px; pointer-events:none; z-index:1;',
+    '    background:linear-gradient(to left, rgba(255,255,255,0), #fff 80%);',
     '  }',
     '  .mobile__gnb .gnb__cateogry .category__wrap{',
     '    display:flex !important; flex-wrap:nowrap !important;',
-    '    overflow-x:auto !important; -webkit-overflow-scrolling:touch;',
+    '    overflow-x:auto !important; overflow-y:hidden !important;',
+    '    -webkit-overflow-scrolling:touch;',
     '    scrollbar-width:none; -ms-overflow-style:none;',
-    '    padding:6px 10px !important; gap:4px !important;',          /* v0.3.8: 8/12·6 → 6/10·4 */
+    '    justify-content:flex-start !important; align-items:center !important;',
+    '    padding:10px 16px 12px !important; gap:18px !important;',
     '    white-space:nowrap !important; line-height:normal !important;',
     '    height:auto !important; max-height:none !important;',
+    '    text-align:left !important;',
     '  }',
     '  .mobile__gnb .gnb__cateogry .category__wrap::-webkit-scrollbar{ display:none }',
+    /* 텍스트 전용 항목 — 배경·테두리·라운드 모두 제거 */
     '  .mobile__gnb .gnb__cateogry .category__wrap > a{',
     '    flex:0 0 auto !important;',
-    '    display:inline-flex !important; align-items:center; justify-content:center;',
-    '    padding:5px 10px !important; font-size:11.5px !important; font-weight:600;',  /* v0.3.8: 6/12·12.5 → 5/10·11.5 */
-    '    color:#555; background:#f4f4f4;',
-    '    border:0.5px solid #e5e5e5; border-radius:14px !important;',
-    '    text-decoration:none !important; white-space:nowrap; line-height:1.3 !important;',
-    '    transition:background 0.15s, color 0.15s;',
+    '    display:inline-block !important;',
+    '    padding:2px 0 !important; margin:0 !important;',
+    '    font-size:13px !important; font-weight:500;',
+    '    color:#555 !important;',
+    '    background:transparent !important;',
+    '    border:0 !important; border-radius:0 !important;',
+    '    text-decoration:none !important; white-space:nowrap;',
+    '    line-height:1.4 !important; position:relative;',
+    '    transition:color 0.15s;',
     '  }',
     '  .mobile__gnb .gnb__cateogry .category__wrap > a:hover{',
-    '    background:#e8edff; color:#0838F8; border-color:#0838F8;',
+    '    color:#0838F8 !important;',
     '  }',
-    '  .mobile__gnb .gnb__cateogry .category__wrap > a.on,',
-    '  .mobile__gnb .gnb__cateogry .category__wrap > a:active{',
-    '    background:#0838F8 !important; color:#fff !important;',
-    '    border-color:#0838F8 !important; font-weight:700;',
+    /* 활성 — 굵게 + 파랑 + 하단 짧은 바 */
+    '  .mobile__gnb .gnb__cateogry .category__wrap > a.on{',
+    '    color:#0838F8 !important; font-weight:800 !important;',
     '  }',
-    '  .mobile__gnb .gnb__cateogry .category__wrap > a.on::after,',
-    '  .mobile__gnb .gnb__cateogry .category__wrap > a::after{ display:none !important }',
-    '  .mobile__gnb .gnb__cateogry .category__wrap > a.bj-internet-cat{',
-    '    background:#f4f4f4; color:#555;',
+    '  .mobile__gnb .gnb__cateogry .category__wrap > a.on::after{',
+    '    content:""; display:block !important;',
+    '    position:absolute; left:0; right:0; bottom:-3px;',
+    '    height:2px; background:#0838F8; border-radius:1px;',
     '  }',
+    '  .mobile__gnb .gnb__cateogry .category__wrap > a:not(.on)::after{ display:none !important }',
+    '  .mobile__gnb .gnb__cateogry .category__wrap > a.bj-internet-cat{ color:#555 !important }',
     /* v0.3.7: 인라인 빨강(#ff1818) 강조 링크 → 브랜드 파랑(#0838F8)로 통일 */
     '  a[style*="ff1818"],',
     '  a[style*="FF1818"],',
@@ -622,7 +638,8 @@
     }, true);
   }
 
-  /* (d) v0.3.8: .category__wrap 자동 스크롤 정렬 — 활성(.on)을 가운데, 없으면 좌측 정렬 */
+  /* (d) v0.3.9: .category__wrap 자동 스크롤 정렬 — 활성(.on)이 보이는 영역 안에 오게,
+       없으면 좌측(scrollLeft:0) 고정. 좌측 정렬 유지 (가운데 정렬 금지). */
   function alignCategoryScroll(){
     var wrap = document.querySelector('.mobile__gnb .gnb__cateogry .category__wrap');
     if (!wrap || wrap.dataset.bjCatAligned) return;
@@ -630,8 +647,13 @@
     if (active) {
       var wrapRect = wrap.getBoundingClientRect();
       var aRect = active.getBoundingClientRect();
-      var offset = (aRect.left - wrapRect.left) - (wrap.clientWidth / 2) + (active.offsetWidth / 2);
-      wrap.scrollLeft = Math.max(0, offset);
+      var leftEdge = 20;
+      var rightEdge = wrap.clientWidth - 32;
+      if (aRect.right - wrapRect.left > rightEdge) {
+        wrap.scrollLeft = (aRect.left - wrapRect.left) - leftEdge;
+      } else if (aRect.left - wrapRect.left < leftEdge) {
+        wrap.scrollLeft = 0;
+      }
     } else {
       wrap.scrollLeft = 0;
     }

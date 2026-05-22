@@ -7,7 +7,7 @@
   <!-- ▲ ▲ -->
   <!-- 데모 표시 배너 (실제 사이트와 구분) -->
   <style>
-    body::before{content:"✅ v0.3.8 FINAL — 카테고리 spacing 축소 + 자동 스크롤 정렬 + 약정/의무사용 기간 ⓘ 툴팁.";
+    body::before{content:"✅ v0.3.9 FINAL — 카테고리 텍스트 전용 스와이프 (pill 폐기) + 좌측 정렬 + 잘림 없음 + 활성 굵게/파랑+밑줄.";
       background:#ecfdf5 !important; border-bottom:1px solid #86efac !important; color:#15803d !important;
       display:block;background:#fff8e6;border-bottom:1px solid #ffd966;padding:10px 16px;font-size:12px;
       color:#8a6d00;line-height:1.5;font-family:'Pretendard','맑은 고딕',sans-serif;text-align:center;font-weight:500}
@@ -2604,79 +2604,92 @@ $(function() {
           header.new-header form .search__wrap,
           header.new-header .bj-inj-right .search__wrap{ display:none !important }
 
-          /* v0.3.7: 모바일 카테고리 메뉴 (.category__wrap) — 1행 가로 스크롤 (이전 3줄 wrap에서 변경)
-             절대 규칙 #20 갱신: 버튼형 + 1행 + overflow-x:auto + 스크롤바 숨김 */
+          /* v0.3.9: 모바일 카테고리 메뉴 (.category__wrap) — 텍스트 전용 스와이프
+             이전 v0.3.7-3.8 pill 버튼 패턴 폐기. 좌측 정렬 + 잘림 없음 + 활성은 텍스트 굵게/파랑+밑줄. */
           .mobile__gnb .gnb__cateogry,
           .mobile__gnb .gnb__cateogry nav{
             background:#fff; border-bottom:1px solid #eee;
           }
+          .mobile__gnb .gnb__cateogry{ position:relative }
           .mobile__gnb .gnb__cateogry .category__wrap{
             display:flex !important;
             flex-wrap:nowrap !important;
             overflow-x:auto !important;
+            overflow-y:hidden !important;
             -webkit-overflow-scrolling:touch;
-            scrollbar-width:none;          /* Firefox */
-            -ms-overflow-style:none;       /* IE */
-            padding:6px 10px !important;
-            gap:4px !important;            /* v0.3.8: 6→4px */
+            scrollbar-width:none;
+            -ms-overflow-style:none;
+            justify-content:flex-start !important;
+            align-items:center !important;
+            padding:10px 16px 12px !important;
+            gap:18px !important;
             white-space:nowrap !important;
             line-height:normal !important;
             height:auto !important;
             max-height:none !important;
+            text-align:left !important;
           }
-          .mobile__gnb .gnb__cateogry .category__wrap::-webkit-scrollbar{
-            display:none;                  /* Chrome/Safari */
-          }
+          .mobile__gnb .gnb__cateogry .category__wrap::-webkit-scrollbar{ display:none }
+          /* 텍스트 전용 — 배경·테두리·라운드 모두 제거 */
           .mobile__gnb .gnb__cateogry .category__wrap > a{
             flex:0 0 auto !important;
-            display:inline-flex !important;
-            align-items:center; justify-content:center;
-            padding:5px 10px !important;   /* v0.3.8: 6/12 → 5/10 */
-            font-size:11.5px !important;   /* v0.3.8: 12.5 → 11.5 */
-            font-weight:600;
-            color:#555;
-            background:#f4f4f4;
-            border:0.5px solid #e5e5e5;
-            border-radius:14px !important;
+            display:inline-block !important;
+            padding:2px 0 !important;
+            margin:0 !important;
+            font-size:13px !important;
+            font-weight:500;
+            color:#555 !important;
+            background:transparent !important;
+            border:0 !important;
+            border-radius:0 !important;
             text-decoration:none !important;
             white-space:nowrap;
-            line-height:1.3 !important;
-            transition:background 0.15s, color 0.15s;
+            line-height:1.4 !important;
+            position:relative;
+            transition:color 0.15s;
           }
           .mobile__gnb .gnb__cateogry .category__wrap > a:hover{
-            background:#e8edff; color:#0838F8; border-color:#0838F8;
+            color:#0838F8 !important;
           }
-          .mobile__gnb .gnb__cateogry .category__wrap > a.on,
-          .mobile__gnb .gnb__cateogry .category__wrap > a:active{
-            background:#0838F8 !important;
-            color:#fff !important;
-            border-color:#0838F8 !important;
-            font-weight:700;
+          /* 활성 — 굵게 + 브랜드 파랑 텍스트 + 하단 짧은 바 (탭 형태) */
+          .mobile__gnb .gnb__cateogry .category__wrap > a.on{
+            color:#0838F8 !important;
+            font-weight:800 !important;
           }
-          /* 원본 .on::after 주황 밑줄 무력화 — 버튼 active로 대체 */
-          .mobile__gnb .gnb__cateogry .category__wrap > a.on::after,
-          .mobile__gnb .gnb__cateogry .category__wrap > a::after{
+          .mobile__gnb .gnb__cateogry .category__wrap > a.on::after{
+            content:"";
+            display:block !important;
+            position:absolute;
+            left:0; right:0; bottom:-3px;
+            height:2px; background:#0838F8;
+            border-radius:1px;
+          }
+          /* 비활성의 ::after 잔재 제거 (원본 빌리조 주황 밑줄 등) */
+          .mobile__gnb .gnb__cateogry .category__wrap > a:not(.on)::after{
             display:none !important;
           }
-          /* 인터넷 카테고리 같은 특수 클래스도 동일 톤 */
           .mobile__gnb .gnb__cateogry .category__wrap > a.bj-internet-cat{
-            background:#f4f4f4; color:#555;
+            color:#555 !important;
           }
 
-          /* v0.3.7: 인라인 빨강(#ff1818) 강조 링크 → 브랜드 파랑(#0838F8)로 통일
-             (예: "이벤트 / 고객센터" 등 페이지 내 산발적 빨강 강조 통일) */
+          /* v0.3.7: 인라인 빨강(#ff1818) 강조 링크 → 브랜드 파랑(#0838F8)로 통일 */
           a[style*="ff1818"],
           a[style*="FF1818"],
           a[style*="#ff1818"],
           a[style*="#FF1818"]{
             color:#0838F8 !important;
           }
-          /* 스크롤 가능 신호 — 우측 fade (선택적) */
-          .mobile__gnb .gnb__cateogry{ position:relative }
+          /* v0.3.9: 우측 fade — 스크롤 가능 신호 */
           .mobile__gnb .gnb__cateogry::after{
             content:""; position:absolute; right:0; top:0; bottom:1px;
-            width:24px; pointer-events:none;
-            background:linear-gradient(to right, rgba(255,255,255,0), #fff);
+            width:32px; pointer-events:none; z-index:1;
+            background:linear-gradient(to right, rgba(255,255,255,0), #fff 70%);
+          }
+          /* v0.3.9: 좌측 fade — 스크롤 시 좌측 가려짐 신호 (약하게) */
+          .mobile__gnb .gnb__cateogry::before{
+            content:""; position:absolute; left:0; top:0; bottom:1px;
+            width:14px; pointer-events:none; z-index:1;
+            background:linear-gradient(to left, rgba(255,255,255,0), #fff 80%);
           }
           /* v0.3.6: 아이콘 리스트 — flex:0 1 auto로 shrink 허용, 폭 부족 시 자동 축소 */
           header.new-header .header__top > ul.inline_wrap.header_m_icon,
@@ -2779,18 +2792,25 @@ $(function() {
             setTimeout(function(){ obs.disconnect(); }, 5000);
           }
 
-          /* v0.3.8: .category__wrap 자동 스크롤 정렬 — 활성(.on) 카테고리를 가운데로,
-             없으면 좌측(scrollLeft:0)으로 고정. 모바일 기본 스크롤 위치 표류 방지. */
+          /* v0.3.9: .category__wrap 자동 스크롤 정렬 — 활성(.on)이 viewport 안에 보이도록 (잘리지 않게),
+             없으면 좌측(scrollLeft:0)으로 고정. 좌측 정렬 유지하면서 활성만 보이게 minimal scroll. */
           function alignCategoryScroll(){
             var wrap = document.querySelector('.mobile__gnb .gnb__cateogry .category__wrap');
             if (!wrap || wrap.dataset.bjCatAligned) return;
             var active = wrap.querySelector('a.on');
             if (active) {
-              // 활성 카테고리를 중앙에 위치
               var wrapRect = wrap.getBoundingClientRect();
               var aRect = active.getBoundingClientRect();
-              var offset = (aRect.left - wrapRect.left) - (wrap.clientWidth / 2) + (active.offsetWidth / 2);
-              wrap.scrollLeft = Math.max(0, offset);
+              var leftEdge = 20;                   // 좌측 fade 영역 14px + 여유
+              var rightEdge = wrap.clientWidth - 32; // 우측 fade 32px
+              // 활성이 보이는 영역 밖에 있으면, 좌측 정렬 기준으로 살짝만 스크롤
+              if (aRect.right - wrapRect.left > rightEdge) {
+                // 활성이 우측 너머 → 좌측에서 leftEdge 위치에 오도록
+                wrap.scrollLeft = (aRect.left - wrapRect.left) - leftEdge;
+              } else if (aRect.left - wrapRect.left < leftEdge) {
+                wrap.scrollLeft = 0;
+              }
+              // 활성이 이미 보이면 scrollLeft 변경 안 함 (좌측 정렬 유지)
             } else {
               wrap.scrollLeft = 0;
             }
