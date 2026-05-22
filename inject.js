@@ -1,11 +1,11 @@
 /*!
- * billyjo-detailcard v0.3.9 — 상세페이지 카드 클라이언트 패치
+ * billyjo-detailcard v0.4.0 — 상세페이지 카드 클라이언트 패치
  * https://github.com/billyjo-appsilon/billyjo-detailcard
  *
  * 적용 페이지: /html/dh_prod/prod_view/*  (제품 상세 페이지)
  * 의존성: 기존 billyjo-inject 스크립트 (헤더 재구성·이벤트 배너 분리 처리)가 먼저 로드된 상태를 전제로 함.
  *
- * 포함 패치 (v0.3.9 기준):
+ * 포함 패치 (v0.4.0 기준):
  *   - 절대 규칙 #14: 6-8칸 스펙요약 + ⓘ 도움말 (모바일 sheet 전환, v0.3.5)
  *   - 절대 규칙 #21: 좁은화면 헤더 (inject.js 결과 DOM 안정 클래스 부여 + 모바일 1행 정렬 + .new-gnb 숨김 + 햄버거 5px)
  *   - 절대 규칙 #22-23: Hero 재배치/Step 폰트/페르소나 폰트 (AI 카드 마크업 존재 시에만 활성)
@@ -17,6 +17,7 @@
  *   - v0.3.7: 모바일 검색바 명시 숨김 + 카테고리 1행 가로스크롤(룰북 #20 갱신) + 빨강→파랑 통일 + .g-d 높이 통일
  *   - v0.3.8: 카테고리 spacing 축소 + 자동 스크롤 정렬 + 약정/의무사용 기간 ⓘ 툴팁 동적 주입
  *   - v0.3.9: 카테고리 텍스트 전용 스와이프 (pill 폐기) + 좌측 정렬 + 활성 굵게/파랑+밑줄
+ *   - v0.4.0: 하단 위젯 fallback 콘텐츠 자체 생성 (.bb-inner 없어도 가격+장바구니+렌탈+사은품+상담신청 3버튼 노출)
  *   - 공통: 햄버거 중복 제거, 제품 썸네일 1px 회색 테두리
  *
  * AI 카드 콘텐츠 자체는 별도 backend 파이프라인에서 사전 생성되어 제품별 HTML에 주입되어야 함.
@@ -362,6 +363,45 @@
     '.bj-btn-consult:hover{ background:#e8edff !important }',
     '.bj-btn-consult svg{ width:18px; height:18px; fill:currentColor }',
 
+    /* v0.4.0: fallback 박스 — .bb-inner 없을 때 위젯 자체 콘텐츠 */
+    '.bj-bar-fallback{',
+    '  padding:14px 18px 16px !important;',
+    '  display:flex !important; align-items:center !important;',
+    '  justify-content:space-between !important; gap:14px !important;',
+    '  flex-wrap:wrap !important;',
+    '  font-family:"Pretendard","Apple SD Gothic Neo",sans-serif !important;',
+    '}',
+    '.bj-fb-info{ display:flex; flex-direction:column; gap:2px; flex:0 1 auto; min-width:0 }',
+    '.bj-fb-label{ font-size:11.5px; color:#6a6a6a; font-weight:600 }',
+    '.bj-fb-price{ font-size:17px; font-weight:800; color:#0838F8; line-height:1.2 }',
+    '.bj-fb-btns{',
+    '  display:flex; align-items:center; gap:8px;',
+    '  flex:0 1 auto; flex-wrap:wrap; justify-content:flex-end;',
+    '}',
+    '.bj-fb-btns .bb-btn{',
+    '  display:inline-flex; align-items:center; gap:6px;',
+    '  padding:10px 14px; font-size:13.5px; font-weight:700;',
+    '  border-radius:8px; cursor:pointer;',
+    '  font-family:"Pretendard",sans-serif;',
+    '  border:1px solid #dfdfdf; background:#fff; color:#2a2a2a;',
+    '  transition:background 0.15s; white-space:nowrap;',
+    '}',
+    '.bj-fb-btns .bb-btn svg{ width:16px; height:16px; fill:currentColor }',
+    '.bj-fb-btns .bb-btn-cart{ background:#fff; color:#444; border:1px solid #dfdfdf }',
+    '.bj-fb-btns .bb-btn-cart:hover{ background:#f4f4f4 }',
+    '@media (max-width:600px){',
+    '  .bj-bar-fallback{ padding:12px 14px 14px !important; gap:10px !important }',
+    '  .bj-fb-label{ font-size:11px }',
+    '  .bj-fb-price{ font-size:15.5px }',
+    '  .bj-fb-btns{ gap:6px; width:100%; justify-content:stretch }',
+    '  .bj-fb-btns .bb-btn{ padding:9px 11px; font-size:12.5px; flex:1 1 auto; justify-content:center }',
+    '  .bj-fb-btns .bb-btn-cart{ flex:0 0 auto; min-width:60px }',
+    '}',
+    '@media (max-width:400px){',
+    '  .bj-fb-btns .bb-btn{ padding:8px 8px; font-size:11.5px }',
+    '  .bj-fb-btns .bb-btn svg{ width:14px; height:14px }',
+    '}',
+
     /* body 하단 패딩 — fixed 위젯이 마지막 콘텐츠 가리지 않게 */
     'body{ padding-bottom:88px !important }',
 
@@ -583,31 +623,56 @@
     });
     wrapper.insertBefore(handle, wrapper.firstChild);
 
-    // 버튼 격상 (.bb-inner 존재 시만)
+    /* v0.4.0: SVG 아이콘 */
+    var SVG_GIFT = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-1.34-3-3-3-1.05 0-1.96.54-2.5 1.35l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83 8.62 12 11 8.76l1-1.36 1 1.36L15.38 12 17 10.83 14.92 8H20v6z"/></svg>';
+    var SVG_CHAT = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>';
+    var SVG_CART = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12L8.1 13h7.45c.75 0 1.41-.41 1.75-1.03L21.7 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>';
+
+    // 버튼 격상 또는 fallback 생성
     if (bbInner) {
       var rentBtn = bbInner.querySelector('.bb-btn-rent');
       if (rentBtn) {
         rentBtn.classList.add('bj-btn-rent-gift');
-        rentBtn.innerHTML =
-          '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-            '<path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-1.34-3-3-3-1.05 0-1.96.54-2.5 1.35l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83 8.62 12 11 8.76l1-1.36 1 1.36L15.38 12 17 10.83 14.92 8H20v6z"/>' +
-          '</svg>렌탈+사은품 신청';
+        rentBtn.innerHTML = SVG_GIFT + '렌탈+사은품 신청';
       }
       var rightTop = bbInner.querySelector('.bb-right-top');
       if (rightTop && !rightTop.querySelector('.bj-btn-consult')) {
         var consult = document.createElement('button');
         consult.type = 'button';
         consult.className = 'bb-btn bj-btn-consult';
-        consult.innerHTML =
-          '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-            '<path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/>' +
-          '</svg>상담신청';
+        consult.innerHTML = SVG_CHAT + '상담신청';
         consult.addEventListener('click', function(){
-          // TODO: 실서비스 상담 폼 URL로 교체
           window.location.href = '/html/dh/counsel';
         });
         rightTop.appendChild(consult);
       }
+    } else {
+      /* v0.4.0: .bb-inner 없을 때 fallback 박스 생성 */
+      var fb = document.createElement('div');
+      fb.className = 'bj-bar-fallback';
+      fb.innerHTML =
+        '<div class="bj-fb-info">' +
+          '<span class="bj-fb-label">월 렌탈료</span>' +
+          '<span class="bj-fb-price">' + (priceText || '문의') + '</span>' +
+        '</div>' +
+        '<div class="bj-fb-btns">' +
+          '<button type="button" class="bb-btn bb-btn-cart bj-fb-cart">' + SVG_CART + '장바구니</button>' +
+          '<button type="button" class="bb-btn bb-btn-rent bj-btn-rent-gift bj-fb-rent">' + SVG_GIFT + '렌탈+사은품 신청</button>' +
+          '<button type="button" class="bb-btn bj-btn-consult bj-fb-consult">' + SVG_CHAT + '상담신청</button>' +
+        '</div>';
+      wrapper.appendChild(fb);
+
+      fb.querySelector('.bj-fb-cart').addEventListener('click', function(){
+        if (typeof window.shoporder === 'function') window.shoporder('cart');
+        else window.location.href = '/html/dh_order/shop_cart';
+      });
+      fb.querySelector('.bj-fb-rent').addEventListener('click', function(){
+        if (typeof window.shoporder === 'function') window.shoporder('rent');
+        else window.location.href = '/html/dh/counsel';
+      });
+      fb.querySelector('.bj-fb-consult').addEventListener('click', function(){
+        window.location.href = '/html/dh/counsel';
+      });
     }
 
     wrapper.dataset.bjBarEnhanced = '1';
