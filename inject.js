@@ -749,6 +749,63 @@
   }
 
   // ─────────────────────────────────────────────────────────────────────────
+  // 2.x) 제품별 AI 카드 HTML 주입 (룰북 v0.4.2)
+  //
+  //   billyjo-detailcard 레포 cards/{prodNo}.html이 존재하면 페이지에 주입한다.
+  //   - 자기 inject.js의 commit hash를 추출해 같은 commit의 카드 fetch (캐시 일관성)
+  //   - 404면 silent skip — 패치(헤더·하단위젯)만 적용
+  //   - 1회만 주입 (window.__bjAiCardFetched 가드)
+  // ─────────────────────────────────────────────────────────────────────────
+  function getOwnCommitHash(){
+    try {
+      var src = (document.currentScript && document.currentScript.src) || '';
+      if (!src) {
+        var scripts = document.getElementsByTagName('script');
+        for (var i = scripts.length - 1; i >= 0; i--) {
+          if (/billyjo-detailcard@/.test(scripts[i].src)) { src = scripts[i].src; break; }
+        }
+      }
+      var m = src.match(/billyjo-detailcard@([0-9a-f]{7,40}|main)\//);
+      return m ? m[1] : 'main';
+    } catch(e) { return 'main'; }
+  }
+
+  function fetchAndInjectAICard(){
+    if (window.__bjAiCardFetched) return;
+    var path = location.pathname || '';
+    var m = path.match(/\/prod_view\/(\d+)/);
+    if (!m) return;
+    var prodNo = m[1];
+    window.__bjAiCardFetched = true;
+
+    var commit = getOwnCommitHash();
+    var url = 'https://cdn.jsdelivr.net/gh/billyjo-appsilon/billyjo-detailcard@' + commit + '/cards/' + prodNo + '.html';
+    fetch(url, { cache: 'force-cache' })
+      .then(function(r){ return r.ok ? r.text() : null; })
+      .then(function(html){
+        if (!html) return;
+        if (document.querySelector('#ai-card-root')) return;  // 이미 주입됨
+        // 삽입 위치: .prod_view_bot.mt10 (상품정보) 바로 앞.
+        // 없으면 .prod_view_detail 앞에, 그것도 없으면 .prod_view_top 뒤에.
+        var anchor =
+          document.querySelector('.prod_view_bot.mt10') ||
+          document.querySelector('.prod_view_detail') ||
+          (function(){
+            var top = document.querySelector('.prod_view_top');
+            return top && top.nextElementSibling;
+          })();
+        if (!anchor) return;
+        var holder = document.createElement('div');
+        holder.innerHTML = html;
+        // holder 안의 자식들을 순서대로 anchor 앞에 삽입
+        while (holder.firstChild) {
+          anchor.parentNode.insertBefore(holder.firstChild, anchor);
+        }
+      })
+      .catch(function(){ /* silent */ });
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
   // 3) 오케스트레이션
   // ─────────────────────────────────────────────────────────────────────────
   function runAll(){
@@ -758,6 +815,7 @@
     setupHelpClose();
     alignCategoryScroll();
     addRentalTermsHelp();
+    fetchAndInjectAICard();
   }
 
   injectCSS();      // CSS 즉시 — head 있으면
