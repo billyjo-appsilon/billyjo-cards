@@ -786,10 +786,17 @@
       apply();
     }
     function apply(){
-      if (pastCard && !manualHide) {
+      var show = pastCard && !manualHide;
+      // inline `bottom:0!important` (forceFixedStyle)이 stylesheet `!important`를 이기므로
+      // 직접 inline으로 setProperty (!important)로 토글한다.
+      if (show) {
         wrapper.classList.remove('bj-bar-slide-hidden');
+        wrapper.style.setProperty('bottom', '0', 'important');
+        wrapper.style.setProperty('pointer-events', 'auto', 'important');
       } else {
         wrapper.classList.add('bj-bar-slide-hidden');
+        wrapper.style.setProperty('bottom', '-280px', 'important');
+        wrapper.style.setProperty('pointer-events', 'none', 'important');
       }
     }
 
