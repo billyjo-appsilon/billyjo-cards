@@ -907,6 +907,54 @@
   }
 
   // ─────────────────────────────────────────────────────────────────────────
+  // 2.z) 기존 페이지의 가격표·제휴카드 안내를 AI 카드 SLOT 8로 이동
+  //
+  //   페이지에 본래 있는 다음 요소를 카드 안 #bj-existing-pricing-slot으로 이동:
+  //     - #livePriceTable (관리유형·약정·관리주기·프로모션·이달 할인가·최종 할인가)
+  //       → 데이터 미로딩 시 .lpt-empty 클래스로 hidden. 로딩되면 이동.
+  //     - .card_sale (제휴카드 안내 — 카드별 할인 조건)
+  //       → ul > li 있을 때만 이동, 접힘 상태 강제 해제.
+  //   둘 다 비어있으면 SLOT 8 섹션 자체 미노출.
+  //   비동기 데이터 로딩에 대비해 runAll 매 호출마다 idempotent 재시도.
+  // ─────────────────────────────────────────────────────────────────────────
+  function mergeExistingPricingIntoCard(){
+    var slot = document.querySelector('#bj-existing-pricing-slot');
+    if (!slot) return;
+    var wrap = slot.querySelector('.bj-existing-pricing-wrap');
+    if (!wrap) return;
+    var moved = false;
+
+    // (1) #livePriceTable — .lpt-empty 클래스 없을 때만 이동
+    var lpt = document.querySelector('#livePriceTable');
+    if (lpt && !lpt.classList.contains('lpt-empty') && lpt.parentElement !== wrap) {
+      lpt.style.setProperty('display', 'block', 'important');
+      wrap.appendChild(lpt);
+      moved = true;
+    } else if (lpt && lpt.parentElement === wrap) {
+      moved = true;  // 이미 안에 들어있음
+    }
+
+    // (2) .card_sale — li 있을 때만 이동 + 강제 펼침
+    var cs = document.querySelector('.card_sale');
+    if (cs && cs.querySelectorAll('ul li').length > 0 && cs.parentElement !== wrap) {
+      // close_btn으로 접힌 ul을 강제 표시
+      var ul = cs.querySelector('ul');
+      if (ul) ul.style.setProperty('display', 'block', 'important');
+      // close_btn 아이콘 숨김 (이미 우리가 펼침)
+      var closeBtn = cs.querySelector('.close_btn');
+      if (closeBtn) closeBtn.style.setProperty('display', 'none', 'important');
+      wrap.appendChild(cs);
+      moved = true;
+    } else if (cs && cs.parentElement === wrap) {
+      moved = true;
+    }
+
+    if (moved) {
+      slot.style.display = 'block';
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
   // 3) 오케스트레이션
   // ─────────────────────────────────────────────────────────────────────────
   function runAll(){
@@ -917,6 +965,7 @@
     alignCategoryScroll();
     addRentalTermsHelp();
     fetchAndInjectAICard();
+    mergeExistingPricingIntoCard();
     setupBottomBarVisibility();
   }
 

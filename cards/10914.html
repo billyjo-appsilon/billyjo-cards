@@ -727,30 +727,14 @@
             </div>
           </div>
 
-          <!-- SLOT 8: 계약 기간별 렌탈료 (10914 — 카드 할인 없음 → 카드 컬럼 미렌더) -->
-          <div class="sec pricing-sec">
-            <div class="sec-t">계약 기간별 렌탈료</div>
-            <div class="pricing-table-wrap">
-              <table class="pricing-table">
-                <thead>
-                  <tr>
-                    <th class="pt-term">약정 기간</th>
-                    <th class="pt-base">월 렌탈료</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td class="pt-term"><strong>60개월</strong></td>
-                    <td class="pt-base"><strong>월 17,900원</strong></td>
-                  </tr>
-                  <tr>
-                    <td class="pt-term"><strong>36개월</strong></td>
-                    <td class="pt-base"><strong>월 20,900원</strong></td>
-                  </tr>
-                </tbody>
-              </table>
-              <p class="pricing-note">제휴 카드 할인은 본 제품에는 적용되지 않습니다.</p>
-            </div>
+          <!-- SLOT 8: 계약 기간별 렌탈료 표 + 제휴카드 안내
+               inject.js의 mergeExistingPricingIntoCard()가 페이지에 이미 있는
+               #lptTable (관리유형/약정기간/관리주기/프로모션/이달의 할인가/최종 할인가)과
+               .card_sale (제휴카드 안내)을 이 컨테이너로 이동 + 강제 노출시킨다.
+               데이터 없으면 inject.js가 섹션 자체를 미렌더한다. -->
+          <div class="sec bj-existing-pricing-sec" id="bj-existing-pricing-slot" style="display:none">
+            <div class="sec-t">계약 기간별 렌탈료 · 제휴카드 할인</div>
+            <div class="bj-existing-pricing-wrap"></div>
           </div>
 
         </div>
