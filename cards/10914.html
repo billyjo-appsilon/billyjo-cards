@@ -213,6 +213,30 @@
           #ai-card-root .gift-db{font-size:11.5px;padding:4px 10px}
         }
 
+        /* SLOT 8 — 계약 기간별 렌탈료 표 */
+        #ai-card-root .pricing-sec{margin-top:14px}
+        #ai-card-root .pricing-table-wrap{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:6px 12px 10px;overflow-x:auto}
+        #ai-card-root .pricing-table{width:100%;border-collapse:collapse;font-family:'Pretendard',sans-serif;font-size:13.5px}
+        #ai-card-root .pricing-table thead th{font-size:11.5px;color:var(--color-text-secondary);font-weight:600;text-align:left;padding:10px 8px 8px;border-bottom:1px solid var(--color-border-tertiary);background:transparent}
+        #ai-card-root .pricing-table thead th.pt-base,
+        #ai-card-root .pricing-table thead th.pt-card{text-align:right}
+        #ai-card-root .pricing-table tbody td{padding:10px 8px;border-bottom:0.5px dashed var(--color-border-tertiary);color:var(--color-text-primary)}
+        #ai-card-root .pricing-table tbody tr:last-child td{border-bottom:0}
+        #ai-card-root .pricing-table tbody td.pt-term{font-weight:600;color:var(--color-text-primary)}
+        #ai-card-root .pricing-table tbody td.pt-base{text-align:right;font-weight:700;color:var(--color-text-info);font-size:14.5px}
+        #ai-card-root .pricing-table tbody td.pt-card{text-align:right;font-weight:700;color:#16a34a;font-size:14px}
+        #ai-card-root .pricing-table tbody td.pt-card-na{text-align:right;color:var(--color-text-tertiary);font-size:13px;font-style:italic}
+        #ai-card-root .pricing-table tbody td strong{font-family:'Pretendard',sans-serif;font-weight:700}
+        #ai-card-root .pricing-note{margin:8px 4px 0;font-size:11.5px;color:var(--color-text-tertiary);line-height:1.5}
+        @media (max-width:600px){
+          #ai-card-root .pricing-table{font-size:12.5px}
+          #ai-card-root .pricing-table thead th{font-size:11px;padding:8px 6px 6px}
+          #ai-card-root .pricing-table tbody td{padding:8px 6px}
+          #ai-card-root .pricing-table tbody td.pt-base{font-size:13.5px}
+          #ai-card-root .pricing-table tbody td.pt-card{font-size:13px}
+          #ai-card-root .pricing-note{font-size:11px}
+        }
+
         /* 모바일 (≤600px) */
         @media (max-width:600px){
           #ai-card-root .card{padding:18px 16px 16px;border-radius:10px}
@@ -700,6 +724,32 @@
               <div class="gift-r"><span class="gift-tag">예상 최대 지원금</span><span class="gift-db">내부 DB 연동 예정</span></div>
               <div class="gift-r"><span class="gift-tag">빌리조 혜택</span><span class="gift-v"><strong>초기비용 0원</strong> + 롯데·삼성카드 청구할인</span></div>
               <div class="gift-r"><span class="gift-tag">제조사 프로모션</span><span class="gift-v"><strong>6개월 무상 A/S</strong> + 패키지 추가 시 월 2,000원 할인</span></div>
+            </div>
+          </div>
+
+          <!-- SLOT 8: 계약 기간별 렌탈료 (10914 — 카드 할인 없음 → 카드 컬럼 미렌더) -->
+          <div class="sec pricing-sec">
+            <div class="sec-t">계약 기간별 렌탈료</div>
+            <div class="pricing-table-wrap">
+              <table class="pricing-table">
+                <thead>
+                  <tr>
+                    <th class="pt-term">약정 기간</th>
+                    <th class="pt-base">월 렌탈료</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="pt-term"><strong>60개월</strong></td>
+                    <td class="pt-base"><strong>월 17,900원</strong></td>
+                  </tr>
+                  <tr>
+                    <td class="pt-term"><strong>36개월</strong></td>
+                    <td class="pt-base"><strong>월 20,900원</strong></td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="pricing-note">제휴 카드 할인은 본 제품에는 적용되지 않습니다.</p>
             </div>
           </div>
 

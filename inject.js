@@ -272,7 +272,13 @@
     '  margin:0 !important;',
     '  overflow:hidden !important;',
     '  max-height:520px !important;',
-    '  transition:max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1) !important;',
+    '  transition:max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1), bottom 0.38s cubic-bezier(0.2, 0.9, 0.3, 1) !important;',
+    '}',
+    /* AI 카드 미통과 / 사용자 수동 숨김 — 화면 밖으로 slide */
+    'body #container .wide-inner > .prod_view_bot.card.mt40.bj-bar-slide-hidden,',
+    '.prod_view_bot.card.mt40.bj-bar-slide-hidden{',
+    '  bottom:-280px !important;',
+    '  pointer-events:none !important;',
     '}',
     '@media (min-width:1500px){',
     '  body #container .wide-inner > .prod_view_bot.card.mt40,',
@@ -749,6 +755,76 @@
   }
 
   // ─────────────────────────────────────────────────────────────────────────
+  // 2.y) 하단 위젯 가시성 — AI 카드 통과 후 노출 + 탭 토글 (v0.4.3)
+  //
+  //   * 페이지에 #ai-card-root 있을 때만 활성. (없으면 기존대로 항상 노출)
+  //   * 초기 상태: 위젯 숨김 (.bj-bar-slide-hidden)
+  //   * 카드의 70% 이상이 viewport 위로 스크롤되면 자동 노출
+  //   * 위젯 영역 밖 화면 탭/클릭 → 가시성 토글 (사용자 명시적 숨김 의도)
+  //   * 사용자가 수동 숨겼다면, 다시 카드 영역으로 스크롤 올라가도 자동 노출 안 함
+  //     (의도 우선) — 위젯 영역 다시 탭하거나 카드 통과 후 외부 탭으로만 복귀
+  //   * 기존 chevron 펼침/접힘 동작은 보존 (max-height 토글)
+  // ─────────────────────────────────────────────────────────────────────────
+  function setupBottomBarVisibility(){
+    if (window.__bjBarVisibilitySetup) return;
+    var wrapper = document.querySelector('.prod_view_bot.card.mt40');
+    if (!wrapper) return;
+    var aiCard = document.querySelector('#ai-card-root');
+    if (!aiCard) return;  // 카드 없는 페이지 → 기존 항상 노출 동작 유지
+
+    window.__bjBarVisibilitySetup = true;
+    wrapper.classList.add('bj-bar-slide-hidden');
+
+    var manualHide = false;        // 사용자가 외부 탭으로 명시 숨김
+    var pastCard = false;            // 카드를 충분히 지나갔는지
+
+    function evalScroll(){
+      var r = aiCard.getBoundingClientRect();
+      // 카드의 70% 이상이 viewport 위로 올라갔을 때 통과
+      var threshold = window.innerHeight * 0.3;
+      pastCard = r.bottom < threshold;
+      apply();
+    }
+    function apply(){
+      if (pastCard && !manualHide) {
+        wrapper.classList.remove('bj-bar-slide-hidden');
+      } else {
+        wrapper.classList.add('bj-bar-slide-hidden');
+      }
+    }
+
+    // throttled scroll
+    var scrollPending = false;
+    function onScroll(){
+      if (scrollPending) return;
+      scrollPending = true;
+      window.requestAnimationFrame(function(){
+        scrollPending = false;
+        evalScroll();
+      });
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+
+    // body tap/click — 위젯 영역 밖이면 토글
+    function onBodyTap(e){
+      if (!pastCard) return;       // 카드 통과 전엔 토글 비활성
+      if (wrapper.contains(e.target)) return;  // 위젯 내부 탭은 무시 (자체 핸들이 처리)
+      // 헬프 팝업·기타 인터랙티브 요소는 제외
+      if (e.target.closest && e.target.closest('details, .help-pop, button, a, input, select, textarea, [role="button"]')) return;
+      manualHide = !manualHide;
+      apply();
+    }
+    document.addEventListener('click', onBodyTap);
+    document.addEventListener('touchend', onBodyTap, { passive: true });
+
+    // 위젯 자체를 탭하면 manualHide 해제 (다시 보이게 강제)
+    wrapper.addEventListener('click', function(){ if (manualHide) { manualHide = false; apply(); }});
+
+    evalScroll();  // 초기 평가
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
   // 2.x) 제품별 AI 카드 HTML 주입 (룰북 v0.4.2)
   //
   //   billyjo-detailcard 레포 cards/{prodNo}.html이 존재하면 페이지에 주입한다.
@@ -816,6 +892,7 @@
     alignCategoryScroll();
     addRentalTermsHelp();
     fetchAndInjectAICard();
+    setupBottomBarVisibility();
   }
 
   injectCSS();      // CSS 즉시 — head 있으면
