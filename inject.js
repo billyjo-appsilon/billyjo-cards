@@ -922,36 +922,43 @@
     if (!slot) return;
     var wrap = slot.querySelector('.bj-existing-pricing-wrap');
     if (!wrap) return;
-    var moved = false;
+    var anyVisible = false;
 
-    // (1) #livePriceTable — .lpt-empty 클래스 없을 때만 이동
+    // (1) #livePriceTable — wrap으로 이동 + 데이터 유무에 따라 표시/숨김
+    //     데이터 없음(.lpt-empty) 또는 본문이 "실시간 가격 확인중..." → 숨김
     var lpt = document.querySelector('#livePriceTable');
-    if (lpt && !lpt.classList.contains('lpt-empty') && lpt.parentElement !== wrap) {
-      lpt.style.setProperty('display', 'block', 'important');
-      wrap.appendChild(lpt);
-      moved = true;
-    } else if (lpt && lpt.parentElement === wrap) {
-      moved = true;  // 이미 안에 들어있음
+    if (lpt) {
+      if (lpt.parentElement !== wrap) wrap.appendChild(lpt);
+      var bodyText = (lpt.textContent || '').trim();
+      var lptEmpty = lpt.classList.contains('lpt-empty') ||
+                     bodyText.indexOf('실시간 가격 확인중') !== -1 ||
+                     bodyText === '';
+      if (lptEmpty) {
+        lpt.style.setProperty('display', 'none', 'important');
+      } else {
+        lpt.style.setProperty('display', 'block', 'important');
+        anyVisible = true;
+      }
     }
 
-    // (2) .card_sale — li 있을 때만 이동 + 강제 펼침
+    // (2) .card_sale — wrap으로 이동 + li 있을 때만 표시 + 접힘 강제 해제
     var cs = document.querySelector('.card_sale');
-    if (cs && cs.querySelectorAll('ul li').length > 0 && cs.parentElement !== wrap) {
-      // close_btn으로 접힌 ul을 강제 표시
-      var ul = cs.querySelector('ul');
-      if (ul) ul.style.setProperty('display', 'block', 'important');
-      // close_btn 아이콘 숨김 (이미 우리가 펼침)
-      var closeBtn = cs.querySelector('.close_btn');
-      if (closeBtn) closeBtn.style.setProperty('display', 'none', 'important');
-      wrap.appendChild(cs);
-      moved = true;
-    } else if (cs && cs.parentElement === wrap) {
-      moved = true;
+    if (cs) {
+      if (cs.parentElement !== wrap) wrap.appendChild(cs);
+      var hasLi = cs.querySelectorAll('ul li').length > 0;
+      if (hasLi) {
+        var ul = cs.querySelector('ul');
+        if (ul) ul.style.setProperty('display', 'block', 'important');
+        var closeBtn = cs.querySelector('.close_btn');
+        if (closeBtn) closeBtn.style.setProperty('display', 'none', 'important');
+        cs.style.setProperty('display', 'block', 'important');
+        anyVisible = true;
+      } else {
+        cs.style.setProperty('display', 'none', 'important');
+      }
     }
 
-    if (moved) {
-      slot.style.display = 'block';
-    }
+    slot.style.display = anyVisible ? 'block' : 'none';
   }
 
   // ─────────────────────────────────────────────────────────────────────────
