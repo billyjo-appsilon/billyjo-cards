@@ -966,16 +966,22 @@
     if (entries.length === 0) return;
 
     // 시그너처로 idempotent 처리 (underlying이 매번 다시 채울 때 깜빡임 방지)
-    var sig = entries.map(function(e){ return e.term + '|' + e.finalPrice; }).join(';');
+    var sig = entries.map(function(e){ return (e.mgmt||'') + '|' + e.term + '|' + e.finalPrice; }).join(';');
     if (lpt.dataset.bjLptSignature === sig) return;
+
+    // 여러 관리유형이 섞여있으면 약정기간 셀에 prefix로 표기 (예: "[방문관리] 3년의무")
+    var mgmtSet = {};
+    entries.forEach(function(e){ if (e.mgmt) mgmtSet[e.mgmt] = true; });
+    var needMgmtPrefix = Object.keys(mgmtSet).length > 1;
 
     // simple 2-col 구조로 재렌더 (다른 컬럼은 빈 셀 + display:none)
     var rows = '';
     entries.forEach(function(e){
+      var termText = needMgmtPrefix && e.mgmt ? '[' + e.mgmt + '] ' + e.term : e.term;
       rows +=
         '<tr style="border-bottom:0.5px solid #eee">' +
           '<td style="display:none"></td>' +
-          '<td style="padding:12px 8px;text-align:center;font-weight:600">' + escapeHtml(e.term) + '</td>' +
+          '<td style="padding:12px 8px;text-align:center;font-weight:600">' + escapeHtml(termText) + '</td>' +
           '<td style="display:none"></td>' +
           '<td style="display:none"></td>' +
           '<td style="display:none"></td>' +
@@ -1017,6 +1023,10 @@
       if (t === '최종 할인가') finalIdx = i;
     });
     if (termIdx === -1 || finalIdx === -1) return [];
+    var mgmtIdx = -1;
+    ths.forEach(function(th, i){
+      if ((th.textContent || '').trim() === '관리유형') mgmtIdx = i;
+    });
 
     var rows = Array.from(tbody.querySelectorAll('tr'));
     if (rows.length === 0) return [];
@@ -1050,7 +1060,8 @@
       }
       var term = rowMap[termIdx];
       var fin = rowMap[finalIdx];
-      if (term && fin) entries.push({ term: term, finalPrice: fin });
+      var mgmt = mgmtIdx >= 0 ? (rowMap[mgmtIdx] || '') : '';
+      if (term && fin) entries.push({ term: term, finalPrice: fin, mgmt: mgmt });
     });
     return entries;
   }
