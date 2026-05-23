@@ -801,14 +801,20 @@
       var show = pastCard && !manualHide;
       // inline `bottom:0!important` (forceFixedStyle)이 stylesheet `!important`를 이기므로
       // 직접 inline으로 setProperty (!important)로 토글한다.
+      // billyjo-inject(underlying)가 자체 scroll 로직으로 `show` 클래스를 토글하므로,
+      // 우리가 보이려고 할 땐 `show`를 강제 부여한다.
       if (show) {
         wrapper.classList.remove('bj-bar-slide-hidden');
+        wrapper.classList.add('show');
         wrapper.style.setProperty('bottom', '0', 'important');
         wrapper.style.setProperty('pointer-events', 'auto', 'important');
+        wrapper.style.setProperty('visibility', 'visible', 'important');
+        wrapper.style.setProperty('opacity', '1', 'important');
       } else {
         wrapper.classList.add('bj-bar-slide-hidden');
         wrapper.style.setProperty('bottom', '-280px', 'important');
         wrapper.style.setProperty('pointer-events', 'none', 'important');
+        // visibility/opacity는 그대로 두어 슬라이드 효과 유지 (visibility:hidden은 transition X)
       }
     }
 
