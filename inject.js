@@ -276,9 +276,11 @@
     '}',
     /* AI 카드 미통과 / 사용자 수동 숨김 — 화면 밖으로 slide */
     'body #container .wide-inner > .prod_view_bot.card.mt40.bj-bar-slide-hidden,',
-    '.prod_view_bot.card.mt40.bj-bar-slide-hidden{',
+    '.prod_view_bot.card.mt40.bj-bar-slide-hidden,',
+    '#billyjo-bottom-bar.bj-bar-slide-hidden{',
     '  bottom:-280px !important;',
     '  pointer-events:none !important;',
+    '  transition:bottom 0.38s cubic-bezier(0.2,0.9,0.3,1) !important;',
     '}',
     '@media (min-width:1500px){',
     '  body #container .wide-inner > .prod_view_bot.card.mt40,',
@@ -767,12 +769,22 @@
   // ─────────────────────────────────────────────────────────────────────────
   function setupBottomBarVisibility(){
     if (window.__bjBarVisibilitySetup) return;
-    var wrapper = document.querySelector('.prod_view_bot.card.mt40');
+    // 현재 라이브 빌리조 사이트는 billyjo-inject가 `#billyjo-bottom-bar`로 위젯을 동적 생성한다.
+    // (룰북 canonical은 `.prod_view_bot.card.mt40`이었음 — fallback으로 유지.)
+    var wrapper = document.querySelector('#billyjo-bottom-bar') ||
+                  document.querySelector('.prod_view_bot.card.mt40');
     if (!wrapper) return;
     var aiCard = document.querySelector('#ai-card-root');
     if (!aiCard) return;  // 카드 없는 페이지 → 기존 항상 노출 동작 유지
 
     window.__bjBarVisibilitySetup = true;
+    // 부드러운 슬라이드 위해 transition 보강
+    if (!wrapper.dataset.bjBarTransition) {
+      wrapper.style.setProperty('transition',
+        (wrapper.style.transition || '') + ', bottom 0.38s cubic-bezier(0.2,0.9,0.3,1)',
+        'important');
+      wrapper.dataset.bjBarTransition = '1';
+    }
     wrapper.classList.add('bj-bar-slide-hidden');
 
     var manualHide = false;        // 사용자가 외부 탭으로 명시 숨김
