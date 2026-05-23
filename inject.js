@@ -938,6 +938,90 @@
       });
       lpt.dataset.bjLptSimplified = '1';
     }
+
+    // (3) lptTable 데이터 채우기 — 페이지 본문의 `.month_box.layer_price[id*="_price_of_"]`
+    //     요소에 약정·가격·카드할인 data-attr이 다 있는데 underlying admin이 lpt를 채우지
+    //     않음 → 직접 채워준다. 약정기간(col 1) + 최종 할인가(col 5)만 의미있게 채우고,
+    //     나머지 컬럼은 빈 셀로 둠 (이미 nth-child로 hide됨).
+    populateLptFromMonthBoxes();
+
+    // (4) PC 가격박스 .fix_price.hide-767 → .prod_name 다음으로 이동
+    reorderFixPriceAfterProdName();
+  }
+
+  function populateLptFromMonthBoxes(){
+    var lpt = document.querySelector('#livePriceTable');
+    if (!lpt || lpt.dataset.bjLptPopulated) return;
+    var table = lpt.querySelector('#lptTable');
+    var tbody = table && table.querySelector('tbody');
+    if (!tbody) return;
+    // 소스: a.month_box.layer_price[id*="_price_of_"] (data-month, data-price, data-dcprice, data-card_dis, data-supname)
+    var sources = document.querySelectorAll('a[id*="_price_of_"][data-month][data-price]');
+    if (sources.length === 0) return;
+
+    var rows = '';
+    sources.forEach(function(src){
+      var month = src.dataset.month || '';
+      var priceStr = src.dataset.price || '';
+      var dc = src.dataset.dcprice || '0';
+      var card_dis = src.dataset.card_dis;
+      var supname = src.dataset.supname || '';
+      // 최종 할인가: card_dis가 "N"(없음)이거나 dc가 0이면 그대로, 아니면 price - dc
+      var finalDisplay = '월 <strong>' + priceStr + '</strong>원';
+      var pNum = parseInt(priceStr.replace(/,/g, ''), 10);
+      var dNum = parseInt(dc, 10);
+      if (card_dis && card_dis !== 'N' && card_dis !== '0' && !isNaN(pNum) && !isNaN(dNum) && dNum > 0) {
+        var finalNum = pNum - dNum;
+        finalDisplay = '월 <strong>' + finalNum.toLocaleString() + '</strong>원';
+      }
+      rows +=
+        '<tr style="border-bottom:0.5px solid #eee">' +
+          '<td style="padding:12px 8px;text-align:center;color:#666">' + supname + '</td>' +
+          '<td style="padding:12px 8px;text-align:center;font-weight:600">' + month + '</td>' +
+          '<td style="padding:12px 8px;text-align:center;color:#999">—</td>' +
+          '<td style="padding:12px 8px;text-align:center;color:#999">—</td>' +
+          '<td style="padding:12px 8px;text-align:center;color:#999">—</td>' +
+          '<td style="padding:12px 8px;text-align:center;color:#0838f8;font-size:15px">' + finalDisplay + '</td>' +
+        '</tr>';
+    });
+    tbody.innerHTML = rows;
+
+    // hide 됐던 컬럼 룰을 새로 추가된 tbody td에도 다시 적용
+    var hideNth = [1, 3, 4, 5];
+    hideNth.forEach(function(n){
+      tbody.querySelectorAll('tr > *:nth-child(' + n + ')').forEach(function(c){
+        c.style.setProperty('display', 'none', 'important');
+      });
+    });
+
+    // wrapper의 .lpt-empty 제거하여 가시화
+    lpt.classList.remove('lpt-empty');
+    lpt.style.removeProperty('display');
+
+    // lptTitle 갱신 ("실시간 가격 확인중..." → 제품명)
+    var title = document.getElementById('lptTitle');
+    if (title) {
+      var nameEl = document.querySelector('.prod_name > b');
+      var modelEl = document.querySelector('.prod_name .model_name small');
+      if (nameEl) {
+        var inner = nameEl.textContent.trim();
+        if (modelEl) inner += '<br><span style="font-size:12px;opacity:0.85;font-weight:400">' + modelEl.textContent.trim() + '</span>';
+        title.innerHTML = inner;
+      }
+    }
+
+    lpt.dataset.bjLptPopulated = '1';
+  }
+
+  function reorderFixPriceAfterProdName(){
+    var fixPrice = document.querySelector('.fix_price.hide-767');
+    var prodName = document.querySelector('.prod_name');
+    if (!fixPrice || !prodName) return;
+    // 이미 prodName 직후에 있으면 skip
+    if (prodName.nextElementSibling === fixPrice) return;
+    // .prod_name과 .fix_price.hide-767 부모가 같아야 안전
+    if (fixPrice.parentElement !== prodName.parentElement) return;
+    prodName.parentElement.insertBefore(fixPrice, prodName.nextElementSibling);
   }
 
   // ─────────────────────────────────────────────────────────────────────────
