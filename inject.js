@@ -949,6 +949,10 @@
     reorderFixPriceAfterProdName();
   }
 
+  // lpt entries 캐시 — underlying이 덮어쓴 후 우리 thead/tbody 구조 바뀌어도
+  // extractor가 못 찾는 경우 대비 (캐시된 데이터로 재렌더)
+  var __bjLptCache = null;
+
   function populateLptFromMonthBoxes(){
     var lpt = document.querySelector('#livePriceTable');
     if (!lpt) return;
@@ -961,9 +965,14 @@
 
     // 우선 underlying이 제공한 rich tbody (rowspan 가능)에서 약정+최종할인가 추출
     var entries = extractLptEntriesFromUnderlying(table);
-    // 비어있거나 추출 실패 → .month_box fallback
+    // 비어있거나 추출 실패 → 캐시 → month_box fallback 순
+    if (entries.length === 0 && __bjLptCache && __bjLptCache.length) {
+      entries = __bjLptCache;
+    }
     if (entries.length === 0) entries = extractLptEntriesFromMonthBoxes();
     if (entries.length === 0) return;
+    // 풍부한 데이터(underlying mgmt 포함) 캐싱 — 다음 재호출 때 thead 라벨 바뀌어도 활용
+    if (entries.some(function(e){ return e.mgmt; })) __bjLptCache = entries;
 
     // tbody 첫 행에 bj-simple-row 마커 있으면 우리가 이미 렌더한 상태 → skip.
     // underlying이 덮어쓰면 마커가 사라지므로 다시 rerender.
