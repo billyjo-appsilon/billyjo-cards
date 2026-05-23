@@ -951,7 +951,13 @@
 
   function populateLptFromMonthBoxes(){
     var lpt = document.querySelector('#livePriceTable');
-    if (!lpt || lpt.dataset.bjLptPopulated) return;
+    if (!lpt) return;
+    // 매 호출마다 .lpt-empty 재제거 + inline display:block 강제 (underlying이 재부착할 수도 있음)
+    if (lpt.dataset.bjLptPopulated) {
+      lpt.classList.remove('lpt-empty');
+      lpt.style.setProperty('display', 'block', 'important');
+      return;
+    }
     var table = lpt.querySelector('#lptTable');
     var tbody = table && table.querySelector('tbody');
     if (!tbody) return;
@@ -994,9 +1000,10 @@
       });
     });
 
-    // wrapper의 .lpt-empty 제거하여 가시화
+    // wrapper의 .lpt-empty 제거하여 가시화. 만약 underlying 스크립트가 재부착하면
+    // 아래 inline display로 override.
     lpt.classList.remove('lpt-empty');
-    lpt.style.removeProperty('display');
+    lpt.style.setProperty('display', 'block', 'important');
 
     // lptTitle 갱신 ("실시간 가격 확인중..." → 제품명)
     var title = document.getElementById('lptTitle');
