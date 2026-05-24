@@ -26,7 +26,59 @@
 (function(){
   'use strict';
 
-  // 페이지 가드 — 제품 상세에서만 실행
+  // 모든 페이지 universal: 신혼부부 패키지 floating badge.
+  // (prod_view 가드 BEFORE 실행하여 메인·카테고리·기타 페이지에서도 노출)
+  (function injectNewlywedFloatingEverywhere(){
+    function getCommit(){
+      try {
+        var src = (document.currentScript && document.currentScript.src) || '';
+        if (!src) {
+          var scripts = document.getElementsByTagName('script');
+          for (var i = scripts.length - 1; i >= 0; i--) {
+            if (/billyjo-detailcard@/.test(scripts[i].src)) { src = scripts[i].src; break; }
+          }
+        }
+        var m = src.match(/billyjo-detailcard@([0-9a-f]{7,40}|main)\//);
+        return m ? m[1] : 'main';
+      } catch(e) { return 'main'; }
+    }
+    function tryInject(){
+      if (document.querySelector('.bj-newlywed-floating')) return;
+      if (!document.body) return;
+      var commit = getCommit();
+      var url = 'https://cdn.jsdelivr.net/gh/billyjo-appsilon/billyjo-detailcard@' + commit + '/landing/newlywed.html';
+      var fab = document.createElement('a');
+      fab.className = 'bj-newlywed-floating';
+      fab.href = url;
+      fab.target = '_blank';
+      fab.rel = 'noopener';
+      fab.style.cssText = [
+        'position:fixed','left:20px','bottom:20px','z-index:99998',
+        'background:linear-gradient(135deg,#0838F8 0%,#1a87ac 100%)','color:#fff',
+        'padding:12px 18px','border-radius:24px',
+        'font-family:Pretendard,sans-serif','font-size:14px','font-weight:700',
+        'text-decoration:none','box-shadow:0 6px 20px rgba(8,56,248,0.35)',
+        'display:inline-flex','align-items:center','gap:6px',
+        'transition:transform 0.2s,box-shadow 0.2s',
+        'cursor:pointer','letter-spacing:-0.2px',
+      ].join(';');
+      fab.innerHTML = '<span style="font-size:16px">💍</span>신혼부부 패키지';
+      fab.onmouseenter = function(){ fab.style.transform = 'translateY(-2px)'; fab.style.boxShadow = '0 8px 24px rgba(8,56,248,0.45)'; };
+      fab.onmouseleave = function(){ fab.style.transform = 'translateY(0)'; fab.style.boxShadow = '0 6px 20px rgba(8,56,248,0.35)'; };
+      document.body.appendChild(fab);
+      if (!document.querySelector('#bj-newlywed-style')) {
+        var st = document.createElement('style');
+        st.id = 'bj-newlywed-style';
+        st.textContent = '@media (max-width:600px){.bj-newlywed-floating{left:12px !important;bottom:80px !important;padding:9px 13px !important;font-size:12.5px !important}}';
+        document.head.appendChild(st);
+      }
+    }
+    if (document.readyState !== 'loading') tryInject();
+    document.addEventListener('DOMContentLoaded', tryInject);
+    [200, 600, 1500, 3000].forEach(function(d){ setTimeout(tryInject, d); });
+  })();
+
+  // 페이지 가드 — 제품 상세에서만 실행 (이하 prod_view 전용)
   if (!/\/html\/dh_prod\/prod_view\//.test(location.pathname)) return;
 
   // 중복 로드 방지
@@ -1141,8 +1193,8 @@
   // 3) 오케스트레이션
   // ─────────────────────────────────────────────────────────────────────────
   // ─────────────────────────────────────────────────────────────────────────
-  // 2.w) GNB에 "신혼부부 패키지" 메뉴 추가 (모든 페이지)
-  //   detailcard repo의 landing/newlywed.html로 링크 (jsdelivr 호스팅).
+  // 2.w) (DEPRECATED — universal fab는 IIFE 최상단에서 모든 페이지에 주입됨.
+  //       이 함수는 prod_view에서 fab 존재 보장 차원의 fallback)
   // ─────────────────────────────────────────────────────────────────────────
   function injectNewlywedGnb(){
     // body에 직접 floating badge 추가 — underlying 스크립트가 GNB를 wipe해도
