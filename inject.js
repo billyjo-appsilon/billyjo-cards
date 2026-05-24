@@ -1145,7 +1145,8 @@
   //   detailcard repo의 landing/newlywed.html로 링크 (jsdelivr 호스팅).
   // ─────────────────────────────────────────────────────────────────────────
   function injectNewlywedGnb(){
-    if (window.__bjNewlywedGnbInjected) return;
+    // window-level 가드 없음 — 매 runAll 사이클마다 셀렉터 재평가 (underlying이
+    // GNB를 wipe해도 다음 사이클에 재주입). 중복 방지는 .bj-newlywed-gnb 클래스 체크.
     var commit = getOwnCommitHash();
     var url = 'https://cdn.jsdelivr.net/gh/billyjo-appsilon/billyjo-detailcard@' + commit + '/landing/newlywed.html';
     // PC GNB: ul.new-gnb (top-level menu) — .gnb__menu 패턴 따라 li 추가
@@ -1167,7 +1168,6 @@
       ml.textContent = '💍 신혼패키지';
       mobileGnb.insertBefore(ml, mobileGnb.firstChild);
     }
-    if (pcGnb || mobileGnb) window.__bjNewlywedGnbInjected = true;
   }
 
   function runAll(){
