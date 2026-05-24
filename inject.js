@@ -46,12 +46,23 @@
       if (document.querySelector('.bj-newlywed-floating')) return;
       if (!document.body) return;
       var commit = getCommit();
-      var url = 'https://cdn.jsdelivr.net/gh/billyjo-appsilon/billyjo-detailcard@' + commit + '/landing/newlywed.html';
+      var modalJsUrl = 'https://cdn.jsdelivr.net/gh/billyjo-appsilon/billyjo-detailcard@' + commit + '/landing/newlywed.js';
       var fab = document.createElement('a');
       fab.className = 'bj-newlywed-floating';
-      fab.href = url;
-      fab.target = '_blank';
-      fab.rel = 'noopener';
+      fab.href = '#';
+      fab.onclick = function(e){
+        e.preventDefault();
+        if (typeof window.bjOpenNewlywedModal === 'function') {
+          window.bjOpenNewlywedModal();
+        } else if (!window.__bjNwLoading) {
+          window.__bjNwLoading = true;
+          var s = document.createElement('script');
+          s.src = modalJsUrl;
+          s.onload = function(){ if (window.bjOpenNewlywedModal) window.bjOpenNewlywedModal(); };
+          document.head.appendChild(s);
+        }
+        return false;
+      };
       fab.style.cssText = [
         'position:fixed','left:20px','bottom:20px','z-index:99998',
         'background:linear-gradient(135deg,#0838F8 0%,#1a87ac 100%)','color:#fff',
