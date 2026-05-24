@@ -1140,6 +1140,36 @@
   // ─────────────────────────────────────────────────────────────────────────
   // 3) 오케스트레이션
   // ─────────────────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────
+  // 2.w) GNB에 "신혼부부 패키지" 메뉴 추가 (모든 페이지)
+  //   detailcard repo의 landing/newlywed.html로 링크 (jsdelivr 호스팅).
+  // ─────────────────────────────────────────────────────────────────────────
+  function injectNewlywedGnb(){
+    if (window.__bjNewlywedGnbInjected) return;
+    var commit = getOwnCommitHash();
+    var url = 'https://cdn.jsdelivr.net/gh/billyjo-appsilon/billyjo-detailcard@' + commit + '/landing/newlywed.html';
+    // PC GNB — .new-gnb 안에 마지막 항목으로 추가
+    var pcGnb = document.querySelector('.new-gnb ul, .new-gnb__wrap ul, .gnb__menu, header nav ul');
+    if (pcGnb && !pcGnb.querySelector('.bj-newlywed-gnb')) {
+      var li = document.createElement('li');
+      li.className = 'bj-newlywed-gnb';
+      li.innerHTML = '<a href="' + url + '" target="_blank" style="color:#0838F8 !important;font-weight:700 !important;display:inline-flex;align-items:center;gap:4px">💍 신혼부부 패키지</a>';
+      pcGnb.appendChild(li);
+    }
+    // 모바일: .mobile__gnb 안에 카테고리 위에 highlight 추가
+    var mobileGnb = document.querySelector('.mobile__gnb .gnb__cateogry .category__wrap, .mobile__aside ul, .mobile__gnb ul');
+    if (mobileGnb && !mobileGnb.querySelector('.bj-newlywed-mobile')) {
+      var ml = document.createElement('a');
+      ml.className = 'bj-newlywed-mobile';
+      ml.href = url;
+      ml.target = '_blank';
+      ml.style.cssText = 'display:inline-flex;align-items:center;gap:4px;color:#0838F8 !important;font-weight:800;padding:2px 8px;background:#e8edff;border-radius:14px;font-size:13px;text-decoration:none;margin-right:4px';
+      ml.textContent = '💍 신혼부부 패키지';
+      mobileGnb.insertBefore(ml, mobileGnb.firstChild);
+    }
+    if (pcGnb || mobileGnb) window.__bjNewlywedGnbInjected = true;
+  }
+
   function runAll(){
     injectCSS();
     tagHeaderDom();
@@ -1150,6 +1180,7 @@
     fetchAndInjectAICard();
     hideOriginalSpecsAndSimplifyLpt();
     setupBottomBarVisibility();
+    injectNewlywedGnb();
   }
 
   injectCSS();      // CSS 즉시 — head 있으면
