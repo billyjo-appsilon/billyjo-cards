@@ -1145,28 +1145,39 @@
   //   detailcard repo의 landing/newlywed.html로 링크 (jsdelivr 호스팅).
   // ─────────────────────────────────────────────────────────────────────────
   function injectNewlywedGnb(){
-    // window-level 가드 없음 — 매 runAll 사이클마다 셀렉터 재평가 (underlying이
-    // GNB를 wipe해도 다음 사이클에 재주입). 중복 방지는 .bj-newlywed-gnb 클래스 체크.
+    // body에 직접 floating badge 추가 — underlying 스크립트가 GNB를 wipe해도
+    // body에 있는 우리 element는 영향 안 받음. 모든 페이지 우측 하단 고정 노출.
+    if (document.querySelector('.bj-newlywed-floating')) return;
+    if (!document.body) return;
     var commit = getOwnCommitHash();
     var url = 'https://cdn.jsdelivr.net/gh/billyjo-appsilon/billyjo-detailcard@' + commit + '/landing/newlywed.html';
-    // PC GNB: ul.new-gnb (top-level menu) — .gnb__menu 패턴 따라 li 추가
-    var pcGnb = document.querySelector('ul.new-gnb');
-    if (pcGnb && !pcGnb.querySelector('.bj-newlywed-gnb')) {
-      var li = document.createElement('li');
-      li.className = 'gnb__menu bj-newlywed-gnb';
-      li.innerHTML = '<a href="' + url + '" target="_blank" style="color:#0838F8 !important;font-weight:800 !important;background:#e8edff;padding:8px 14px;border-radius:18px;display:inline-flex;align-items:center;gap:4px;font-size:14px;white-space:nowrap">💍 신혼부부 패키지</a>';
-      pcGnb.appendChild(li);
-    }
-    // 모바일: .category__wrap 안 첫 항목으로 알약 형태 link 추가
-    var mobileGnb = document.querySelector('.mobile__gnb .gnb__cateogry .category__wrap, .category__wrap');
-    if (mobileGnb && !mobileGnb.querySelector('.bj-newlywed-mobile')) {
-      var ml = document.createElement('a');
-      ml.className = 'bj-newlywed-mobile';
-      ml.href = url;
-      ml.target = '_blank';
-      ml.style.cssText = 'flex:0 0 auto;display:inline-flex;align-items:center;gap:3px;color:#0838F8 !important;font-weight:800;padding:4px 10px;background:#e8edff;border-radius:14px;font-size:12.5px;text-decoration:none;margin-right:6px;white-space:nowrap;border:0';
-      ml.textContent = '💍 신혼패키지';
-      mobileGnb.insertBefore(ml, mobileGnb.firstChild);
+    var fab = document.createElement('a');
+    fab.className = 'bj-newlywed-floating';
+    fab.href = url;
+    fab.target = '_blank';
+    fab.rel = 'noopener';
+    fab.style.cssText = [
+      'position:fixed','left:20px','bottom:20px','z-index:99998',
+      'background:linear-gradient(135deg,#0838F8 0%,#1a87ac 100%)','color:#fff',
+      'padding:12px 18px','border-radius:24px',
+      'font-family:Pretendard,sans-serif','font-size:14px','font-weight:700',
+      'text-decoration:none','box-shadow:0 6px 20px rgba(8,56,248,0.35)',
+      'display:inline-flex','align-items:center','gap:6px',
+      'transition:transform 0.2s,box-shadow 0.2s',
+      'cursor:pointer','letter-spacing:-0.2px',
+    ].join(';');
+    fab.innerHTML = '<span style="font-size:16px">💍</span>신혼부부 패키지';
+    fab.onmouseenter = function(){ fab.style.transform = 'translateY(-2px)'; fab.style.boxShadow = '0 8px 24px rgba(8,56,248,0.45)'; };
+    fab.onmouseleave = function(){ fab.style.transform = 'translateY(0)'; fab.style.boxShadow = '0 6px 20px rgba(8,56,248,0.35)'; };
+    document.body.appendChild(fab);
+
+    // 모바일에서는 좌측 하단 + 작은 크기 (위쪽 widget 핸들과 겹치지 않게)
+    var mediaQuery = '@media (max-width:600px){.bj-newlywed-floating{left:12px !important;bottom:80px !important;padding:9px 13px !important;font-size:12.5px !important}}';
+    if (!document.querySelector('#bj-newlywed-style')) {
+      var st = document.createElement('style');
+      st.id = 'bj-newlywed-style';
+      st.textContent = mediaQuery;
+      document.head.appendChild(st);
     }
   }
 
