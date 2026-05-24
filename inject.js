@@ -1148,23 +1148,23 @@
     if (window.__bjNewlywedGnbInjected) return;
     var commit = getOwnCommitHash();
     var url = 'https://cdn.jsdelivr.net/gh/billyjo-appsilon/billyjo-detailcard@' + commit + '/landing/newlywed.html';
-    // PC GNB — .new-gnb 안에 마지막 항목으로 추가
-    var pcGnb = document.querySelector('.new-gnb ul, .new-gnb__wrap ul, .gnb__menu, header nav ul');
+    // PC GNB: ul.new-gnb (top-level menu) — .gnb__menu 패턴 따라 li 추가
+    var pcGnb = document.querySelector('ul.new-gnb');
     if (pcGnb && !pcGnb.querySelector('.bj-newlywed-gnb')) {
       var li = document.createElement('li');
-      li.className = 'bj-newlywed-gnb';
-      li.innerHTML = '<a href="' + url + '" target="_blank" style="color:#0838F8 !important;font-weight:700 !important;display:inline-flex;align-items:center;gap:4px">💍 신혼부부 패키지</a>';
+      li.className = 'gnb__menu bj-newlywed-gnb';
+      li.innerHTML = '<a href="' + url + '" target="_blank" style="color:#0838F8 !important;font-weight:800 !important;background:#e8edff;padding:8px 14px;border-radius:18px;display:inline-flex;align-items:center;gap:4px;font-size:14px;white-space:nowrap">💍 신혼부부 패키지</a>';
       pcGnb.appendChild(li);
     }
-    // 모바일: .mobile__gnb 안에 카테고리 위에 highlight 추가
-    var mobileGnb = document.querySelector('.mobile__gnb .gnb__cateogry .category__wrap, .mobile__aside ul, .mobile__gnb ul');
+    // 모바일: .category__wrap 안 첫 항목으로 알약 형태 link 추가
+    var mobileGnb = document.querySelector('.mobile__gnb .gnb__cateogry .category__wrap, .category__wrap');
     if (mobileGnb && !mobileGnb.querySelector('.bj-newlywed-mobile')) {
       var ml = document.createElement('a');
       ml.className = 'bj-newlywed-mobile';
       ml.href = url;
       ml.target = '_blank';
-      ml.style.cssText = 'display:inline-flex;align-items:center;gap:4px;color:#0838F8 !important;font-weight:800;padding:2px 8px;background:#e8edff;border-radius:14px;font-size:13px;text-decoration:none;margin-right:4px';
-      ml.textContent = '💍 신혼부부 패키지';
+      ml.style.cssText = 'flex:0 0 auto;display:inline-flex;align-items:center;gap:3px;color:#0838F8 !important;font-weight:800;padding:4px 10px;background:#e8edff;border-radius:14px;font-size:12.5px;text-decoration:none;margin-right:6px;white-space:nowrap;border:0';
+      ml.textContent = '💍 신혼패키지';
       mobileGnb.insertBefore(ml, mobileGnb.firstChild);
     }
     if (pcGnb || mobileGnb) window.__bjNewlywedGnbInjected = true;
