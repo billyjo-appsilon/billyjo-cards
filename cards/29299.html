@@ -1,0 +1,628 @@
+<!-- AI 카드 v0.4.3 (29299 / SQG550SW_1구좌) — auto-generated v1 (F08) -->
+<!-- 라이브: https://www.billyjo.co.kr/html/dh_prod/prod_view/29299 -->
+<!-- 룰북: skin-css/works/billyjo_ai_detailpage_rulebook.md -->
+
+      <style>
+        /* === v0.2.4 카드 스코프 (#ai-card-root 아래만) — 빌리조 CSS와 격리 === */
+
+        /* v0.2.4 — 페이지 주요 섹션을 AI 카드와 동일한 테두리 박스로 시각 일관성 부여
+           대상: .prod_view_top(이미지+가격) / .prod_view_bot.card.mt40(렌탈사 비교) / .prod_view_bot.mt10(상품정보) */
+        #container .wide-inner > .prod_view_top,
+        #container .wide-inner > .prod_view_bot{
+          background:#fff !important;
+          border:0.5px solid #dfdfdf !important;
+          border-radius:12px !important;
+          box-sizing:border-box !important;
+        }
+
+        /* .prod_view_top — 이미지+가격: 22px 패딩 */
+        #container .wide-inner > .prod_view_top{
+          padding:22px !important;
+          margin:0 !important;
+        }
+
+        /* .prod_view_bot.card.mt40 — 렌탈사 비교: inject.js의 .card__top 헤더(파란 배경)가 내부에 있으므로
+           외곽 박스만 만들고 패딩은 0 (.card__top이 padding 16px 20px 자체 보유) — 박스 corner와 .card__top 헤더 corner 일치 */
+        #container .wide-inner > .prod_view_bot.card.mt40{
+          padding:0 !important;
+          margin:24px 0 0 0 !important;
+          overflow:hidden;  /* .card__top의 border-radius가 외곽 박스 corner를 넘지 않도록 */
+        }
+
+        /* .prod_view_bot.mt10 — 상품정보(상세설명 이미지): 22px 패딩 */
+        #container .wide-inner > .prod_view_bot.mt10{
+          padding:22px !important;
+          margin:24px 0 0 0 !important;
+        }
+
+        @media (max-width:600px){
+          #container .wide-inner > .prod_view_top,
+          #container .wide-inner > .prod_view_bot.mt10{
+            padding:16px !important;
+            border-radius:10px !important;
+          }
+          #container .wide-inner > .prod_view_bot.card.mt40{
+            border-radius:10px !important;
+          }
+        }
+
+        /* AI 카드를 감싸는 wrapper — 빌리조의 float 기반 .prod_view_top 컬럼을 clear */
+        #ai-card-wrapper{
+          clear:both !important; display:block !important;
+          width:100%; margin:24px 0 0 0; padding:0; box-sizing:border-box;
+          float:none !important; position:relative;
+          /* float를 clear한 후 BFC 형성 (혹시 부모가 float 컨테이너인 경우 대비) */
+          overflow:visible;
+        }
+        #ai-card-wrapper::before{content:""; display:table; clear:both}
+        #ai-card-wrapper::after{content:""; display:table; clear:both}
+
+        #ai-card-root{
+          --color-text-primary:#2a2a2a; --color-text-secondary:#6a6a6a; --color-text-tertiary:#999;
+          --color-text-info:#0838F8; --color-background-primary:#ffffff; --color-background-secondary:#f7f7f7;
+          --color-background-info:#e8edff; --color-border-tertiary:#dfdfdf;
+          --border-radius-md:8px; --border-radius-lg:12px;
+          --g-1:#0838F8; --g-1-5:#1a87ac; --g-2:#16a34a; --g-2-5:#4ec727;
+          --g-3:#84cc16; --g-3-5:#c2ce15; --g-4:#facc15; --g-d:#999;
+          position:relative;
+          /* 변경 (절대규칙#2 v2): 풀폭 — 이미지 섹션(.prod_view_top) 가로와 정확히 일치 */
+          width:100%; margin:0; padding:0; box-sizing:border-box;
+          float:none !important; clear:both !important;
+          font-family:'Pretendard','Apple SD Gothic Neo','맑은 고딕',sans-serif;
+          color:var(--color-text-primary); -webkit-font-smoothing:antialiased;
+          text-align:left !important;
+        }
+        @media (max-width:600px){
+          #ai-card-root{margin:0 !important; padding:0 !important}
+        }
+
+        #ai-card-root .ai-card-tag{position:absolute;top:-1px;left:34px;background:var(--color-text-info);color:#fff;font-size:11px;padding:3px 9px;border-radius:5px;font-weight:700;letter-spacing:0.2px;z-index:1;line-height:1.3}
+        #ai-card-root .ai-card-tag::before{content:"📊 ";font-size:12px}
+
+        #ai-card-root .card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:22px 22px 18px}
+        #ai-card-root .head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding-bottom:12px;border-bottom:0.5px solid var(--color-border-tertiary)}
+        #ai-card-root .head > div{flex:1;min-width:0}
+        #ai-card-root .name{font-size:15px;font-weight:500;line-height:1.4;color:var(--color-text-primary)}
+        #ai-card-root .meta{font-size:11.5px;color:var(--color-text-tertiary);margin-top:4px;line-height:1.5}
+        #ai-card-root .model-num{color:var(--color-text-info);font-weight:700}
+
+        #ai-card-root .summary{display:flex;align-items:center;gap:24px;padding:14px 4px}
+        #ai-card-root .mgrid{flex:1;display:grid;grid-template-columns:1fr 1fr;row-gap:10px;column-gap:14px}
+        #ai-card-root .m{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:2px 0}
+        #ai-card-root .ml{font-size:11.5px;color:var(--color-text-secondary)}
+        #ai-card-root .grade-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:4px 10px;border-radius:6px;color:#fff;font-weight:700;line-height:1.2}
+        #ai-card-root .grade-badge small{font-size:78%;opacity:0.85;font-weight:700;padding-left:6px;border-left:1px solid rgba(255,255,255,0.5);margin-left:2px}
+        #ai-card-root .g-S{background:var(--g-1)} #ai-card-root .g-Aplus{background:var(--g-1-5)}
+        #ai-card-root .g-A{background:var(--g-2)} #ai-card-root .g-Bplus{background:var(--g-2-5)}
+        #ai-card-root .g-B{background:var(--g-3)} #ai-card-root .g-Cplus{background:var(--g-3-5)}
+        #ai-card-root .g-C{background:var(--g-4);color:#5d4d00}
+        #ai-card-root .g-C small{border-left-color:rgba(93,77,0,0.4)}
+        /* v0.3.7: .g-d 평가없음 배지 — .grade-badge와 동일 높이로 통일
+           (이전: display:inline + line-height 미지정으로 다른 배지보다 키가 컸음) */
+        #ai-card-root .g-d{
+          display:inline-flex; align-items:center; gap:6px;
+          background:var(--g-d); font-size:12px; font-weight:700;
+          padding:4px 10px; border-radius:6px; color:#fff;
+          line-height:1.2; vertical-align:middle;
+        }
+
+        #ai-card-root .specs{display:grid;grid-template-columns:1fr 1fr 1fr;background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px 6px}
+        #ai-card-root .sc{text-align:center;padding:8px 4px;position:relative}
+        #ai-card-root .sl{font-size:11px;color:var(--color-text-secondary);font-weight:700;display:inline-flex;align-items:center;gap:3px;justify-content:center}
+        #ai-card-root .sv{font-size:13px;font-weight:700;color:var(--color-text-info);margin-top:4px}
+
+        #ai-card-root .help{display:inline-block;position:relative}
+        #ai-card-root .help summary{list-style:none;cursor:pointer;font-size:11px;color:var(--color-text-tertiary);padding:0 2px}
+        #ai-card-root .help summary::-webkit-details-marker{display:none}
+        #ai-card-root .help summary::after{content:"ⓘ"}
+        #ai-card-root .help[open] summary{color:var(--color-text-info)}
+        #ai-card-root .help[open] .help-pop{display:block}
+        /* PC: 아이콘 아래 absolute 팝업 (220px) */
+        #ai-card-root .help-pop{display:none;position:absolute;left:50%;top:140%;transform:translateX(-50%);background:#fff;border:0.5px solid var(--color-border-tertiary);border-radius:6px;padding:10px 12px;font-size:12px;color:var(--color-text-primary);width:240px;max-width:calc(100vw - 32px);line-height:1.6;z-index:1000;box-shadow:0 6px 18px rgba(0,0,0,0.1);text-align:left;font-weight:400;word-break:keep-all}
+        /* 모바일 (≤600px): viewport 하단 sheet — .sc 셀 폭 협소로 absolute 팝업이 화면 밖으로 넘어가는 문제 해결 */
+        @media (max-width:600px){
+          #ai-card-root .help-pop{
+            position:fixed !important;
+            left:12px !important; right:12px !important;
+            top:auto !important; bottom:96px !important;
+            transform:none !important;
+            width:auto !important; max-width:none !important;
+            padding:14px 16px !important;
+            font-size:13px !important; line-height:1.65 !important;
+            border-radius:10px !important;
+            box-shadow:0 -8px 24px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05) !important;
+            z-index:100000 !important;
+            animation:bjHelpPopIn 0.2s ease-out;
+          }
+          /* 팝업에 닫기 안내 텍스트 자동 추가 */
+          #ai-card-root .help[open] .help-pop::after{
+            content:"ⓘ 아이콘을 다시 누르면 닫힙니다";
+            display:block;
+            margin-top:10px; padding-top:10px;
+            border-top:0.5px dashed var(--color-border-tertiary);
+            font-size:11px; color:var(--color-text-tertiary);
+            text-align:center;
+          }
+        }
+        @keyframes bjHelpPopIn{
+          from{ opacity:0; transform:translateY(20px) }
+          to{ opacity:1; transform:translateY(0) }
+        }
+
+        #ai-card-root .sec{padding-top:14px;margin-top:14px;border-top:0.5px solid var(--color-border-tertiary)}
+        #ai-card-root .sec-t{font-size:13px;color:var(--color-text-primary);margin-bottom:10px;font-weight:700}
+        #ai-card-root .rec{font-size:11.5px;color:var(--color-text-secondary);margin-top:8px;line-height:1.65}
+        #ai-card-root .pills{display:flex;flex-wrap:wrap;gap:5px}
+        #ai-card-root .pill{font-size:11px;padding:3px 9px;border-radius:999px;border:0.5px solid var(--color-border-tertiary);color:var(--color-text-tertiary);background:transparent}
+        #ai-card-root .pill.on{color:var(--color-text-info);background:var(--color-background-info);border-color:var(--color-background-info)}
+
+        #ai-card-root .hq-btn{font-size:11px;padding:3px 9px;border-radius:999px;background:var(--color-text-info);color:#fff;font-weight:700;display:inline-flex;align-items:center;gap:4px;vertical-align:middle}
+        #ai-card-root .hq-btn::before{content:"🏢"}
+
+        #ai-card-root .rental-terms{margin-top:12px;background:#fff;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px 12px;display:grid;grid-template-columns:1fr 1fr;column-gap:14px;row-gap:6px}
+        #ai-card-root .rt-r{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;gap:8px;min-width:0}
+        #ai-card-root .rt-l{color:var(--color-text-secondary);white-space:nowrap;flex-shrink:0;display:inline-flex;align-items:center;gap:3px}
+        #ai-card-root .rt-l .help{margin-left:1px}
+        #ai-card-root .rt-l .help summary{font-size:11px;color:var(--color-text-tertiary);padding:0 2px;cursor:pointer}
+        #ai-card-root .rt-v{color:var(--color-text-primary);font-weight:700;text-align:right;line-height:1.4;word-break:keep-all;min-width:0}
+
+        #ai-card-root .strengths{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+        #ai-card-root .strength-chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;padding:5px 10px;border-radius:6px;background:var(--color-background-info);color:var(--color-text-info);font-weight:700;line-height:1.3}
+        #ai-card-root .strength-chip i{font-size:13px}
+
+        #ai-card-root .persona{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+        #ai-card-root .p{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:11px 12px;display:flex;flex-direction:column;gap:6px}
+        #ai-card-root .p-top{display:flex;align-items:center;justify-content:space-between}
+        #ai-card-root .p-top i{font-size:18px;color:var(--color-text-info)}
+        #ai-card-root .rec-p-level-1,#ai-card-root .rec-p-level-2,#ai-card-root .rec-p-level-3{font-size:10.5px;padding:2px 7px;border-radius:4px;color:#fff;font-weight:700;letter-spacing:-0.2px;line-height:1.3}
+        #ai-card-root .rec-p-level-1{background:var(--g-1)}
+        #ai-card-root .rec-p-level-2{background:var(--g-1-5)}
+        #ai-card-root .rec-p-level-3{background:var(--g-2-5)}
+        #ai-card-root .rec-p-title{font-size:12px;color:var(--color-text-primary);line-height:1.35;font-weight:700}
+        #ai-card-root .p-d{font-size:11px;color:var(--color-text-secondary);line-height:1.5}
+        #ai-card-root .feat-btns{display:flex;flex-wrap:wrap;gap:4px;margin-top:2px}
+        #ai-card-root .feat-btn{font-size:10.5px;padding:3px 7px;border-radius:4px;background:#fff;color:var(--color-text-info);border:0.5px solid var(--color-background-info);font-weight:700}
+
+        #ai-card-root .step-h{display:flex;align-items:center;gap:8px;margin:12px 0 6px;font-size:12.5px;color:var(--color-text-primary)}
+        #ai-card-root .step-n{background:var(--color-text-info);color:#fff;width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:500;flex-shrink:0}
+        #ai-card-root .step-title{font-weight:700}
+        #ai-card-root .step-sum{font-size:11.5px;color:var(--color-text-secondary);line-height:1.55;padding-left:26px;margin:4px 0 6px}
+        #ai-card-root .step-sum strong{color:var(--color-text-primary);background:linear-gradient(transparent 62%,var(--color-background-info) 62%);padding:0 1px;font-weight:700}
+
+        #ai-card-root .step-details{padding-left:26px}
+        #ai-card-root .step-details summary{list-style:none;cursor:pointer;font-size:11px;color:var(--color-text-info);margin:2px 0 8px;display:inline-flex;align-items:center;gap:3px}
+        #ai-card-root .step-details summary::-webkit-details-marker{display:none}
+        #ai-card-root .step-details summary::after{content:"▾";font-size:10px;transition:transform 0.15s}
+        #ai-card-root .step-details[open] summary::after{transform:rotate(180deg)}
+        #ai-card-root .field{margin:8px 0 10px}
+        #ai-card-root .field-l{font-size:11.5px;color:var(--color-text-secondary);margin-bottom:6px}
+
+        #ai-card-root .gift{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px 16px}
+        /* PC: 라벨 좌 / 값 우 (space-between). 모바일: column stack (라벨 위, 값 아래 좌측 정렬) */
+        #ai-card-root .gift-r{display:flex;justify-content:space-between;align-items:flex-start;font-size:13px;padding:8px 0;gap:12px;flex-wrap:wrap}
+        #ai-card-root .gift-r + .gift-r{border-top:0.5px dashed var(--color-border-tertiary);margin-top:2px;padding-top:10px}
+        #ai-card-root .gift-tag{font-size:12px;padding:5px 11px;border-radius:5px;color:var(--color-text-info);background:var(--color-background-info);font-weight:700;white-space:nowrap;line-height:1.3;flex-shrink:0}
+        #ai-card-root .gift-v{color:var(--color-text-primary);text-align:right;line-height:1.6;font-size:13px;word-break:keep-all;flex:1 1 auto;min-width:0}
+        #ai-card-root .gift-v strong{color:var(--color-text-info);font-weight:700;word-break:keep-all}
+        #ai-card-root .gift-db{color:var(--color-text-tertiary);font-size:12px;background:#fff;border:0.5px dashed var(--color-border-tertiary);padding:4px 11px;border-radius:6px;white-space:nowrap}
+        /* 모바일: column 레이아웃 — 라벨 위, 값 아래 좌측 정렬, 자연스러운 줄바꿈 */
+        @media (max-width:600px){
+          #ai-card-root .gift{padding:10px 12px}
+          #ai-card-root .gift-r{flex-direction:column;align-items:flex-start;gap:6px;padding:10px 0}
+          #ai-card-root .gift-tag{font-size:11.5px;padding:4px 10px}
+          #ai-card-root .gift-v{text-align:left;font-size:13px;line-height:1.65;width:100%}
+          #ai-card-root .gift-db{font-size:11.5px;padding:4px 10px}
+        }
+
+        /* SLOT 8 — 계약 기간별 렌탈료 표 */
+        #ai-card-root .pricing-sec{margin-top:14px}
+        #ai-card-root .pricing-table-wrap{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:6px 12px 10px;overflow-x:auto}
+        #ai-card-root .pricing-table{width:100%;border-collapse:collapse;font-family:'Pretendard',sans-serif;font-size:13.5px}
+        #ai-card-root .pricing-table thead th{font-size:11.5px;color:var(--color-text-secondary);font-weight:600;text-align:left;padding:10px 8px 8px;border-bottom:1px solid var(--color-border-tertiary);background:transparent}
+        #ai-card-root .pricing-table thead th.pt-base,
+        #ai-card-root .pricing-table thead th.pt-card{text-align:right}
+        #ai-card-root .pricing-table tbody td{padding:10px 8px;border-bottom:0.5px dashed var(--color-border-tertiary);color:var(--color-text-primary)}
+        #ai-card-root .pricing-table tbody tr:last-child td{border-bottom:0}
+        #ai-card-root .pricing-table tbody td.pt-term{font-weight:600;color:var(--color-text-primary)}
+        #ai-card-root .pricing-table tbody td.pt-base{text-align:right;font-weight:700;color:var(--color-text-info);font-size:14.5px}
+        #ai-card-root .pricing-table tbody td.pt-card{text-align:right;font-weight:700;color:#16a34a;font-size:14px}
+        #ai-card-root .pricing-table tbody td.pt-card-na{text-align:right;color:var(--color-text-tertiary);font-size:13px;font-style:italic}
+        #ai-card-root .pricing-table tbody td strong{font-family:'Pretendard',sans-serif;font-weight:700}
+        #ai-card-root .pricing-note{margin:8px 4px 0;font-size:11.5px;color:var(--color-text-tertiary);line-height:1.5}
+        @media (max-width:600px){
+          #ai-card-root .pricing-table{font-size:12.5px}
+          #ai-card-root .pricing-table thead th{font-size:11px;padding:8px 6px 6px}
+          #ai-card-root .pricing-table tbody td{padding:8px 6px}
+          #ai-card-root .pricing-table tbody td.pt-base{font-size:13.5px}
+          #ai-card-root .pricing-table tbody td.pt-card{font-size:13px}
+          #ai-card-root .pricing-note{font-size:11px}
+        }
+
+        /* 모바일 (≤600px) */
+        @media (max-width:600px){
+          #ai-card-root .card{padding:18px 16px 16px;border-radius:10px}
+          #ai-card-root .name{font-size:16px;line-height:1.35}
+          #ai-card-root .meta{font-size:11px;line-height:1.5}
+          #ai-card-root .summary{gap:10px;padding:10px 0;flex-direction:column;align-items:stretch}
+          #ai-card-root .summary > svg{align-self:center}
+          #ai-card-root .mgrid{grid-template-columns:1fr;row-gap:0;column-gap:0}
+          #ai-card-root .m{flex-direction:row;align-items:center;justify-content:space-between;padding:7px 10px;gap:6px;border-bottom:0.5px solid var(--color-border-tertiary)}
+          #ai-card-root .m:last-child{border-bottom:none}
+          #ai-card-root .m .ml{white-space:nowrap;flex-shrink:0;font-size:12px}
+          #ai-card-root .m .grade-badge,#ai-card-root .m .g-d{flex-shrink:0;margin-left:auto;font-size:11.5px;padding:3px 9px}
+          #ai-card-root .specs{grid-template-columns:1fr 1fr;padding:6px 4px}
+          #ai-card-root .sc{padding:5px 4px}
+          #ai-card-root .persona{grid-template-columns:1fr;gap:6px}
+          #ai-card-root .rental-terms{grid-template-columns:1fr;row-gap:4px;padding:9px 11px}
+          #ai-card-root .step-sum{padding-left:22px;font-size:12px}
+          #ai-card-root .step-details{padding-left:22px}
+        }
+
+        /* ===== 헤더/썸네일 패치 v0.2.5 (절대 규칙 #21) — inject.js 결과 DOM 타게팅 =====
+           inject.js가 PC>768px에서 header.new-header 첫 자식으로 new row(.bj-inj-row)를 만들고
+           leftGroup(.bj-inj-left: logo + new-gnb__wrap) / rightGroup(.bj-inj-right: gnb__right + search__wrap)으로 재배치함.
+           rightGroup 인라인 스타일(flex-shrink:0; white-space:nowrap)이 좁은 폭에서 카테고리 위로 오버플로우의 원인 */
+
+        /* [공통] 모바일 헤더 가림 방지 — header:not(.bj-ready){opacity:0} 보호 룰 무력화 */
+        header.new-header.new-header{ opacity:1 !important; visibility:visible !important }
+        @media (max-width:768px){
+          header.new-header.new-header,
+          header.new-header.new-header:not(.bj-ready){ opacity:1 !important; visibility:visible !important }
+        }
+
+        /* [공통] 햄버거 중복 제거 — .gnb__hamburger 유지, .hamburger__btn 숨김 */
+        .new-gnb .gnb__all .hamburger__btn,
+        .new-gnb__wrap .show-768.hide-default{ display:none !important }
+
+        /* [공통] 제품 썸네일 60×60 1px 회색 테두리 */
+        .prod_img_small .prod_thumbs li a{
+          display:inline-block; border:1px solid #dfdfdf; box-sizing:border-box; line-height:0;
+        }
+        .prod_img_small .prod_thumbs li a img{ display:block }
+
+        /* [Layout 1] 좁은 PC(≤1280px): rightGroup이 leftGroup 아래로 줄바꿈 허용
+           inject.js의 인라인 flex-shrink:0; white-space:nowrap; margin-left:auto 무력화 */
+        @media (max-width:1280px){
+          header.new-header > .bj-inj-row{
+            flex-wrap:wrap !important;
+            padding:16px 20px !important;
+            row-gap:10px !important; column-gap:16px !important;
+          }
+          header.new-header > .bj-inj-row > .bj-inj-left{
+            flex:1 1 auto !important; min-width:0 !important;
+            flex-wrap:wrap !important; row-gap:10px !important;
+          }
+          header.new-header > .bj-inj-row > .bj-inj-right{
+            flex-shrink:1 !important;
+            white-space:normal !important;
+            flex-wrap:wrap !important;
+            margin-left:auto !important;
+            gap:12px !important;
+            justify-content:flex-end !important;
+            align-items:center !important;
+          }
+          header.new-header .bj-inj-right .gnb__right{
+            position:static !important; top:0 !important; gap:10px !important;
+          }
+          header.new-header .bj-inj-right .search__wrap{ max-width:280px }
+          /* leftGroup 안의 카테고리가 오른쪽으로 흘러넘쳐 rightGroup 위로 paint되는 것 차단 */
+          header.new-header .bj-inj-left{ overflow:visible }
+        }
+
+        /* [Layout 1] 더 좁은 폭(≤1024px): rightGroup을 별도 행으로 강제 분리 */
+        @media (max-width:1024px){
+          header.new-header > .bj-inj-row{
+            flex-direction:column !important; align-items:stretch !important;
+          }
+          header.new-header > .bj-inj-row > .bj-inj-left{
+            width:100% !important; flex-wrap:wrap !important;
+          }
+          header.new-header > .bj-inj-row > .bj-inj-right{
+            width:100% !important; margin-left:0 !important;
+            justify-content:flex-end !important;
+            border-top:0.5px solid #eee; padding-top:10px;
+          }
+          header.new-header .bj-inj-right .search__wrap{ max-width:100%; flex:1 1 auto }
+          header.new-header .bj-inj-right .search__wrap input{ width:100%; box-sizing:border-box }
+        }
+
+        /* ===== 모바일 헤더 (≤768px) 공통 — 로고 + 아이콘 리스트(이벤트·검색·장바구니) 1행 =====
+           v0.3.2: 햄버거 + 5px gap + 로고 + ... + 아이콘 (margin-left:auto). .new-gnb 명시 숨김. */
+        @media (max-width:768px){
+          /* 분리된 이벤트 배너 숨김 (JS가 이벤트 링크를 아이콘 리스트로 복원하므로) */
+          header.new-header > #bj-top-banner,
+          body > #bj-top-banner{ display:none !important }
+
+          /* v0.3.2: PC GNB 카테고리 메뉴(.new-gnb)는 모바일에서 명시 숨김 — inject.js가 모바일에서는 .mobile__gnb로 별도 노출하므로 .new-gnb는 불필요 */
+          header.new-header .new-gnb__wrap,
+          header.new-header .new-gnb,
+          header.new-header .new-gnb__wrap .new-gnb,
+          header.new-header li.bj-internet-li{ display:none !important }
+
+          header.new-header .wide-inner{ display:block !important; padding:0 !important; margin:0 !important }
+          header.new-header .header__top{
+            display:flex !important; align-items:center !important;
+            gap:0 !important; padding:8px 12px !important;
+            flex-wrap:nowrap !important; background:#fff !important;
+            border-bottom:1px solid #eee !important;
+            position:relative !important;
+            min-width:0 !important; overflow:hidden;
+          }
+          /* v0.3.2: 햄버거 → 5px 여백 → 로고 → 우측 끝까지 빈 공간 → 아이콘 리스트 */
+          header.new-header .header__top .gnb__hamburger{
+            flex:0 0 auto !important; margin:0 5px 0 0 !important;
+            cursor:pointer; padding:4px;
+          }
+          /* v0.3.6: 로고 max-width 제한 — 로고 이미지의 intrinsic width가 크면 아이콘과 겹치는 문제 해결 */
+          header.new-header .header__top .logo{
+            flex:0 1 auto !important; margin:0 !important;
+            min-width:0 !important; max-width:38vw !important;
+            overflow:hidden !important;
+          }
+          header.new-header .header__top .logo img{
+            height:26px !important; width:auto !important; max-width:100% !important;
+            display:block !important; object-fit:contain;
+          }
+          /* 원본 .top__right(검색폼·전화·SNS·gnb__right 등)는 모바일에서 숨김 */
+          header.new-header .header__top .top__right{ display:none !important }
+          /* v0.3.7: 검색바 명시 숨김 — .top__right 외에 다른 위치에 .search__wrap이
+             렌더될 수도 있으므로 (inject.js 변형, 외부 코드 등) 안전망. 검색은 아이콘 클릭 시 .m_search_popup으로 열림 */
+          header.new-header .search__wrap,
+          header.new-header form .search__wrap,
+          header.new-header .bj-inj-right .search__wrap{ display:none !important }
+
+          /* v0.3.9: 모바일 카테고리 메뉴 (.category__wrap) — 텍스트 전용 스와이프
+             이전 v0.3.7-3.8 pill 버튼 패턴 폐기. 좌측 정렬 + 잘림 없음 + 활성은 텍스트 굵게/파랑+밑줄. */
+          .mobile__gnb .gnb__cateogry,
+          .mobile__gnb .gnb__cateogry nav{
+            background:#fff; border-bottom:1px solid #eee;
+          }
+          .mobile__gnb .gnb__cateogry{ position:relative }
+          .mobile__gnb .gnb__cateogry .category__wrap{
+            display:flex !important;
+            flex-wrap:nowrap !important;
+            overflow-x:auto !important;
+            overflow-y:hidden !important;
+            -webkit-overflow-scrolling:touch;
+            scrollbar-width:none;
+            -ms-overflow-style:none;
+            justify-content:flex-start !important;
+            align-items:center !important;
+            padding:10px 16px 12px !important;
+            gap:18px !important;
+            white-space:nowrap !important;
+            line-height:normal !important;
+            height:auto !important;
+            max-height:none !important;
+            text-align:left !important;
+          }
+          .mobile__gnb .gnb__cateogry .category__wrap::-webkit-scrollbar{ display:none }
+          /* 텍스트 전용 — 배경·테두리·라운드 모두 제거 */
+          .mobile__gnb .gnb__cateogry .category__wrap > a{
+            flex:0 0 auto !important;
+            display:inline-block !important;
+            padding:2px 0 !important;
+            margin:0 !important;
+            font-size:13px !important;
+            font-weight:500;
+            color:#555 !important;
+            background:transparent !important;
+            border:0 !important;
+            border-radius:0 !important;
+            text-decoration:none !important;
+            white-space:nowrap;
+            line-height:1.4 !important;
+            position:relative;
+            transition:color 0.15s;
+          }
+          .mobile__gnb .gnb__cateogry .category__wrap > a:hover{
+            color:#0838F8 !important;
+          }
+          /* 활성 — 굵게 + 브랜드 파랑 텍스트 + 하단 짧은 바 (탭 형태) */
+          .mobile__gnb .gnb__cateogry .category__wrap > a.on{
+            color:#0838F8 !important;
+            font-weight:800 !important;
+          }
+          .mobile__gnb .gnb__cateogry .category__wrap > a.on::after{
+            content:"";
+            display:block !important;
+            position:absolute;
+            left:0; right:0; bottom:-3px;
+            height:2px; background:#0838F8;
+            border-radius:1px;
+          }
+          /* 비활성의 ::after 잔재 제거 (원본 빌리조 주황 밑줄 등) */
+          .mobile__gnb .gnb__cateogry .category__wrap > a:not(.on)::after{
+            display:none !important;
+          }
+          .mobile__gnb .gnb__cateogry .category__wrap > a.bj-internet-cat{
+            color:#555 !important;
+          }
+
+          /* v0.3.7: 인라인 빨강(#ff1818) 강조 링크 → 브랜드 파랑(#0838F8)로 통일 */
+          a[style*="ff1818"],
+          a[style*="FF1818"],
+          a[style*="#ff1818"],
+          a[style*="#FF1818"]{
+            color:#0838F8 !important;
+          }
+          /* v0.3.9: 우측 fade — 스크롤 가능 신호 */
+          .mobile__gnb .gnb__cateogry::after{
+            content:""; position:absolute; right:0; top:0; bottom:1px;
+            width:32px; pointer-events:none; z-index:1;
+            background:linear-gradient(to right, rgba(255,255,255,0), #fff 70%);
+          }
+          /* v0.3.9: 좌측 fade — 스크롤 시 좌측 가려짐 신호 (약하게) */
+          .mobile__gnb .gnb__cateogry::before{
+            content:""; position:absolute; left:0; top:0; bottom:1px;
+            width:14px; pointer-events:none; z-index:1;
+            background:linear-gradient(to left, rgba(255,255,255,0), #fff 80%);
+          }
+          /* v0.3.6: 아이콘 리스트 — flex:0 1 auto로 shrink 허용, 폭 부족 시 자동 축소 */
+          header.new-header .header__top > ul.inline_wrap.header_m_icon,
+          header.new-header .header__top > ul#bj-header-icons,
+          header.new-header ul#bj-header-icons{
+            display:flex !important; align-items:center !important;
+            gap:6px !important; margin:0 0 0 auto !important; padding:0 0 0 6px !important;
+            list-style:none !important;
+            flex:0 1 auto !important; flex-wrap:nowrap !important;
+            min-width:0 !important;
+          }
+          header.new-header ul#bj-header-icons li,
+          header.new-header .header__top ul.inline_wrap.header_m_icon li{
+            margin:0 !important; padding:0 !important; list-style:none !important;
+            display:inline-flex; align-items:center; flex:0 0 auto;
+          }
+          header.new-header ul#bj-header-icons li a{
+            display:inline-flex; align-items:center; line-height:1;
+          }
+          header.new-header ul#bj-header-icons li img{
+            height:20px !important; width:auto !important; display:block;
+          }
+          /* v0.3.6: 이벤트 링크 — 폰트·padding 더 컴팩트, 텍스트 줄임 옵션 */
+          header.new-header ul#bj-header-icons li a[style*="ff3700"],
+          header.new-header ul#bj-header-icons li a[style*="ff3700 "]{
+            white-space:nowrap; font-size:10px !important;
+            padding:3px 6px !important; line-height:1.2;
+            border-radius:4px !important;
+            max-width:38vw; overflow:hidden; text-overflow:ellipsis;
+          }
+        }
+
+        /* v0.3.6: 더 좁은 폭(≤400px)에서는 이벤트 텍스트 라벨을 더 짧게 */
+        @media (max-width:400px){
+          header.new-header ul#bj-header-icons li a[style*="ff3700"]{
+            font-size:9.5px !important; padding:3px 5px !important;
+            max-width:28vw;
+          }
+          header.new-header .header__top .logo{ max-width:32vw !important }
+          header.new-header .header__top .logo img{ height:24px !important }
+        }
+        /* v0.3.6: 극협소(≤360px) iPhone SE — 이벤트 텍스트 첫 줄만 노출 (혹은 ... ellipsis) */
+        @media (max-width:360px){
+          header.new-header .header__top{ padding:8px 10px !important }
+          header.new-header ul#bj-header-icons{ gap:5px !important }
+          header.new-header ul#bj-header-icons li a[style*="ff3700"]{
+            max-width:90px;
+          }
+          header.new-header ul#bj-header-icons li img{ height:18px !important }
+        }
+      </style>
+
+      <div id="ai-card-wrapper">
+      <div id="ai-card-root">
+        <div class="card">
+
+          <!-- SLOT 1: 헤더 (규격 흡수) -->
+          <div class="head">
+            <div>
+              <div class="name">(보람피플 올인원598 1구좌) 인켈 구글OS 스마트 50W사운드 QLED TV 55인치 상조가전</div>
+              <div class="meta">모델명: <span class="model-num">SQG550SW</span> · 1구좌</div>
+            </div>
+          </div>
+
+          <!-- SLOT 2: 게이지(letter) + 4지표 — 종합 78.3 → A, dasharray = 129 165 -->
+          <div class="summary">
+            <svg viewBox="0 0 100 100" width="100" height="100" style="display:block;flex-shrink:0">
+              <path d="M 25.25 74.75 A 35 35 0 1 1 74.75 74.75" fill="none" stroke="var(--color-border-tertiary)" stroke-width="6" stroke-linecap="round"/>
+              <path d="M 25.25 74.75 A 35 35 0 1 1 74.75 74.75" fill="none" stroke="var(--g-2)" stroke-width="6" stroke-linecap="round" stroke-dasharray="129 165"/>
+              <text x="50" y="40" text-anchor="middle" font-size="9" fill="var(--color-text-secondary)" style="font-family:'Pretendard',sans-serif">종합 평가</text>
+              <text x="50" y="62" text-anchor="middle" font-size="26" fill="var(--g-2)" style="font-family:'Pretendard',sans-serif;font-weight:700">A</text>
+            </svg>
+            <div class="mgrid"><div class="m"><span class="ml">렌탈료</span><span class="grade-badge g-Aplus">적극추천<small>A+</small></span></div><div class="m"><span class="ml">화질·음향</span><span class="grade-badge g-A">추천<small>A</small></span></div><div class="m"><span class="ml">연결성</span><span class="grade-badge g-Bplus">우수<small>B+</small></span></div><div class="m"><span class="ml">편의기능</span><span class="grade-badge g-Bplus">우수<small>B+</small></span></div></div>
+          </div>
+
+          <!-- SLOT 3: 스펙요약 8칸 (v0.2.6 — .rec 흡수: 방문관리·소유권 운영정보 편입) -->
+          <div class="specs">
+            <div class="sc"><div class="sl">렌탈료</div><div class="sv">월 29,900원</div></div>
+            <div class="sc"><div class="sl">종류</div><div class="sv">올인원S598</div></div>
+            <div class="sc"><div class="sl">타입</div><div class="sv">1구좌</div></div>
+            <div class="sc"><div class="sl">제품정보</div><div class="sv">제품 상세페이지 참고</div></div>
+            <div class="sc"><div class="sl">납부정보</div><div class="sv">1~60회 &gt; 상조: 500원, 가전: 29,400원
+61~200회 &gt; 상조: 29,900원</div></div>
+            
+          </div>
+
+          <!-- SLOT 4: 기본정보 + 강점 (.rec 제거 — 스펙 그리드에 편입됨) -->
+          <div class="sec">
+            <div class="sec-t">기본정보 · 설치 형태</div>
+            <div class="pills">
+              <span class="pill on">데스크형 (저수조)</span>
+              <span class="pill">스탠드형</span>
+              <span class="pill">언더싱크</span>
+              <span class="pill">직수형 슬림</span>
+            </div>
+
+            <!-- .rental-terms — 약정·의무사용·위약금. v0.3.8: 약정·의무사용 기간에 ⓘ 툴팁 추가 -->
+            <div class="rental-terms">
+              <div class="rt-r">
+                <span class="rt-l">약정 기간
+                  <details class="help"><summary aria-label="약정 기간 설명"></summary><div class="help-pop"><strong>약정 기간</strong>은 렌탈 계약의 전체 기간입니다. 이 기간 동안 매월 렌탈료를 납부하며, 종료 시점에 제품 소유권이 이전(또는 반환)됩니다. 약정을 채워야 광고된 월 렌탈료가 유지됩니다.</div></details>
+                </span>
+                <span class="rt-v">60개월</span>
+              </div>
+              <div class="rt-r">
+                <span class="rt-l">의무 사용 기간
+                  <details class="help"><summary aria-label="의무 사용 기간 설명"></summary><div class="help-pop"><strong>의무 사용 기간</strong>은 위약금이 부과되는 최소 기간입니다. 이 기간이 지난 뒤 해지하면 별도 위약금 없이 자유로운 해지가 가능합니다. 약정 기간보다 짧은 게 일반적이며, 짧을수록 사용자에게 유리합니다.</div></details>
+                </span>
+                <span class="rt-v">36개월</span>
+              </div>
+              <div class="rt-r"><span class="rt-l">중도해지 위약금</span><span class="rt-v">잔여 렌탈료 50%</span></div>
+            </div>
+
+            <!-- .strengths — .rec와 중복되는 "4개월 코디 방문관리"·"60개월 후 소유권 이전" 칩 제거,
+                 다른 운영(분리세척 코크)·혜택(무상 A/S 6개월) 강점으로 교체 -->
+            <div class="strengths"><span class="strength-chip"><i class="ti ti-currency-won"></i>월 29,900원</span><span class="strength-chip"><i class="ti ti-shield-check"></i>검증 브랜드</span></div>
+          </div>
+
+          <!-- SLOT 5: 페르소나 Top 3 -->
+          <div class="sec">
+            <div class="sec-t">이런 분에게 추천해요</div>
+            <div class="persona">
+              <div class="p"><div class="p-top"><i class="ti ti-home"></i><span class="rec-p-level-1">매우 추천</span></div><div class="rec-p-title">합리적 가격 선호 1인·신혼</div><div class="p-d">월 29,900원 부담 없는 진입, 핵심 기능 충분</div><div class="feat-btns"><span class="feat-btn">가성비</span><span class="feat-btn">컴팩트</span><span class="feat-btn">기본 기능</span></div></div><div class="p"><div class="p-top"><i class="ti ti-users"></i><span class="rec-p-level-1">매우 추천</span></div><div class="rec-p-title">3-4인 가족 표준 사용</div><div class="p-d">가족 단위 일상 사용에 적합</div><div class="feat-btns"><span class="feat-btn">표준 용량</span><span class="feat-btn">검증된 브랜드</span><span class="feat-btn">A/S 안심</span></div></div><div class="p"><div class="p-top"><i class="ti ti-shield-check"></i><span class="rec-p-level-2">추천</span></div><div class="rec-p-title">신뢰성 우선 사용자</div><div class="p-d">대기업 브랜드 + 검증된 모델 선호 — A/S·내구성 우선</div><div class="feat-btns"><span class="feat-btn">브랜드</span><span class="feat-btn">A/S</span><span class="feat-btn">내구성</span></div></div>
+            </div>
+          </div>
+
+          <!-- SLOT 6: Step 1-3 (자세히 보기 접기) -->
+          <div class="sec">
+            <div class="sec-t">상세 스펙</div>
+
+            <div class="step-h"><span class="step-n">1</span><span class="step-title">화질·음향</span><span class="grade-badge g-A" style="margin-left:auto">추천<small>A</small></span></div><div class="step-sum">표준 화질·음향 — 카테고리 기본 기능 만족 (상세는 본문 참조)</div><details class="step-details"><summary>자세히 보기</summary><div class="field"><div class="field-l">기본 특징</div><div class="pills"><span class="pill on">기본 기능</span></div></div></details>
+                </div>
+              </div>
+              <div class="field"><div class="field-l">필터 개수</div>
+                <div class="pills"><span class="pill">1개</span><span class="pill">2개</span><span class="pill">3개</span><span class="pill on">4개+</span></div>
+              </div>
+            </details>
+
+            <div class="step-h"><span class="step-n">2</span><span class="step-title">연결성</span><span class="grade-badge g-Bplus" style="margin-left:auto">우수<small>B+</small></span></div><div class="step-sum">연결성 — 표준 수준 (상세 미공개 항목 다수)</div><details class="step-details"><summary>자세히 보기</summary><div class="field"><div class="field-l">기본 특징</div><div class="pills"><span class="pill on">표준</span></div></div></details>
+                </div>
+              </div>
+              <div class="field"><div class="field-l">위생 기능</div>
+                <div class="pills"><span class="pill on">분리세척 코크</span><span class="pill">무빙코크</span><span class="pill">자동잔수비움</span></div>
+              </div>
+              <div class="field"><div class="field-l">저수조 재질</div>
+                <div class="pills"><span class="pill">스테인리스</span><span class="pill">트라이탄</span><span class="pill on">PP 항균</span></div>
+              </div>
+            </details>
+
+            <div class="step-h"><span class="step-n">3</span><span class="step-title">편의기능</span><span class="grade-badge g-Bplus" style="margin-left:auto">우수<small>B+</small></span></div><div class="step-sum">편의기능 — 표준 수준</div><details class="step-details"><summary>자세히 보기</summary><div class="field"><div class="field-l">기본 특징</div><div class="pills"><span class="pill on">표준</span></div></div></details>
+          </div>
+
+          <!-- SLOT 7: 예상 지원금ㆍ빌리조 혜택 -->
+          <div class="sec">
+            <div class="sec-t">예상 최대 지원금ㆍ빌리조 혜택</div>
+            <div class="gift">
+              <div class="gift-r"><span class="gift-tag">예상 최대 지원금</span><span class="gift-db">내부 DB 연동 예정</span></div>
+              <div class="gift-r"><span class="gift-tag">빌리조 혜택</span><span class="gift-v"><strong>초기비용 0원</strong> + 롯데·삼성카드 청구할인</span></div>
+              <div class="gift-r"><span class="gift-tag">제조사 프로모션</span><span class="gift-v"><strong>6개월 무상 A/S</strong> + 패키지 추가 시 월 2,000원 할인</span></div>
+            </div>
+          </div>
+
+          <!-- SLOT 8 폐기: 카드 안 카드사 할인/lpt 표 미포함.
+               약정기간별 카드할인 적용 렌탈료는 페이지 본문의 #livePriceTable이 담당
+               (inject.js가 약정기간 + 최종 할인가 2개 컬럼만 노출하도록 처리). -->
+
+        </div>
+      </div>
+      </div><!-- /#ai-card-wrapper -->
