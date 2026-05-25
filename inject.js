@@ -50,19 +50,76 @@
       var fab = document.createElement('a');
       fab.className = 'bj-newlywed-floating';
       fab.href = '#';
-      fab.onclick = function(e){
+
+      // 드래그 가능 + click vs drag 구분 (drag threshold 5px)
+      var dragState = null;  // {startX,startY,origLeft,origBottom,moved}
+      var DRAG_THRESHOLD = 5;
+      function onDragStart(e){
+        var t = e.touches ? e.touches[0] : e;
+        var rect = fab.getBoundingClientRect();
+        dragState = {
+          startX: t.clientX, startY: t.clientY,
+          origLeft: rect.left, origTop: rect.top,
+          moved: false,
+        };
         e.preventDefault();
-        if (typeof window.bjOpenNewlywedModal === 'function') {
-          window.bjOpenNewlywedModal();
-        } else if (!window.__bjNwLoading) {
-          window.__bjNwLoading = true;
-          var s = document.createElement('script');
-          s.src = modalJsUrl;
-          s.onload = function(){ if (window.bjOpenNewlywedModal) window.bjOpenNewlywedModal(); };
-          document.head.appendChild(s);
+      }
+      function onDragMove(e){
+        if (!dragState) return;
+        var t = e.touches ? e.touches[0] : e;
+        var dx = t.clientX - dragState.startX;
+        var dy = t.clientY - dragState.startY;
+        if (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD) dragState.moved = true;
+        if (dragState.moved) {
+          var newLeft = Math.max(8, Math.min(window.innerWidth - fab.offsetWidth - 8, dragState.origLeft + dx));
+          var newTop = Math.max(8, Math.min(window.innerHeight - fab.offsetHeight - 8, dragState.origTop + dy));
+          fab.style.setProperty('left', newLeft + 'px', 'important');
+          fab.style.setProperty('top', newTop + 'px', 'important');
+          fab.style.setProperty('bottom', 'auto', 'important');
+          fab.style.setProperty('right', 'auto', 'important');
         }
-        return false;
-      };
+      }
+      function onDragEnd(e){
+        if (!dragState) return;
+        if (dragState.moved) {
+          // 위치 저장
+          try {
+            localStorage.setItem('bjNwFabPos', JSON.stringify({ left: fab.style.left, top: fab.style.top }));
+          } catch(_){}
+        }
+        // 클릭으로 간주
+        if (dragState && !dragState.moved) {
+          if (typeof window.bjOpenNewlywedModal === 'function') {
+            window.bjOpenNewlywedModal();
+          } else if (!window.__bjNwLoading) {
+            window.__bjNwLoading = true;
+            var s = document.createElement('script');
+            s.src = modalJsUrl;
+            s.onload = function(){ if (window.bjOpenNewlywedModal) window.bjOpenNewlywedModal(); };
+            document.head.appendChild(s);
+          }
+        }
+        dragState = null;
+      }
+      fab.addEventListener('mousedown', onDragStart);
+      fab.addEventListener('touchstart', onDragStart, { passive: false });
+      document.addEventListener('mousemove', onDragMove);
+      document.addEventListener('touchmove', onDragMove, { passive: false });
+      document.addEventListener('mouseup', onDragEnd);
+      document.addEventListener('touchend', onDragEnd);
+
+      // 기본 click 차단 (드래그 핸들러가 처리)
+      fab.onclick = function(e){ e.preventDefault(); return false; };
+
+      // 저장된 위치 복원
+      try {
+        var saved = JSON.parse(localStorage.getItem('bjNwFabPos') || 'null');
+        if (saved && saved.left && saved.top) {
+          fab.style.setProperty('left', saved.left, 'important');
+          fab.style.setProperty('top', saved.top, 'important');
+          fab.style.setProperty('bottom', 'auto', 'important');
+        }
+      } catch(_){}
       fab.style.cssText = [
         'position:fixed','left:20px','bottom:20px','z-index:99998',
         'background:linear-gradient(135deg,#0838F8 0%,#1a87ac 100%)','color:#fff',
@@ -89,13 +146,14 @@
     [200, 600, 1500, 3000].forEach(function(d){ setTimeout(tryInject, d); });
   })();
 
-  // 모바일 카테고리 바 — 1열 가로 스와이프 + 좌측정렬 (모든 페이지 universal)
-  (function injectMobileCategoryCSS(){
+  // 모바일 universal CSS — 카테고리 바 + 헤더 햄버거 (룰북 #20·#21)
+  (function injectMobileUniversalCSS(){
     if (document.querySelector('#bj-mobile-cat-style')) return;
     var st = document.createElement('style');
     st.id = 'bj-mobile-cat-style';
     st.textContent = [
       '@media (max-width:768px){',
+      // (1) 카테고리 바 — 1열 좌측 스와이프
       '  .mobile__gnb .gnb__cateogry .category__wrap, .category__wrap{',
       '    display:flex !important; flex-wrap:nowrap !important;',
       '    overflow-x:auto !important; overflow-y:hidden !important;',
@@ -110,6 +168,25 @@
       '  .category__wrap::-webkit-scrollbar{display:none}',
       '  .category__wrap > a, .category__wrap > *{',
       '    flex:0 0 auto !important; white-space:nowrap !important;',
+      '  }',
+      // (2) 헤더 햄버거 + 로고 정렬 (룰북 #21)
+      '  .header__top{',
+      '    display:flex !important; align-items:center !important;',
+      '    padding:8px 12px !important; gap:0 !important;',
+      '    overflow:hidden !important;',
+      '  }',
+      '  .gnb__hamburger{',
+      '    margin-right:5px !important; flex:0 0 auto !important;',
+      '  }',
+      '  .hamburger__btn{display:none !important}',
+      '  .logo{ flex:0 1 auto !important; max-width:38vw !important; overflow:hidden !important; }',
+      '  .logo img{ max-width:100% !important; height:26px !important; object-fit:contain !important; }',
+      '  /* 우측 아이콘 그룹 shrink 허용 */',
+      '  ul#bj-header-icons{ flex:0 1 auto !important; min-width:0 !important; gap:6px !important; margin-left:auto !important; }',
+      // 협소(≤400px)
+      '  @media (max-width:400px){',
+      '    .logo{ max-width:32vw !important }',
+      '    .logo img{ height:24px !important }',
       '  }',
       '}',
     ].join('\n');
@@ -1042,10 +1119,23 @@
     }
 
     // (3) lptTable 데이터 채우기
-    //     (a) underlying admin이 데이터 제공하면 (rich tbody — rowspan 사용 가능)
-    //         → tbody 파싱해서 약정기간 + 최종 할인가만 추출, 2-col로 재렌더
-    //     (b) 비어있으면 .month_box.layer_price[id*="_price_of_"] data-attr로 fallback
     populateLptFromMonthBoxes();
+
+    // (3b) .card_sale (제휴카드 안내) 강제 펼침 — 카드별 할인 정보 가시화
+    var cs = document.querySelector('.card_sale');
+    if (cs && !cs.dataset.bjOpened) {
+      var ul = cs.querySelector('ul');
+      if (ul) ul.style.setProperty('display', 'block', 'important');
+      var closeBtn = cs.querySelector('.close_btn');
+      if (closeBtn) closeBtn.style.setProperty('display', 'none', 'important');
+      // 카드별 .li 항상 노출 + .on 자동 부여 (첫 번째)
+      var lis = cs.querySelectorAll('ul > li');
+      lis.forEach((li, i) => {
+        li.style.setProperty('display', 'block', 'important');
+        if (i === 0) li.classList.add('on');
+      });
+      cs.dataset.bjOpened = '1';
+    }
 
     // (4) PC 가격박스 .fix_price.hide-767 → .prod_name 다음으로 이동
     reorderFixPriceAfterProdName();
@@ -1097,7 +1187,9 @@
       var bg = '';
       if (needMgmtPrefix && e.mgmt === '방문관리') bg = 'background:#f5f6f8;';
       else if (needMgmtPrefix && e.mgmt === '자가관리') bg = 'background:#ffffff;';
-      var monthlyDisplay = e.monthly && e.monthly !== e.finalPrice ? e.monthly : '—';
+      // 월 렌탈료 항상 표시 — monthly=finalPrice면 finalPrice 값으로 동일 표시
+      // (10914처럼 카드할인 없는 경우 두 컬럼 같은 값 표시되어 직관적)
+      var monthlyDisplay = e.monthly || e.finalPrice || '—';
       rows +=
         '<tr data-bj-simple-row="1" style="border-bottom:0.5px solid #eee;' + bg + '">' +
           '<td style="display:none"></td>' +
