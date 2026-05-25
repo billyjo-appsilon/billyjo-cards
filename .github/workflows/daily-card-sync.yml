@@ -1,0 +1,57 @@
+name: Daily Card Sync
+
+# 매일 새벽 2시 KST (= 17:00 UTC 전날) 실행
+# 빌리조 카탈로그 변경 감지 → 신규 제품 카드 자동 생성·커밋
+on:
+  schedule:
+    - cron: '0 17 * * *'
+  workflow_dispatch:  # 수동 트리거 허용
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-chromium
+
+      - name: Install Playwright
+        run: |
+          npm install playwright
+          npx playwright install chromium --with-deps
+
+      - name: Run daily sync
+        run: node scripts/daily-sync.js
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+
+      - name: Commit & push if changed
+        run: |
+          git config user.name "billyjo-daily-sync[bot]"
+          git config user.email "billyjo-daily-sync@users.noreply.github.com"
+          git add cards/
+          if git diff --cached --quiet; then
+            echo "no changes — nothing to commit"
+          else
+            COUNT=$(git diff --cached --name-only -- 'cards/*.html' | wc -l | tr -d ' ')
+            git commit -m "auto: daily card sync $(date -u +%Y-%m-%d) — ${COUNT} cards updated/added"
+            git push
+          fi
