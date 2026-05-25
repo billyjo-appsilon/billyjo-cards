@@ -89,6 +89,41 @@
     [200, 600, 1500, 3000].forEach(function(d){ setTimeout(tryInject, d); });
   })();
 
+  // 모바일 카테고리 바 — 1열 가로 스와이프 + 좌측정렬 (모든 페이지 universal)
+  (function injectMobileCategoryCSS(){
+    if (document.querySelector('#bj-mobile-cat-style')) return;
+    var st = document.createElement('style');
+    st.id = 'bj-mobile-cat-style';
+    st.textContent = [
+      '@media (max-width:768px){',
+      '  .mobile__gnb .gnb__cateogry .category__wrap, .category__wrap{',
+      '    display:flex !important; flex-wrap:nowrap !important;',
+      '    overflow-x:auto !important; overflow-y:hidden !important;',
+      '    -webkit-overflow-scrolling:touch;',
+      '    scrollbar-width:none; -ms-overflow-style:none;',
+      '    justify-content:flex-start !important; align-items:center !important;',
+      '    padding:10px 16px 12px !important; gap:18px !important;',
+      '    white-space:nowrap !important; line-height:normal !important;',
+      '    height:auto !important; max-height:none !important;',
+      '    text-align:left !important;',
+      '  }',
+      '  .category__wrap::-webkit-scrollbar{display:none}',
+      '  .category__wrap > a, .category__wrap > *{',
+      '    flex:0 0 auto !important; white-space:nowrap !important;',
+      '  }',
+      '}',
+    ].join('\n');
+    (document.head || document.documentElement).appendChild(st);
+  })();
+  // head 없을 수도 있어서 DOMContentLoaded에서 재시도
+  document.addEventListener('DOMContentLoaded', function(){
+    if (document.querySelector('#bj-mobile-cat-style')) return;
+    var s2 = document.createElement('style');
+    s2.id = 'bj-mobile-cat-style';
+    s2.textContent = '@media (max-width:768px){.mobile__gnb .gnb__cateogry .category__wrap,.category__wrap{display:flex !important;flex-wrap:nowrap !important;overflow-x:auto !important;justify-content:flex-start !important;align-items:center !important;padding:10px 16px 12px !important;gap:18px !important;white-space:nowrap !important;height:auto !important}.category__wrap > *{flex:0 0 auto !important}}';
+    document.head.appendChild(s2);
+  });
+
   // 페이지 가드 — 제품 상세에서만 실행 (이하 prod_view 전용)
   if (!/\/html\/dh_prod\/prod_view\//.test(location.pathname)) return;
 
