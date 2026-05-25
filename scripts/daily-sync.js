@@ -305,14 +305,26 @@ function renderCard(pid, d, template) {
     log('Loading template...');
     const template = fs.readFileSync(TEMPLATE_PATH, 'utf-8');
 
-    let saved = 0, skipped = 0;
+    // 안전 가드: 기존 cards/{pid}.html이 hero refined 마커("hero refined")를 포함하면
+    // 절대 overwrite 안 함 (missing pid만 처리하므로 사실 발생 안 함 — 이중 안전망)
+    let saved = 0, skipped = 0, protectedFiles = 0;
     for (const pid of Object.keys(scraped)) {
       const d = scraped[pid];
       if (d.error || !d.name) { skipped++; log('skip ' + pid + ': ' + (d.error || 'no name')); continue; }
+      const outPath = path.join(CARDS_DIR, pid + '.html');
+      if (fs.existsSync(outPath)) {
+        const head = fs.readFileSync(outPath, 'utf-8').slice(0, 500);
+        if (/hero refined/.test(head)) {
+          protectedFiles++;
+          log('protect refined: ' + pid);
+          continue;
+        }
+      }
       const html = renderCard(pid, d, template);
-      fs.writeFileSync(path.join(CARDS_DIR, pid + '.html'), html);
+      fs.writeFileSync(outPath, html);
       saved++;
     }
+    log('protected: ' + protectedFiles);
     log('Saved: ' + saved + ' / Skipped: ' + skipped);
     log('=== Done ===');
   } finally {
