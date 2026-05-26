@@ -736,8 +736,9 @@
 
   /* (b) 하단 위젯 — CSS specificity 안전망 + 핸들 + 버튼 격상 */
   function forceFixedStyle(wrapper){
+    /* v0.5.3: display:block 강제 — billyjo underlying의 display:none override */
     wrapper.style.cssText = (wrapper.style.cssText || '') +
-      ';position:fixed!important;bottom:0!important;left:0!important;right:0!important;' +
+      ';display:block!important;position:fixed!important;bottom:0!important;left:0!important;right:0!important;' +
       'z-index:99999!important;margin:0!important;';
   }
 
