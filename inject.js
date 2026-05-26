@@ -1,5 +1,5 @@
 /*!
- * billyjo-detailcard v0.5.16 — 상세페이지 카드 클라이언트 패치
+ * billyjo-detailcard v0.5.17 — 상세페이지 카드 클라이언트 패치
  * https://github.com/billyjo-appsilon/billyjo-detailcard
  *
  * 적용 페이지: /html/dh_prod/prod_view/*  (제품 상세 페이지)
@@ -659,7 +659,10 @@
     '  50%{ transform:scale(1.03); box-shadow:0 0 0 4px rgba(220,38,38,0) }',
     '}',
     /* v0.5.15: 위젯 펼친 영역의 .bb-option-select 스타일 — 가독성·터치 영역 확보 */
-    '.bj-bb-inner-merged .bb-option-select{',
+    '.bj-bb-inner-merged .bb-option-select,',
+    '.bj-bb-inner-merged .option_select,',
+    '.bj-bar-fallback .bb-option-select,',
+    '.bj-bar-fallback .option_select{',
     '  width:100% !important; padding:11px 36px 11px 12px !important;',
     '  border:1px solid #dfdfdf !important; border-radius:8px !important;',
     '  font-size:13.5px !important; font-weight:600 !important;',
@@ -674,7 +677,10 @@
     '  box-shadow:0 0 0 0 rgba(8,56,248,0) !important;',
     '  transition:border-color 0.15s, box-shadow 0.15s;',
     '}',
-    '.bj-bb-inner-merged .bb-option-select:focus{',
+    '.bj-bb-inner-merged .bb-option-select:focus,',
+    '.bj-bb-inner-merged .option_select:focus,',
+    '.bj-bar-fallback .bb-option-select:focus,',
+    '.bj-bar-fallback .option_select:focus{',
     '  outline:none !important; border-color:#0838F8 !important;',
     '  box-shadow:0 0 0 3px rgba(8,56,248,0.15) !important;',
     '}',
@@ -1205,11 +1211,57 @@
     wrapper.dataset.bjBarEnhanced = '1';
   }
 
-  /* v0.5.15: 옵션 select를 핸들 옆에 미러링 + 옵션 변경 시 핸들 갱신.
-     옵션이 미선택이면 빨간 chip으로 표시 — 사용자 액션 유도. */
+  /* v0.5.15+v0.5.17: 옵션 select 처리 — 핸들 옆 chip 미러링 + 위젯에 select 노출.
+     selector: .bb-option-select (빌리조 동적 생성) + .option_select (페이지 원본)
+     wrapper 안에 없으면 페이지 내 visible select를 위젯에 클론 후 양방향 sync. */
   function syncOptionSelectToHandle(wrapper, handle){
-    var select = wrapper.querySelector('.bb-option-select');
-    if (!select) return;
+    var SEL = '.bb-option-select, .option_select';
+    var select = wrapper.querySelector(SEL);
+    if (!select) {
+      /* v0.5.17: wrapper 밖 visible select 찾아 클론 후 위젯에 삽입 */
+      var allSelects = document.querySelectorAll('.option_select, .bb-option-select');
+      var orig = null;
+      for (var i = 0; i < allSelects.length; i++) {
+        var s = allSelects[i];
+        if (wrapper.contains(s)) continue;
+        /* 빌리조 원본 sticky 위젯 안 (.prod_fix_wrap) select는 v0.5.11에서 숨겼지만 값/이벤트는 정상 — skip */
+        if (s.closest && s.closest('.prod_fix_wrap')) continue;
+        if (s.options && s.options.length > 1) { orig = s; break; }
+      }
+      if (!orig) return;
+      /* 클론 + 위젯 안 위치에 삽입 */
+      var cloneSelect = orig.cloneNode(true);
+      cloneSelect.classList.add('bb-option-select', 'bj-option-clone');
+      cloneSelect.removeAttribute('onchange');
+      cloneSelect.value = orig.value;
+      /* 양방향 sync */
+      cloneSelect.addEventListener('change', function(){
+        orig.value = cloneSelect.value;
+        try { orig.dispatchEvent(new Event('change', { bubbles: true })); } catch(_){}
+        /* 빌리조 onchange="option_selec(this.value)" 직접 호출 fallback */
+        if (typeof window.option_selec === 'function') {
+          try { window.option_selec(cloneSelect.value); } catch(_){}
+        }
+      });
+      orig.addEventListener('change', function(){
+        if (cloneSelect.value !== orig.value) {
+          cloneSelect.value = orig.value;
+          try { cloneSelect.dispatchEvent(new Event('change', { bubbles: true })); } catch(_){}
+        }
+      });
+      /* 삽입 위치: .bb-right-top > 맨 앞 (장바구니 버튼 위) 또는 fallback .bj-fb-btns 직전 */
+      var bbInner = wrapper.querySelector('.bb-inner');
+      var rightTop = bbInner && bbInner.querySelector('.bb-right-top');
+      if (rightTop) {
+        rightTop.insertBefore(cloneSelect, rightTop.firstChild);
+      } else {
+        var fb = wrapper.querySelector('.bj-bar-fallback');
+        var btns = fb && fb.querySelector('.bj-fb-btns');
+        if (btns) fb.insertBefore(cloneSelect, btns);
+        else if (fb) fb.appendChild(cloneSelect);
+      }
+      select = cloneSelect;
+    }
     var handleText = handle.querySelector('.bj-bar-handle-text');
     if (!handleText) return;
     /* 핸들 안 옵션 칩 ensure */
