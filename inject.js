@@ -947,20 +947,22 @@
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // 2.y) 하단 위젯 가시성 — AI 카드 통과 후 노출 + 탭 토글 (v0.4.3)
+  // 2.y) 하단 위젯 가시성 — AI 카드 완전 통과 후 노출 + 드래그 게스처 (v0.5.2)
   //
-  //   * 페이지에 #ai-card-root 있을 때만 활성. (없으면 기존대로 항상 노출)
-  //   * 초기 상태: 위젯 숨김 (.bj-bar-slide-hidden)
-  //   * 카드의 70% 이상이 viewport 위로 스크롤되면 자동 노출
-  //   * 위젯 영역 밖 화면 탭/클릭 → 가시성 토글 (사용자 명시적 숨김 의도)
-  //   * 사용자가 수동 숨겼다면, 다시 카드 영역으로 스크롤 올라가도 자동 노출 안 함
-  //     (의도 우선) — 위젯 영역 다시 탭하거나 카드 통과 후 외부 탭으로만 복귀
-  //   * 기존 chevron 펼침/접힘 동작은 보존 (max-height 토글)
+  //   * 페이지에 #ai-card-root 있을 때만 활성. 모든 제품에 동일 적용 (10914 한정 게이트 폐기)
+  //   * 트리거: AI 카드 bottom이 viewport top 위로 완전히 올라간 시점 (r.bottom < 0)
+  //     → "사용자가 카드를 끝까지 다 봤다"는 명확한 신호
+  //   * 한 번 노출되면 sticky — 스크롤 백업해도 자동으로 사라지지 않음
+  //     (사용자가 드래그·X 버튼·외부 탭으로만 명시적으로 닫음)
+  //   * 드래그 게스처 (.bj-bar-handle에 등록):
+  //     - 위로 드래그 ≥30px → 펼침 (.bj-bar-expanded)
+  //     - 아래로 드래그 ≥30px → 접기 (.bj-bar-collapsed)
+  //     - 더 아래로 드래그 ≥120px → 위젯 dismiss (slide-hidden)
+  //     - 작은 movement (<10px) → 탭으로 간주, 펼침/접힘 토글
+  //   * push (탭) — 접힘 상태에서 핸들 탭 시 펼침으로 복귀
   // ─────────────────────────────────────────────────────────────────────────
   function setupBottomBarVisibility(){
     if (window.__bjBarVisibilitySetup) return;
-    // 10914 한정 게이트: 새 트리거(lpt 통과) + 명시적 토글 — 승인 후 전제품 확대 예정.
-    var IS_TEST_PROD = /\/prod_view\/10914/.test(location.pathname);
 
     var wrapper = document.querySelector('#billyjo-bottom-bar') ||
                   document.querySelector('.prod_view_bot.card.mt40');
@@ -977,22 +979,23 @@
     }
     wrapper.classList.add('bj-bar-slide-hidden');
 
-    // 사용자 dismiss 영구 기록 (sessionStorage — 세션 동안만)
     var SESSION_KEY = 'bjBarDismissed_' + (location.pathname.match(/prod_view\/(\d+)/) || [,'unknown'])[1];
     var manualHide = (function(){ try { return sessionStorage.getItem(SESSION_KEY) === '1'; } catch(e){ return false; } })();
     var pastTrigger = false;
+    var shownOnce = false;  // sticky — 한 번 노출되면 자동 hide 안 함
 
     function evalScroll(){
-      // 새 트리거 (10914): #livePriceTable 통과
-      // 기존 트리거: #ai-card-root 통과
-      var target = IS_TEST_PROD ? (document.querySelector('#livePriceTable') || aiCard) : aiCard;
-      var r = target.getBoundingClientRect();
-      var threshold = window.innerHeight * 0.3;
-      pastTrigger = r.bottom < threshold;
+      var r = aiCard.getBoundingClientRect();
+      // 트리거: 카드 bottom이 viewport top 위로 완전히 올라감 (사용자가 카드 전체를 다 봄)
+      if (r.bottom < 0) {
+        pastTrigger = true;
+        shownOnce = true;
+      }
+      // sticky — 한 번 trigger 발동 후엔 스크롤 위치 무관하게 노출 상태 유지 (manualHide 우선)
       apply();
     }
     function apply(){
-      var show = pastTrigger && !manualHide;
+      var show = (pastTrigger || shownOnce) && !manualHide;
       if (show) {
         wrapper.classList.remove('bj-bar-slide-hidden');
         wrapper.classList.add('show');
@@ -1002,13 +1005,13 @@
         wrapper.style.setProperty('opacity', '1', 'important');
       } else {
         wrapper.classList.add('bj-bar-slide-hidden');
-        wrapper.style.setProperty('bottom', '-280px', 'important');
+        wrapper.style.setProperty('bottom', '-320px', 'important');
         wrapper.style.setProperty('pointer-events', 'none', 'important');
       }
     }
 
-    // 10914 한정: 명시적 X 버튼 (위젯 우측 상단 모서리에 dismiss)
-    if (IS_TEST_PROD && !wrapper.querySelector('.bj-bar-dismiss-x')) {
+    // 우측 상단 X 버튼 (영구 dismiss — 세션 동안 유지)
+    if (!wrapper.querySelector('.bj-bar-dismiss-x')) {
       var x = document.createElement('button');
       x.className = 'bj-bar-dismiss-x';
       x.type = 'button';
@@ -1030,7 +1033,10 @@
       wrapper.appendChild(x);
     }
 
-    // throttled scroll
+    // v0.5.2: 핸들 드래그 게스처
+    setupHandleDragGesture(wrapper);
+
+    // throttled scroll — 트리거 진입만 감지, 빠져나가도 hide 안 함 (sticky)
     var scrollPending = false;
     function onScroll(){
       if (scrollPending) return;
@@ -1043,21 +1049,87 @@
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll, { passive: true });
 
-    // body tap/click — 외부 탭 토글 (10914에서는 비활성 — X 버튼으로만 dismiss)
-    if (!IS_TEST_PROD) {
-      function onBodyTap(e){
-        if (!pastTrigger) return;
-        if (wrapper.contains(e.target)) return;
-        if (e.target.closest && e.target.closest('details, .help-pop, button, a, input, select, textarea, [role="button"]')) return;
-        manualHide = !manualHide;
-        apply();
+    evalScroll();  // 초기 평가
+  }
+
+  // v0.5.2: 핸들 드래그 — 위로/아래로 swipe로 펼침·접기·dismiss
+  function setupHandleDragGesture(wrapper){
+    var handle = wrapper.querySelector('.bj-bar-handle');
+    if (!handle || handle.dataset.bjDragSetup) return;
+    handle.dataset.bjDragSetup = '1';
+
+    var startY = null, startX = null, moved = false, dragOffset = 0;
+    var DRAG_TAP_THRESHOLD = 10;   // 이하면 탭으로 간주
+    var DRAG_TOGGLE_THRESHOLD = 30; // 이상이면 펼침/접기 전환
+    var DRAG_DISMISS_THRESHOLD = 120; // 아래로 이상이면 완전 dismiss
+
+    function isExpanded(){ return wrapper.classList.contains('bj-bar-expanded'); }
+
+    function onStart(e){
+      var t = e.touches ? e.touches[0] : e;
+      startY = t.clientY;
+      startX = t.clientX;
+      moved = false;
+      dragOffset = 0;
+      wrapper.style.setProperty('transition', 'none', 'important');
+    }
+    function onMove(e){
+      if (startY === null) return;
+      var t = e.touches ? e.touches[0] : e;
+      var dy = t.clientY - startY;
+      var dx = t.clientX - startX;
+      if (Math.abs(dy) > DRAG_TAP_THRESHOLD || Math.abs(dx) > DRAG_TAP_THRESHOLD) moved = true;
+      // 시각 피드백 — 아래로 드래그 시 위젯이 손가락 따라 따라옴 (제스처 응답성)
+      if (dy > 0) {
+        dragOffset = Math.min(dy, 200);
+        wrapper.style.setProperty('transform', 'translateY(' + dragOffset + 'px)', 'important');
+      } else {
+        wrapper.style.setProperty('transform', 'translateY(0)', 'important');
       }
-      document.addEventListener('click', onBodyTap);
-      document.addEventListener('touchend', onBodyTap, { passive: true });
-      wrapper.addEventListener('click', function(){ if (manualHide) { manualHide = false; apply(); }});
+      if (e.cancelable && Math.abs(dy) > DRAG_TAP_THRESHOLD) e.preventDefault();
+    }
+    function onEnd(e){
+      if (startY === null) return;
+      var t = e.changedTouches ? e.changedTouches[0] : e;
+      var dy = t.clientY - startY;
+      wrapper.style.removeProperty('transform');
+      wrapper.style.setProperty('transition',
+        'max-height 0.32s cubic-bezier(0.2,0.9,0.3,1), bottom 0.38s cubic-bezier(0.2,0.9,0.3,1)',
+        'important');
+
+      if (!moved || Math.abs(dy) < DRAG_TAP_THRESHOLD) {
+        // 탭으로 간주 — 펼침/접힘 토글
+        toggleExpanded();
+      } else if (dy <= -DRAG_TOGGLE_THRESHOLD) {
+        // 위로 드래그 → 펼침
+        wrapper.classList.remove('bj-bar-collapsed');
+        wrapper.classList.add('bj-bar-expanded');
+      } else if (dy >= DRAG_DISMISS_THRESHOLD) {
+        // 아래로 크게 드래그 → 완전 dismiss (다음 노출까지)
+        wrapper.classList.add('bj-bar-slide-hidden');
+        wrapper.style.setProperty('bottom', '-320px', 'important');
+        wrapper.style.setProperty('pointer-events', 'none', 'important');
+        try { sessionStorage.setItem(
+          'bjBarDismissed_' + (location.pathname.match(/prod_view\/(\d+)/) || [,'x'])[1], '1'); } catch(_){}
+      } else if (dy >= DRAG_TOGGLE_THRESHOLD) {
+        // 아래로 드래그 → 접기
+        wrapper.classList.add('bj-bar-collapsed');
+        wrapper.classList.remove('bj-bar-expanded');
+      }
+      startY = null; startX = null; moved = false;
+    }
+    function toggleExpanded(){
+      var collapsed = wrapper.classList.toggle('bj-bar-collapsed');
+      wrapper.classList.toggle('bj-bar-expanded', !collapsed);
     }
 
-    evalScroll();  // 초기 평가
+    handle.addEventListener('mousedown', onStart);
+    handle.addEventListener('touchstart', onStart, { passive: true });
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('mouseup', onEnd);
+    document.addEventListener('touchend', onEnd, { passive: true });
+    document.addEventListener('touchcancel', onEnd, { passive: true });
   }
 
   // ─────────────────────────────────────────────────────────────────────────
