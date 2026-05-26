@@ -1,5 +1,5 @@
 /*!
- * billyjo-detailcard v0.5.30 — 상세페이지 카드 클라이언트 패치
+ * billyjo-detailcard v0.5.31 — 상세페이지 카드 클라이언트 패치
  * https://github.com/billyjo-appsilon/billyjo-detailcard
  *
  * 적용 페이지: /html/dh_prod/prod_view/*  (제품 상세 페이지)
@@ -467,6 +467,8 @@
     '.prod_view_bot.card.mt40.bj-bar-collapsed .bj-ws-term-pills,',
     '.prod_view_bot.card.mt40.bj-bar-collapsed .bj-fb-info,',
     '.prod_view_bot.card.mt40.bj-bar-collapsed .bj-fb-btns,',
+    /* v0.5.31: 옵션 박스도 collapsed 시 hide (wrapper max-height:56px 잘림 방지) */
+    '.prod_view_bot.card.mt40.bj-bar-collapsed .bj-fb-option-box,',
     /* .bb-inner 자체도 숨김 (안에 .bb-product-name·.bb-months 등이 보일 수 있음) */
     '.prod_view_bot.card.mt40.bj-bar-collapsed .bb-inner,',
     '.prod_view_bot.card.mt40.bj-bar-collapsed .bb-right{',
@@ -592,14 +594,15 @@
     '  box-sizing:border-box !important;',
     '}',
     '.bj-ws-term-pills::-webkit-scrollbar{ display:none }',
-    /* v0.5.19: pill을 완전 1행 — period · price · eff 가로 배치 + 구분점 */
+    /* v0.5.19: pill을 완전 1행 — period · price 가로 배치 + 구분점
+       v0.5.31: padding/gap 축소로 가로 길이 컴팩트화 */
     '.bj-ws-term-pill{',
     '  flex:0 0 auto !important; min-width:auto !important;',
-    '  padding:5px 11px !important;',
+    '  padding:4px 8px !important;',
     '  background:#fafafa !important;',
     '  border:1px solid #dfdfdf !important; border-radius:999px !important;',
     '  display:inline-flex !important; flex-direction:row !important;',
-    '  align-items:center !important; gap:7px !important; cursor:pointer !important;',
+    '  align-items:center !important; gap:5px !important; cursor:pointer !important;',
     '  font-family:Pretendard,sans-serif !important;',
     '  transition:border-color 0.15s, background 0.15s !important;',
     '  white-space:nowrap;',
@@ -1425,26 +1428,20 @@
       optBox.appendChild(label);
       optBox.appendChild(cloneSelect);
 
-      /* v0.5.29: 삽입 위치 — 우선순위
-         (1) .bj-bar-fallback 있으면 그 안 .bj-fb-btns 앞 (라벨 박스로 명시 노출)
-         (2) .bb-inner 있는 페이지(18055 등 LG·코웨이 풀 위젯 케이스): .bb-inner 앞에
-             삽입 → 핸들 → 옵션 박스 → .bb-inner 순으로 가시 영역에 들어감.
-             wrapper.appendChild로 끝에 붙이면 .bb-inner의 overflow:auto + max-height
-             324px 다음 행에 위치해 wrapper의 380px max-height에 잘려 안 보임.
-         (3) 그 외 — wrapper 끝에 append */
-      var fb = wrapper.querySelector('.bj-bar-fallback');
-      var btns = fb && fb.querySelector('.bj-fb-btns');
-      if (btns) {
-        fb.insertBefore(optBox, btns);
-      } else if (fb) {
-        fb.appendChild(optBox);
+      /* v0.5.31: 삽입 위치 일원화 — 항상 handle 바로 다음 (wrapper 최상단의 visible 영역).
+         이전 .bb-inner 앞 분기는 .bb-inner가 wrapper 외부에 있는 케이스에서 동작 안 함.
+         handle 다음으로 통일하면 어떤 페이지 변종이든 가시 영역에 위치.
+         + inline style로 display/visibility 강제 — CSS 충돌 안전망. */
+      optBox.style.cssText = 'visibility:visible !important; opacity:1 !important;';
+      var handleEl = wrapper.querySelector(':scope > .bj-bar-handle');
+      if (handleEl) {
+        wrapper.insertBefore(optBox, handleEl.nextSibling);
       } else {
-        var bbInnerEl = wrapper.querySelector('.bb-inner');
-        if (bbInnerEl) {
-          wrapper.insertBefore(optBox, bbInnerEl);
-        } else {
-          wrapper.appendChild(optBox);
-        }
+        /* 핸들이 아직 없는 극단 케이스 — fallback 처리 */
+        var fb = wrapper.querySelector('.bj-bar-fallback');
+        var btns = fb && fb.querySelector('.bj-fb-btns');
+        if (btns) fb.insertBefore(optBox, btns);
+        else wrapper.insertBefore(optBox, wrapper.firstChild);
       }
       select = cloneSelect;
     }
@@ -1637,16 +1634,15 @@
       var termPills =
         '<div class="bj-ws-term-pills">' +
           sup.terms.map(function(t, i){
-            var monthly = t.price ? '월 ' + t.price + '원' : '문의';
-            /* 카드할인 적용가 — effective와 priceNum 차이 있을 때 보조 라벨 */
-            var hasCardDc = t.effective > 0 && t.effective < t.priceNum;
-            var effLabel = hasCardDc ? '<span class="bj-ws-term-eff">카드 월 ' + t.effective.toLocaleString() + '원</span>' : '';
+            /* v0.5.31: pill 컴팩트화 — "월 39,900원" → "39,900" (월/원 텍스트 제거,
+               헤더 라벨로 단위 추론). 카드할인 eff 라벨은 pill에서 제거 — active pill의
+               경우 핸들 가격(.bj-bar-handle-price)에 이미 노출되어 정보 중복. */
+            var monthly = t.price ? t.price : '문의';
             var bestBadge = t.isBest ? '<span class="bj-ws-best-badge">BEST</span>' : '';
             return '<button type="button" class="bj-ws-term-pill' + (i === state.termIdx ? ' active' : '') + (t.isBest ? ' is-best' : '') + '" data-i="' + i + '">' +
               bestBadge +
               '<span class="bj-ws-term-period">' + escapeWidgetHtml(t.month) + '</span>' +
               '<span class="bj-ws-term-price">' + escapeWidgetHtml(monthly) + '</span>' +
-              effLabel +
             '</button>';
           }).join('') +
         '</div>';
@@ -1880,43 +1876,53 @@
         'important');
       wrapper.dataset.bjBarTransition = '1';
     }
-    wrapper.classList.add('bj-bar-slide-hidden');
+    /* v0.5.31: 위젯이 페이지 진입 시부터 접힌 상태(collapsed)로 항상 노출.
+       이전 slide-hidden 초기값 폐기 — 사용자 핸들이 항상 보여야 다시 펼침 가능. */
+    wrapper.classList.remove('bj-bar-slide-hidden');
+    wrapper.classList.add('bj-bar-collapsed');
+    wrapper.classList.remove('bj-bar-expanded');
 
     var SESSION_KEY = 'bjBarDismissed_' + (location.pathname.match(/prod_view\/(\d+)/) || [,'unknown'])[1];
     var manualHide = (function(){ try { return sessionStorage.getItem(SESSION_KEY) === '1'; } catch(e){ return false; } })();
-    var showBar = false;
-
-    /* v0.5.16: bidirectional — AI 카드가 viewport에서 사라지면 show, 다시 나타나면 hide.
-       이전 sticky 방식(한 번 노출되면 영구)이 위로 스크롤 시 카드와 위젯 동시 노출되어
-       사용자가 거슬려함. 자연스러운 CTA UX: 카드를 보면 카드만, 카드 지나면 위젯 등장. */
+    /* v0.5.31: 트리거 의미 변경 — show/hide 결정 → expand/collapse 결정.
+       페이지 진입 시 항상 visible+collapsed. trigger 천이(oov ↔ inview) 시점에만
+       자동으로 expand/collapse 적용 (hysteresis). 사용자가 수동 토글한 후에는 다음
+       trigger 천이까지 사용자 결정이 유지됨. 사용자 명시적 dismiss는 핸들 ≥120px 드래그. */
+    var lastTriggerState = null; /* 'oov' | 'inview' | null */
     function evalScroll(){
       var r = aiCard.getBoundingClientRect();
-      var vh = window.innerHeight || document.documentElement.clientHeight;
-      /* 카드가 viewport에서 거의 사라짐 (bottom < 80px 여유) — 위젯 show */
       var cardOutOfView = r.bottom < 80;
-      /* 카드가 viewport에 충분히 들어옴 (bottom > 200px) — 위젯 hide */
       var cardInView = r.bottom > 200;
-      if (cardOutOfView) showBar = true;
-      else if (cardInView) showBar = false;
-      /* 중간 영역 (80px ~ 200px)에서는 직전 상태 유지 — 깜빡임 방지 hysteresis */
+      var newTrigger = null;
+      if (cardOutOfView) newTrigger = 'oov';
+      else if (cardInView) newTrigger = 'inview';
+      /* 천이가 일어났을 때만 자동 적용 — 그 사이엔 사용자 수동 토글 유지 */
+      if (newTrigger && newTrigger !== lastTriggerState) {
+        lastTriggerState = newTrigger;
+        if (newTrigger === 'oov') {
+          wrapper.classList.remove('bj-bar-collapsed');
+          wrapper.classList.add('bj-bar-expanded');
+        } else {
+          wrapper.classList.remove('bj-bar-expanded');
+          wrapper.classList.add('bj-bar-collapsed');
+        }
+      }
       apply();
     }
     function apply(){
-      var show = showBar && !manualHide;
-      /* v0.5.3: display:block 항상 강제 (billyjo underlying이 display:none 설정) */
       wrapper.style.setProperty('display', 'block', 'important');
-      if (show) {
-        wrapper.classList.remove('bj-bar-slide-hidden');
-        wrapper.classList.add('show');
-        wrapper.style.setProperty('bottom', '0', 'important');
-        wrapper.style.setProperty('pointer-events', 'auto', 'important');
-        wrapper.style.setProperty('visibility', 'visible', 'important');
-        wrapper.style.setProperty('opacity', '1', 'important');
-      } else {
+      if (manualHide) {
         wrapper.classList.add('bj-bar-slide-hidden');
         wrapper.style.setProperty('bottom', '-320px', 'important');
         wrapper.style.setProperty('pointer-events', 'none', 'important');
+        return;
       }
+      wrapper.classList.remove('bj-bar-slide-hidden');
+      wrapper.classList.add('show');
+      wrapper.style.setProperty('bottom', '0', 'important');
+      wrapper.style.setProperty('pointer-events', 'auto', 'important');
+      wrapper.style.setProperty('visibility', 'visible', 'important');
+      wrapper.style.setProperty('opacity', '1', 'important');
     }
 
     /* v0.5.27: 우측 상단 X 버튼 제거 — ▾ 토글과 기능 중복으로 사용자 혼란.
