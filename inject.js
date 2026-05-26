@@ -1,5 +1,5 @@
 /*!
- * billyjo-detailcard v0.5.20 — 상세페이지 카드 클라이언트 패치
+ * billyjo-detailcard v0.5.21 — 상세페이지 카드 클라이언트 패치
  * https://github.com/billyjo-appsilon/billyjo-detailcard
  *
  * 적용 페이지: /html/dh_prod/prod_view/*  (제품 상세 페이지)
@@ -2352,6 +2352,51 @@
     });
   }
 
+  /* v0.5.21: 외부 .bb-inner 영구 감시 — 빌리조 main inject.js가 페이지 로드 후 늦게,
+     혹은 스크롤 트리거로 .bb-inner를 wrapper 밖 또는 늦게 생성하는 케이스 대응.
+     enhanceBottomBar 가드(dataset.bjBarEnhanced)로 1회만 실행되는 한계 우회. */
+  function hideExternalBbInner(){
+    var wrapper = document.querySelector('.prod_view_bot.card.mt40');
+    document.querySelectorAll('.bb-inner').forEach(function(inner){
+      if (wrapper && wrapper.contains(inner)) return; /* wrapper 안은 격상 대상 */
+      if (inner.getAttribute('data-bj-extra-hidden') === '1') return; /* 이미 처리 */
+      inner.style.setProperty('display', 'none', 'important');
+      inner.style.setProperty('visibility', 'hidden', 'important');
+      inner.setAttribute('data-bj-extra-hidden', '1');
+    });
+  }
+  function watchForBbInner(){
+    if (window.__bjBbInnerWatched) return;
+    window.__bjBbInnerWatched = true;
+    hideExternalBbInner();
+    if (!window.MutationObserver) return;
+    /* 영구 옵저버 — disconnect 안 함. 콜백은 lightweight (.bb-inner만 체크) */
+    var obs = new MutationObserver(function(mutations){
+      var hasNewBbInner = false;
+      for (var i = 0; i < mutations.length; i++) {
+        var m = mutations[i];
+        if (m.type !== 'childList') continue;
+        for (var j = 0; j < m.addedNodes.length; j++) {
+          var n = m.addedNodes[j];
+          if (n.nodeType !== 1) continue;
+          if (n.classList && n.classList.contains('bb-inner')) { hasNewBbInner = true; break; }
+          if (n.querySelector && n.querySelector('.bb-inner')) { hasNewBbInner = true; break; }
+        }
+        if (hasNewBbInner) break;
+      }
+      if (hasNewBbInner) {
+        hideExternalBbInner();
+        /* wrapper 안에 들어온 .bb-inner면 enhanceBottomBar 재실행 trigger
+           (v0.5.14 idempotent 분기가 fallback 제거 + 격상 재실행) */
+        var wrapper = document.querySelector('.prod_view_bot.card.mt40');
+        if (wrapper && wrapper.querySelector('.bb-inner:not(.bj-bb-inner-merged)')) {
+          try { enhanceBottomBar(); } catch(e){}
+        }
+      }
+    });
+    try { obs.observe(document.body, { childList: true, subtree: true }); } catch(e){}
+  }
+
   /* v0.5.20: 업소용 카테고리 노출 — main inject.js가 hide한 prod_list/10-1153을 복원 +
      라벨 "업소용·창업" → "업소용"으로 단축. */
   function showBusinessCategory(){
@@ -2403,6 +2448,8 @@
     injectNewlywedGnb();
     removeOriginalStickyWidget();
     showBusinessCategory();
+    hideExternalBbInner();    /* v0.5.21: 매 호출마다 외부 .bb-inner 즉시 숨김 */
+    watchForBbInner();        /* v0.5.21: 영구 옵저버 설치 (한 번만) */
   }
 
   injectCSS();      // CSS 즉시 — head 있으면
