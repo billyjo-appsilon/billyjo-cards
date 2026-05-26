@@ -26,9 +26,8 @@
 (function(){
   'use strict';
 
-  // 모든 페이지 universal: 신혼부부 패키지 floating badge.
-  // (prod_view 가드 BEFORE 실행하여 메인·카테고리·기타 페이지에서도 노출)
-  (function injectNewlywedFloatingEverywhere(){
+  // v0.5.1: 신혼부부 패키지 — 플로팅 fab 폐기, 상단 카테고리바(.category__wrap)에 항목 추가.
+  (function injectNewlywedInCategoryBar(){
     function getCommit(){
       try {
         var src = (document.currentScript && document.currentScript.src) || '';
@@ -43,103 +42,37 @@
       } catch(e) { return 'main'; }
     }
     function tryInject(){
-      if (document.querySelector('.bj-newlywed-floating')) return;
-      if (!document.body) return;
+      /* 기존 floating fab이 있으면 제거 (v0.5.0 잔재 정리) */
+      var old = document.querySelector('.bj-newlywed-floating');
+      if (old) old.remove();
+      /* 이미 카테고리바에 삽입됐으면 skip */
+      if (document.querySelector('.bj-newlywed-cat')) return;
+      var wrap = document.querySelector('.mobile__gnb .gnb__cateogry .category__wrap, .category__wrap');
+      if (!wrap) return;
+
       var commit = getCommit();
       var modalJsUrl = 'https://cdn.jsdelivr.net/gh/billyjo-appsilon/billyjo-detailcard@' + commit + '/landing/newlywed.js';
-      var fab = document.createElement('a');
-      fab.className = 'bj-newlywed-floating';
-      fab.href = '#';
 
-      // 드래그 가능 + click vs drag 구분 (drag threshold 5px)
-      var dragState = null;  // {startX,startY,origLeft,origBottom,moved}
-      var DRAG_THRESHOLD = 5;
-      function onDragStart(e){
-        var t = e.touches ? e.touches[0] : e;
-        var rect = fab.getBoundingClientRect();
-        dragState = {
-          startX: t.clientX, startY: t.clientY,
-          origLeft: rect.left, origTop: rect.top,
-          moved: false,
-        };
+      var link = document.createElement('a');
+      link.className = 'bj-newlywed-cat';
+      link.href = '#';
+      link.innerHTML = '<span style="margin-right:3px">💍</span>신혼부부 패키지';
+      /* 다른 카테고리 항목과 동일 시각, 단 브랜드 파랑 강조 */
+      link.style.cssText = 'flex:0 0 auto;display:inline-flex;align-items:center;padding:2px 0;font:700 13px Pretendard,sans-serif;color:#0838F8;text-decoration:none;background:transparent;border:0;white-space:nowrap;cursor:pointer;line-height:1.4';
+      link.onclick = function(e){
         e.preventDefault();
-      }
-      function onDragMove(e){
-        if (!dragState) return;
-        var t = e.touches ? e.touches[0] : e;
-        var dx = t.clientX - dragState.startX;
-        var dy = t.clientY - dragState.startY;
-        if (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD) dragState.moved = true;
-        if (dragState.moved) {
-          var newLeft = Math.max(8, Math.min(window.innerWidth - fab.offsetWidth - 8, dragState.origLeft + dx));
-          var newTop = Math.max(8, Math.min(window.innerHeight - fab.offsetHeight - 8, dragState.origTop + dy));
-          fab.style.setProperty('left', newLeft + 'px', 'important');
-          fab.style.setProperty('top', newTop + 'px', 'important');
-          fab.style.setProperty('bottom', 'auto', 'important');
-          fab.style.setProperty('right', 'auto', 'important');
+        if (typeof window.bjOpenNewlywedModal === 'function') {
+          window.bjOpenNewlywedModal();
+        } else if (!window.__bjNwLoading) {
+          window.__bjNwLoading = true;
+          var s = document.createElement('script');
+          s.src = modalJsUrl;
+          s.onload = function(){ if (window.bjOpenNewlywedModal) window.bjOpenNewlywedModal(); };
+          document.head.appendChild(s);
         }
-      }
-      function onDragEnd(e){
-        if (!dragState) return;
-        if (dragState.moved) {
-          // 위치 저장
-          try {
-            localStorage.setItem('bjNwFabPos', JSON.stringify({ left: fab.style.left, top: fab.style.top }));
-          } catch(_){}
-        }
-        // 클릭으로 간주
-        if (dragState && !dragState.moved) {
-          if (typeof window.bjOpenNewlywedModal === 'function') {
-            window.bjOpenNewlywedModal();
-          } else if (!window.__bjNwLoading) {
-            window.__bjNwLoading = true;
-            var s = document.createElement('script');
-            s.src = modalJsUrl;
-            s.onload = function(){ if (window.bjOpenNewlywedModal) window.bjOpenNewlywedModal(); };
-            document.head.appendChild(s);
-          }
-        }
-        dragState = null;
-      }
-      fab.addEventListener('mousedown', onDragStart);
-      fab.addEventListener('touchstart', onDragStart, { passive: false });
-      document.addEventListener('mousemove', onDragMove);
-      document.addEventListener('touchmove', onDragMove, { passive: false });
-      document.addEventListener('mouseup', onDragEnd);
-      document.addEventListener('touchend', onDragEnd);
-
-      // 기본 click 차단 (드래그 핸들러가 처리)
-      fab.onclick = function(e){ e.preventDefault(); return false; };
-
-      // 저장된 위치 복원
-      try {
-        var saved = JSON.parse(localStorage.getItem('bjNwFabPos') || 'null');
-        if (saved && saved.left && saved.top) {
-          fab.style.setProperty('left', saved.left, 'important');
-          fab.style.setProperty('top', saved.top, 'important');
-          fab.style.setProperty('bottom', 'auto', 'important');
-        }
-      } catch(_){}
-      fab.style.cssText = [
-        'position:fixed','left:20px','bottom:20px','z-index:99998',
-        'background:linear-gradient(135deg,#0838F8 0%,#1a87ac 100%)','color:#fff',
-        'padding:12px 18px','border-radius:24px',
-        'font-family:Pretendard,sans-serif','font-size:14px','font-weight:700',
-        'text-decoration:none','box-shadow:0 6px 20px rgba(8,56,248,0.35)',
-        'display:inline-flex','align-items:center','gap:6px',
-        'transition:transform 0.2s,box-shadow 0.2s',
-        'cursor:pointer','letter-spacing:-0.2px',
-      ].join(';');
-      fab.innerHTML = '<span style="font-size:16px">💍</span>신혼부부 패키지';
-      fab.onmouseenter = function(){ fab.style.transform = 'translateY(-2px)'; fab.style.boxShadow = '0 8px 24px rgba(8,56,248,0.45)'; };
-      fab.onmouseleave = function(){ fab.style.transform = 'translateY(0)'; fab.style.boxShadow = '0 6px 20px rgba(8,56,248,0.35)'; };
-      document.body.appendChild(fab);
-      if (!document.querySelector('#bj-newlywed-style')) {
-        var st = document.createElement('style');
-        st.id = 'bj-newlywed-style';
-        st.textContent = '@media (max-width:600px){.bj-newlywed-floating{left:12px !important;bottom:80px !important;padding:9px 13px !important;font-size:12.5px !important}}';
-        document.head.appendChild(st);
-      }
+      };
+      /* 첫 번째 위치에 삽입 (좌측 정렬, 가장 먼저 보이도록) */
+      wrap.insertBefore(link, wrap.firstChild);
     }
     if (document.readyState !== 'loading') tryInject();
     document.addEventListener('DOMContentLoaded', tryInject);
@@ -153,17 +86,25 @@
     st.id = 'bj-mobile-cat-style';
     st.textContent = [
       '@media (max-width:768px){',
-      // (1) 카테고리 바 — 1열 좌측 스와이프
+      // (0) v0.5.1: 카테고리바 위 여백 제거 — .mobile__gnb·.gnb__cateogry 자체 margin/padding 0
+      '  .mobile__gnb, .mobile__gnb .gnb__cateogry{',
+      '    margin-top:0 !important; padding-top:0 !important;',
+      '  }',
+      '  .mobile__gnb .gnb__cateogry nav{',
+      '    margin-top:0 !important; padding-top:0 !important;',
+      '  }',
+      // (1) 카테고리 바 — 1열 좌측 스와이프 (위 여백 6→2px 압축)
       '  .mobile__gnb .gnb__cateogry .category__wrap, .category__wrap{',
       '    display:flex !important; flex-wrap:nowrap !important;',
       '    overflow-x:auto !important; overflow-y:hidden !important;',
       '    -webkit-overflow-scrolling:touch;',
       '    scrollbar-width:none; -ms-overflow-style:none;',
       '    justify-content:flex-start !important; align-items:center !important;',
-      '    padding:10px 16px 12px !important; gap:18px !important;',
+      '    padding:4px 16px 8px !important; gap:18px !important;',
       '    white-space:nowrap !important; line-height:normal !important;',
       '    height:auto !important; max-height:none !important;',
       '    text-align:left !important;',
+      '    margin-top:0 !important;',
       '  }',
       '  .category__wrap::-webkit-scrollbar{display:none}',
       '  .category__wrap > a, .category__wrap > *{',
@@ -177,6 +118,22 @@
       '  }',
       '  header .gnb__hamburger.gnb__hamburger, body .gnb__hamburger{',
       '    margin-right:5px !important; flex:0 0 auto !important;',
+      '    width:26px !important; height:22px !important;',
+      '    position:relative !important; cursor:pointer; padding:0 !important;',
+      '    background:none !important; border:0 !important;',
+      '  }',
+      // v0.5.1: 햄버거 3줄 강제 — billyjo 기본 아이콘이 2줄로 잘려보이는 문제 해결.
+      // 기존 ::before/::after/배경 모두 무력화 후 3개 line을 box-shadow stack으로 그림.
+      '  header .gnb__hamburger.gnb__hamburger > *, body .gnb__hamburger > *{ display:none !important }',
+      '  header .gnb__hamburger.gnb__hamburger::before, body .gnb__hamburger::before{',
+      '    content:""; display:block !important;',
+      '    position:absolute !important; left:3px !important; top:4px !important;',
+      '    width:20px !important; height:2.5px !important;',
+      '    background:#222 !important; border-radius:2px !important;',
+      '    box-shadow:0 7px 0 #222, 0 14px 0 #222 !important;',
+      '  }',
+      '  header .gnb__hamburger.gnb__hamburger::after, body .gnb__hamburger::after{',
+      '    content:none !important; display:none !important;',
       '  }',
       '  .hamburger__btn{display:none !important}',
       '  header .logo.logo, body .logo{ flex:0 1 auto !important; max-width:38vw !important; overflow:hidden !important; }',
@@ -1325,9 +1282,9 @@
     mountLptIntoCard(entries);
   }
 
-  /* v0.5.0: AI 카드 SLOT 8(#ai-card-lpt-mount)에 약정·카드 할인가 표 mount.
-     조건: 어느 한 행이라도 monthly !== finalPrice (실제 카드 할인 적용) → 표 노출.
-     모든 행이 monthly === finalPrice면 카드 할인 없는 제품 → 섹션 hidden 유지. */
+  /* v0.5.1: LPT를 AI 카드 SLOT 8에 **항상** mount. 카드할인 유무에 관계없이 노출.
+     본문 #livePriceTable은 mount 성공 시 hide → 카드 내부만 단일 출처.
+     사용자 룰북 v0.5.1: "위생관리·카드 할인가 모두 자동생성 카드 내부에 포함되어야 함". */
   function mountLptIntoCard(entries){
     var section = document.getElementById('ai-card-lpt-section');
     var mount = document.getElementById('ai-card-lpt-mount');
@@ -1338,7 +1295,6 @@
     var hasDiscount = entries.some(function(e){
       return e.monthly && e.finalPrice && digits(e.monthly) !== digits(e.finalPrice);
     });
-    if (!hasDiscount) { section.hidden = true; return; }
 
     /* mount 안에 컴팩트 표 직접 생성 (#livePriceTable DOM 이동 대신 복제) — 본문 LPT는 그대로 두고
        카드 내부에 독립 인스턴스. underlying 재렌더와 충돌 없음. */
@@ -1362,19 +1318,41 @@
         '</tr>';
     }).join('');
 
+    /* 카드할인이 있는 경우 3컬럼 (약정/월렌탈료/카드할인가),
+       없는 경우 2컬럼 (약정/월렌탈료) — 컬럼 헤더도 동적 */
+    var headerCols = hasDiscount
+      ? '<th style="padding:9px 8px;text-align:center;font-weight:600">약정기간</th>' +
+        '<th style="padding:9px 8px;text-align:center;font-weight:600">월 렌탈료</th>' +
+        '<th style="padding:9px 8px;text-align:center;font-weight:600">카드 할인가</th>'
+      : '<th style="padding:9px 8px;text-align:center;font-weight:600">약정기간</th>' +
+        '<th style="padding:9px 8px;text-align:center;font-weight:600">월 렌탈료</th>';
+    if (!hasDiscount) {
+      /* 2컬럼 모드 — final 컬럼 제거하고 monthly만 강조 */
+      rows = entries.map(function(e){
+        var termText = needMgmtPrefix && e.mgmt ? '[' + e.mgmt + '] ' + e.term : e.term;
+        var monthly = e.monthly || e.finalPrice || '—';
+        return '<tr style="border-bottom:0.5px solid #eee">' +
+          '<td style="padding:10px 8px;text-align:center;font-weight:600;font-size:13px">' + escapeHtml(termText) + '</td>' +
+          '<td style="padding:10px 8px;text-align:center;color:#0838f8;font-weight:700;font-size:14px">' + escapeHtml(monthly) + '</td>' +
+          '</tr>';
+      }).join('');
+    }
+
     mount.innerHTML =
       '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">' +
-        '<table style="width:100%;min-width:280px;border-collapse:collapse;font-family:Pretendard,sans-serif;background:#fff;border-radius:8px;overflow:hidden;border:1px solid #e5e8ee">' +
-          '<thead><tr style="background:#0838f8;color:#fff;font-size:12px">' +
-            '<th style="padding:9px 8px;text-align:center;font-weight:600">약정기간</th>' +
-            '<th style="padding:9px 8px;text-align:center;font-weight:600">월 렌탈료</th>' +
-            '<th style="padding:9px 8px;text-align:center;font-weight:600">카드 할인가</th>' +
-          '</tr></thead>' +
+        '<table style="width:100%;min-width:240px;border-collapse:collapse;font-family:Pretendard,sans-serif;background:#fff;border-radius:8px;overflow:hidden;border:1px solid #e5e8ee">' +
+          '<thead><tr style="background:#0838f8;color:#fff;font-size:12px">' + headerCols + '</tr></thead>' +
           '<tbody>' + rows + '</tbody>' +
         '</table>' +
       '</div>';
     section.hidden = false;
     section.dataset.bjLptMounted = '1';
+
+    /* v0.5.1: 본문 #livePriceTable 숨김 — 카드 내부 SLOT 8이 단일 출처가 되도록 */
+    var bodyLpt = document.getElementById('livePriceTable');
+    if (bodyLpt && bodyLpt.id !== mount.id) {
+      bodyLpt.style.setProperty('display', 'none', 'important');
+    }
   }
 
   function escapeHtml(s){
@@ -1469,40 +1447,33 @@
   //       이 함수는 prod_view에서 fab 존재 보장 차원의 fallback)
   // ─────────────────────────────────────────────────────────────────────────
   function injectNewlywedGnb(){
-    // body에 직접 floating badge 추가 — underlying 스크립트가 GNB를 wipe해도
-    // body에 있는 우리 element는 영향 안 받음. 모든 페이지 우측 하단 고정 노출.
-    if (document.querySelector('.bj-newlywed-floating')) return;
-    if (!document.body) return;
+    // v0.5.1: 플로팅 fab 폐기 — 카테고리바(.category__wrap)에 직접 link 추가.
+    // 기존 .bj-newlywed-floating 잔재 있으면 제거.
+    var stale = document.querySelector('.bj-newlywed-floating');
+    if (stale) stale.remove();
+    /* 카테고리바 항목은 위쪽 injectNewlywedInCategoryBar IIFE가 처리 — 재호출 트리거만 */
+    var wrap = document.querySelector('.mobile__gnb .gnb__cateogry .category__wrap, .category__wrap');
+    if (!wrap || wrap.querySelector('.bj-newlywed-cat')) return;
     var commit = getOwnCommitHash();
-    var url = 'https://cdn.jsdelivr.net/gh/billyjo-appsilon/billyjo-detailcard@' + commit + '/landing/newlywed.html';
-    var fab = document.createElement('a');
-    fab.className = 'bj-newlywed-floating';
-    fab.href = url;
-    fab.target = '_blank';
-    fab.rel = 'noopener';
-    fab.style.cssText = [
-      'position:fixed','left:20px','bottom:20px','z-index:99998',
-      'background:linear-gradient(135deg,#0838F8 0%,#1a87ac 100%)','color:#fff',
-      'padding:12px 18px','border-radius:24px',
-      'font-family:Pretendard,sans-serif','font-size:14px','font-weight:700',
-      'text-decoration:none','box-shadow:0 6px 20px rgba(8,56,248,0.35)',
-      'display:inline-flex','align-items:center','gap:6px',
-      'transition:transform 0.2s,box-shadow 0.2s',
-      'cursor:pointer','letter-spacing:-0.2px',
-    ].join(';');
-    fab.innerHTML = '<span style="font-size:16px">💍</span>신혼부부 패키지';
-    fab.onmouseenter = function(){ fab.style.transform = 'translateY(-2px)'; fab.style.boxShadow = '0 8px 24px rgba(8,56,248,0.45)'; };
-    fab.onmouseleave = function(){ fab.style.transform = 'translateY(0)'; fab.style.boxShadow = '0 6px 20px rgba(8,56,248,0.35)'; };
-    document.body.appendChild(fab);
-
-    // 모바일에서는 좌측 하단 + 작은 크기 (위쪽 widget 핸들과 겹치지 않게)
-    var mediaQuery = '@media (max-width:600px){.bj-newlywed-floating{left:12px !important;bottom:80px !important;padding:9px 13px !important;font-size:12.5px !important}}';
-    if (!document.querySelector('#bj-newlywed-style')) {
-      var st = document.createElement('style');
-      st.id = 'bj-newlywed-style';
-      st.textContent = mediaQuery;
-      document.head.appendChild(st);
-    }
+    var modalJsUrl = 'https://cdn.jsdelivr.net/gh/billyjo-appsilon/billyjo-detailcard@' + commit + '/landing/newlywed.js';
+    var link = document.createElement('a');
+    link.className = 'bj-newlywed-cat';
+    link.href = '#';
+    link.innerHTML = '<span style="margin-right:3px">💍</span>신혼부부 패키지';
+    link.style.cssText = 'flex:0 0 auto;display:inline-flex;align-items:center;padding:2px 0;font:700 13px Pretendard,sans-serif;color:#0838F8;text-decoration:none;background:transparent;border:0;white-space:nowrap;cursor:pointer;line-height:1.4';
+    link.onclick = function(e){
+      e.preventDefault();
+      if (typeof window.bjOpenNewlywedModal === 'function') {
+        window.bjOpenNewlywedModal();
+      } else if (!window.__bjNwLoading) {
+        window.__bjNwLoading = true;
+        var s = document.createElement('script');
+        s.src = modalJsUrl;
+        s.onload = function(){ if (window.bjOpenNewlywedModal) window.bjOpenNewlywedModal(); };
+        document.head.appendChild(s);
+      }
+    };
+    wrap.insertBefore(link, wrap.firstChild);
   }
 
   function runAll(){

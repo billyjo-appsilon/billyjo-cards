@@ -347,6 +347,30 @@
 
     **접근성**: `role="button"` + `tabindex="0"` + Enter/Space 키보드 지원 + aria-label. chevron은 `aria-hidden`. 본문 가림 방지를 위한 body padding은 위젯 펼침 max-height와 무관하게 80px 고정 (펼침 시에도 본문 끝이 위젯 위로 잘 보이도록 사용자가 스크롤).
 
+27. **SLOT 6·8 카드 내부 의무화 (v0.5.1 신설)**: 모든 SLOT(특히 SLOT 6 Step 1·2·3 + SLOT 8 LPT)은 **반드시 `#ai-card-root` 내부**에 렌더링되어야 한다. 카드 외부 누출 금지 사항:
+
+    **(A) SLOT 6 누출 방지** — daily-sync.js 생성 카드 + 수동 작성 모두 적용:
+    - 각 Step은 `<!-- step-N-start --> ... <!-- step-N-end -->` 앵커 주석으로 감싸기 (N=1,2,3)
+    - 정규식 교체 시 `[\\s\\S]*?</details>` 비-탐욕 anchor 금지 (내부 `<details class="help">`·`<details class="spec-detail-toggle">`에서 끊김). 반드시 `<!-- step-N-end -->` 앵커로 종료
+    - `<details class="step-details">` 안에 `<summary>` 다음으로 `<div class="field">`만 둘 것. 추가 `<details>` 중첩 시 anchor 주석 반드시 사용
+    - 신규 카드 작성·기존 카드 fix 모두 `scripts/template-base.html`을 표준 골격으로 사용
+
+    **(B) SLOT 8 약정·카드 할인가 — 카드 내부 항상 노출**:
+    - 카드 할인 유무에 **관계없이** 항상 SLOT 8 (`#ai-card-lpt-section`) 노출
+    - 카드 할인 있음(`monthly !== finalPrice`): 3컬럼 표 (약정기간 / 월 렌탈료 / 카드 할인가 + 절감액 -원 마크)
+    - 카드 할인 없음: 2컬럼 표 (약정기간 / 월 렌탈료)
+    - 본문 `#livePriceTable`은 카드 내부 mount 성공 시 `display:none` — **단일 출처(카드 내부) 원칙**
+    - inject.js `mountLptIntoCard()`가 `populateLptFromMonthBoxes` 마지막에 자동 호출
+
+    **(C) 일괄 fix 도구**: 기존 카드의 누출 구조는 `scripts/fix-cards.js` 일회성 실행으로 anchor-comment 구조 + SLOT 8 placeholder 일괄 주입. v0.5.0 이전 카드는 모두 이 도구로 갱신 완료(2026-05-26 fix-cards 3,222개).
+
+28. **상단 카테고리바 + 신혼부부 패키지 (v0.5.1)**: 사이트 전역 promotion 항목(예: 신혼부부 패키지)은 **플로팅 fab 금지**, **`.category__wrap` 상단 카테고리바 첫 항목으로 삽입**.
+    - 클래스: `.bj-newlywed-cat` (다른 promotion도 `.bj-{name}-cat` 패턴)
+    - 스타일: 다른 카테고리 항목과 동일 폰트/높이, 단 브랜드 파랑(`#0838F8`) + Bold(700)로 강조
+    - 클릭 시 modal open (`window.bjOpenNewlywedModal()` 또는 동적 로드)
+    - 카테고리바 위 여백 `padding-top` 압축 (10px → 4px)으로 빈 공간 최소화
+    - 햄버거 아이콘 `.gnb__hamburger`는 3줄 보장 (CSS `::before` + `box-shadow` 3줄 stack으로 빌리조 기본 2줄 아이콘 덮어쓰기)
+
 26. **ⓘ 도움말 툴팁 (`.help-pop`) 전역 사양 (v0.5.0 신설)**: 카드 어디든 — 룰 #14 스펙 그리드, rental-terms, hero, 본문 그 어디서든 — `<details class="help">` + `.help-pop` 패턴으로 만든 추가 설명문은 다음 두 가지를 **반드시** 보장한다:
 
     **(A) 어떤 viewport에서도 화면 밖으로 나가지 않을 것**
