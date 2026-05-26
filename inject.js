@@ -499,6 +499,57 @@
     /* bb-inner padding 조정 */
     '.prod_view_bot.card.mt40 .bb-inner{ padding:14px 18px 16px !important }',
 
+    /* v0.5.4: 핸들+bb-inner 병합 — bb-inner를 단일 column 레이아웃으로 재구성 */
+    '.prod_view_bot.card.mt40 .bb-inner.bj-bb-inner-merged{',
+    '  display:flex !important; flex-direction:column !important;',
+    '  gap:12px !important; padding:14px 18px 18px !important;',
+    '}',
+    /* bb-left·bb-right column 폐기 — 단일 column flex로 통합 */
+    '.bj-bb-inner-merged .bb-left, .bj-bb-inner-merged .bb-right{',
+    '  display:contents !important;',
+    '}',
+    /* 약정 pill 행 — 가로 배치, 클릭형 카드 */
+    '.bj-bb-inner-merged .bb-months{',
+    '  display:flex !important; gap:8px !important; flex-wrap:wrap !important;',
+    '  margin:0 !important;',
+    '}',
+    '.bj-bb-inner-merged .bb-month-pill{',
+    '  flex:1 1 0 !important; min-width:120px !important;',
+    '  padding:10px 12px !important;',
+    '  border:1px solid #dfdfdf !important; border-radius:10px !important;',
+    '  background:#fafafa !important;',
+    '  display:flex !important; flex-direction:column !important;',
+    '  align-items:center !important; gap:2px !important; cursor:pointer !important;',
+    '  transition:border-color 0.15s, background 0.15s !important;',
+    '}',
+    '.bj-bb-inner-merged .bb-month-pill:hover,',
+    '.bj-bb-inner-merged .bb-month-pill.active{',
+    '  border-color:#0838F8 !important; background:#eff3ff !important;',
+    '}',
+    '.bj-bb-inner-merged .bb-month-period{ font-size:11px; color:#666; font-weight:500 }',
+    '.bj-bb-inner-merged .bb-month-price{ font-size:14px; font-weight:700; color:#0838F8 }',
+    /* 버튼 행 — 3버튼 가로 균등 분배 */
+    '.bj-bb-inner-merged .bb-right-top{',
+    '  display:flex !important; gap:8px !important; margin:0 !important;',
+    '  width:100% !important;',
+    '}',
+    '.bj-bb-inner-merged .bb-right-top .bb-btn{',
+    '  flex:1 1 0 !important; min-width:0 !important;',
+    '  justify-content:center !important;',
+    '}',
+    /* 장바구니는 비교적 좁게 */
+    '.bj-bb-inner-merged .bb-right-top .bb-btn-cart{ flex:0 0 auto !important; min-width:84px !important }',
+    /* 모바일 ≤600px — 약정 pill·버튼 폰트 축소 */
+    '@media (max-width:600px){',
+    '  .bj-bb-inner-merged{ padding:12px 14px 14px !important; gap:10px !important }',
+    '  .bj-bb-inner-merged .bb-month-pill{ padding:8px 10px !important; min-width:100px !important }',
+    '  .bj-bb-inner-merged .bb-month-period{ font-size:10.5px }',
+    '  .bj-bb-inner-merged .bb-month-price{ font-size:13px }',
+    '  .bj-bb-inner-merged .bb-right-top{ gap:6px !important }',
+    '  .bj-bb-inner-merged .bb-right-top .bb-btn{ font-size:12px !important; padding:9px 8px !important }',
+    '  .bj-bb-inner-merged .bb-right-top .bb-btn-cart{ min-width:68px !important }',
+    '}',
+
     /* 렌탈+사은품 신청 버튼 */
     '.bb-btn-rent.bj-btn-rent-gift{',
     '  background:#0838F8 !important; color:#fff !important;',
@@ -750,19 +801,22 @@
     wrapper.classList.add('bj-bar-expanded');
 
     var bbInner = wrapper.querySelector('.bb-inner');
-    var prodName, priceEl;
+    var prodName, priceEl, firstMonthPill;
     if (bbInner) {
       prodName = bbInner.querySelector('.bb-product-name');
-      priceEl  = bbInner.querySelector('.bb-price') || bbInner.querySelector('.bb-month-pill .bb-month-price');
+      firstMonthPill = bbInner.querySelector('.bb-month-pill .bb-month-price');
+      priceEl  = bbInner.querySelector('.bb-price') || firstMonthPill;
     }
-    var nameText  = (prodName && prodName.textContent.trim()) ||
-                    (document.querySelector('.prod_name b') && document.querySelector('.prod_name b').textContent.trim()) ||
-                    '렌탈 신청';
+    /* v0.5.4: 핸들 텍스트는 brand prefix("세스코 - ", "쿠쿠 - " 등) 제거하여 모델명만 노출 */
+    var rawName = (prodName && prodName.textContent.trim()) ||
+                  (document.querySelector('.prod_name b') && document.querySelector('.prod_name b').textContent.trim()) ||
+                  '렌탈 신청';
+    var nameText = rawName.replace(/^[가-힣A-Za-z0-9]+\s*[-·]\s*/, '');
     var priceText = (priceEl && priceEl.textContent.trim()) ||
                     (document.querySelector('.top_min_price b') && '월 ' + document.querySelector('.top_min_price b').textContent.trim() + '원') ||
                     '';
 
-    // 핸들 삽입
+    // v0.5.4: 핸들 = 제품명 + 최저가 (bb-inner와의 중복 정보 통합 — 핸들이 단일 출처)
     var handle = document.createElement('div');
     handle.className = 'bj-bar-handle';
     handle.setAttribute('role', 'button');
@@ -770,12 +824,25 @@
     handle.setAttribute('tabindex', '0');
     handle.innerHTML =
       '<div class="bj-bar-handle-text">' +
-        '<span>' + nameText + '</span>' +
+        '<span class="bj-bar-handle-name">' + nameText + '</span>' +
         (priceText ? '<span class="bj-bar-handle-price">' + priceText + '</span>' : '') +
       '</div>' +
       '<button type="button" class="bj-bar-handle-toggle" aria-label="펼치기/접기">' +
         '<span class="bj-bar-chevron">▾</span>' +
       '</button>';
+
+    /* v0.5.4: bb-inner 내부 중복 요소 숨김 — 핸들이 이미 표시.
+       - .bb-product-name: 핸들의 name과 중복
+       - .bb-right-bottom: "월 렌탈료 -" 라벨, 핸들의 price와 중복 (가격은 펼침 시 .bb-months에서 약정별 표시)
+       남는 요소: .bb-months (약정별 pill — 펼침 시 메인 콘텐츠) + .bb-right-top (버튼 3개) */
+    if (bbInner) {
+      var pn = bbInner.querySelector('.bb-product-name');
+      if (pn) pn.style.setProperty('display', 'none', 'important');
+      var rb = bbInner.querySelector('.bb-right-bottom');
+      if (rb) rb.style.setProperty('display', 'none', 'important');
+      /* bb-inner 자체를 단일 column flex로 — 약정 pill 윗줄, 버튼 행 아랫줄 */
+      bbInner.classList.add('bj-bb-inner-merged');
+    }
 
     function toggle(){
       var collapsed = wrapper.classList.toggle('bj-bar-collapsed');
