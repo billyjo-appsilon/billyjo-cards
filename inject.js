@@ -93,8 +93,10 @@
       '  .mobile__gnb .gnb__cateogry nav{',
       '    margin-top:0 !important; padding-top:0 !important;',
       '  }',
-      // (1) 카테고리 바 — 1열 좌측 스와이프 (위 여백 6→2px 압축)
-      '  .mobile__gnb .gnb__cateogry .category__wrap, .category__wrap{',
+      // (1) v0.5.9: 카테고리 바 — .category__wrap + 신규 .bj-sh-cat 모두 1행 가로 스와이프 강제
+      //     모바일에서 어떤 경우에도 전체 펼침/멀티라인 금지
+      '  .mobile__gnb .gnb__cateogry .category__wrap, .category__wrap,',
+      '  .bj-sh-cat, body .bj-sh-cat, header .bj-sh-cat{',
       '    display:flex !important; flex-wrap:nowrap !important;',
       '    overflow-x:auto !important; overflow-y:hidden !important;',
       '    -webkit-overflow-scrolling:touch;',
@@ -106,6 +108,21 @@
       '    text-align:left !important;',
       '    margin-top:0 !important;',
       '  }',
+      '  .bj-sh-cat::-webkit-scrollbar{ display:none !important }',
+      '  .bj-sh-cat > a{',
+      '    flex:0 0 auto !important; display:inline-block !important;',
+      '    white-space:nowrap !important;',
+      '    padding:2px 0 !important; margin:0 !important;',
+      '    font-size:13px !important; font-weight:500 !important;',
+      '    color:#555 !important; text-decoration:none !important;',
+      '    background:transparent !important; border:0 !important; border-radius:0 !important;',
+      '    line-height:1.4 !important;',
+      '  }',
+      '  .bj-sh-cat > a:hover{ color:#0838F8 !important }',
+      '  .bj-sh-cat > a.on{',
+      '    color:#0838F8 !important; font-weight:800 !important; position:relative !important;',
+      '  }',
+      '  .bj-sh-cat > a:first-child{ color:#0838F8 !important; font-weight:700 !important }',  /* 신혼부부 패키지 강조 */
       '  .category__wrap::-webkit-scrollbar{display:none}',
       '  .category__wrap > a, .category__wrap > *{',
       '    flex:0 0 auto !important; white-space:nowrap !important;',
@@ -1286,23 +1303,26 @@
   /* (d) v0.3.9: .category__wrap 자동 스크롤 정렬 — 활성(.on)이 보이는 영역 안에 오게,
        없으면 좌측(scrollLeft:0) 고정. 좌측 정렬 유지 (가운데 정렬 금지). */
   function alignCategoryScroll(){
-    var wrap = document.querySelector('.mobile__gnb .gnb__cateogry .category__wrap');
-    if (!wrap || wrap.dataset.bjCatAligned) return;
-    var active = wrap.querySelector('a.on');
-    if (active) {
-      var wrapRect = wrap.getBoundingClientRect();
-      var aRect = active.getBoundingClientRect();
-      var leftEdge = 20;
-      var rightEdge = wrap.clientWidth - 32;
-      if (aRect.right - wrapRect.left > rightEdge) {
-        wrap.scrollLeft = (aRect.left - wrapRect.left) - leftEdge;
-      } else if (aRect.left - wrapRect.left < leftEdge) {
+    /* v0.5.9: .category__wrap + 신규 .bj-sh-cat 두 컨테이너 모두 처리 */
+    var wraps = document.querySelectorAll('.mobile__gnb .gnb__cateogry .category__wrap, .bj-sh-cat');
+    wraps.forEach(function(wrap){
+      if (!wrap || wrap.dataset.bjCatAligned) return;
+      var active = wrap.querySelector('a.on');
+      if (active) {
+        var wrapRect = wrap.getBoundingClientRect();
+        var aRect = active.getBoundingClientRect();
+        var leftEdge = 20;
+        var rightEdge = wrap.clientWidth - 32;
+        if (aRect.right - wrapRect.left > rightEdge) {
+          wrap.scrollLeft = (aRect.left - wrapRect.left) - leftEdge;
+        } else if (aRect.left - wrapRect.left < leftEdge) {
+          wrap.scrollLeft = 0;
+        }
+      } else {
         wrap.scrollLeft = 0;
       }
-    } else {
-      wrap.scrollLeft = 0;
-    }
-    wrap.dataset.bjCatAligned = '1';
+      wrap.dataset.bjCatAligned = '1';
+    });
   }
 
   /* (e) v0.3.8: 약정 기간·의무 사용 기간 라벨에 ⓘ 툴팁 동적 주입 (실서버에서 AI 카드 HTML에
