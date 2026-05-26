@@ -347,6 +347,23 @@
 
     **접근성**: `role="button"` + `tabindex="0"` + Enter/Space 키보드 지원 + aria-label. chevron은 `aria-hidden`. 본문 가림 방지를 위한 body padding은 위젯 펼침 max-height와 무관하게 80px 고정 (펼침 시에도 본문 끝이 위젯 위로 잘 보이도록 사용자가 스크롤).
 
+26. **ⓘ 도움말 툴팁 (`.help-pop`) 전역 사양 (v0.5.0 신설)**: 카드 어디든 — 룰 #14 스펙 그리드, rental-terms, hero, 본문 그 어디서든 — `<details class="help">` + `.help-pop` 패턴으로 만든 추가 설명문은 다음 두 가지를 **반드시** 보장한다:
+
+    **(A) 어떤 viewport에서도 화면 밖으로 나가지 않을 것**
+    - 데스크탑(≥901px): `position:absolute`이라도 `max-width:min(280px, calc(100vw - 24px)) !important` + `box-sizing:border-box` 필수
+    - **좁은 화면(≤900px, 모바일+태블릿+landscape 포함)**: 무조건 `position:fixed; left:12px; right:12px; bottom:96px; transform:none; width:auto; max-width:none` viewport bottom-sheet로 전환 (이전 v0.3.5의 `≤600px` 한정 → v0.5.0에서 ≤900px로 확대 — 601~900px 좁은 태블릿/landscape에서 새던 버그 해결)
+    - selector는 `#ai-card-root` 스코프에 한정하지 말 것 — **`.help-pop` 글로벌 selector 필수** (다른 위치/스코프 외부 인스턴스도 동일 룰 적용)
+
+    **(B) 닫힘 트리거 4종 모두 지원**
+    1. ⓘ summary 다시 클릭 (네이티브 details 토글)
+    2. **화면의 아무 영역 클릭/탭** — `document.addEventListener('click', ..., true)` + `'touchstart'` capture phase 동시 등록, `details.help[open]` 글로벌 selector로 외부 클릭 시 모두 닫힘
+    3. 다른 `.help`가 열릴 때 — 기존 열린 것 자동 닫힘 (1개만 열림 보장)
+    4. **ESC 키** — 접근성, 키보드 사용자 대응
+
+    setupHelpClose()는 `#ai-card-root` 스코프 한정 금지. 모든 `details.help`를 글로벌로 다뤄야 rental-terms·hero 등 어디서든 동작한다. inject.js v0.5.0+ 이후 표준 패턴이며 신규 ⓘ 추가 시 별도 JS 작업 불필요(이벤트 위임 구조).
+
+    **모바일 sheet에는 닫기 안내 ::after 필수**: `content:"화면 아무 곳을 눌러도 닫혀요"` — 사용자가 닫는 방법을 모르는 일 방지.
+
 ## 카테고리 라우팅
 
 신규 제품은 14개 패밀리 중 하나로 분류한 뒤 `docs/rulebook.md`의 해당 섹션을 따른다.

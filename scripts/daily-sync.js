@@ -20,7 +20,8 @@ const path = require('path');
 
 const REPO_ROOT = path.resolve(__dirname, '..');
 const CARDS_DIR = path.join(REPO_ROOT, 'cards');
-const TEMPLATE_PATH = path.join(CARDS_DIR, '10914.html');
+// v0.5.0: 템플릿을 생성물(cards/10914.html)에서 분리 — 한 번 망가져도 누적 전파 안 됨
+const TEMPLATE_PATH = path.join(REPO_ROOT, 'scripts', 'template-base.html');
 
 // 카테고리 prod_list URLs (메인 1depth, 2depth는 site map에서 동적 발견)
 const CATEGORY_SEED = [
@@ -234,10 +235,72 @@ function renderCard(pid, d, template) {
       '<div class="feat-btns"><span class="feat-btn">브랜드</span><span class="feat-btn">A/S</span><span class="feat-btn">내구성</span></div>' +
     '</div>';
 
-  function stepBlock(n, title, letter) {
-    return '<div class="step-h"><span class="step-n">' + n + '</span><span class="step-title">' + title + '</span><span class="grade-badge ' + classOf(letter) + '" style="margin-left:auto">' + labelOf(letter) + '<small>' + letter + '</small></span></div>' +
-           '<div class="step-sum">표준 ' + title + ' — 카테고리 기본 기능 만족 (상세는 본문 참조)</div>' +
-           '<details class="step-details"><summary>자세히 보기</summary><div class="field"><div class="field-l">기본 특징</div><div class="pills"><span class="pill on">기본 기능</span></div></div></details>';
+  // F01 정수기 — 패밀리별 Step 필드 정의
+  function f01StepFields(stepIdx, specs) {
+    // 빌리조 본사 page 스펙에서 키워드 매칭으로 활성 pill 선택
+    function pickOn(values, pool) {
+      const matched = new Set();
+      const blob = (Object.values(specs).join(' ') + ' ' + (specs['기능'] || '') + ' ' + (specs['타입'] || '')).toLowerCase();
+      pool.forEach(p => { if (blob.includes(p.toLowerCase())) matched.add(p); });
+      return values.map(v => matched.has(v) ? { v, on: true } : { v, on: false });
+    }
+    function pillsHtml(items) {
+      return items.map(i => '<span class="pill' + (i.on ? ' on' : '') + '">' + escapeHtml(i.v) + '</span>').join('');
+    }
+    if (stepIdx === 0) {
+      // 정수성능: 출수 종류 + 필터 종류 + 필터 단계
+      const outputs = pickOn(['냉수', '온수', '정수', '얼음', '살균수'], ['냉수', '온수', '정수', '얼음', '살균']);
+      const filterTypes = pickOn(['RO 역삼투압', 'UF 중공사막', '나노필터'], ['RO', '역삼투압', '중공사막', 'UF', '나노']);
+      const filterStages = pickOn(['1단', '2단', '3단', '4단+'], specs['필터단계'] ? [specs['필터단계']] : ['4단']);
+      return '<div class="field"><div class="field-l">출수 종류</div><div class="pills">' + pillsHtml(outputs) + '</div></div>' +
+             '<div class="field"><div class="field-l">필터 종류</div><div class="pills">' + pillsHtml(filterTypes) + '</div></div>' +
+             '<div class="field"><div class="field-l">필터 단계</div><div class="pills">' + pillsHtml(filterStages) + '</div></div>';
+    }
+    if (stepIdx === 1) {
+      // 위생관리: 살균 방식 + 위생 기능 + 저수조 재질
+      const sterilize = pickOn(['UV 살균', '자동살균', '고온살균', '전해수', '평가없음'], ['UV', '자동살균', '고온', '전해']);
+      const hygiene = pickOn(['분리세척 코크', '무빙코크', '자동잔수비움'], ['분리세척', '무빙', '잔수']);
+      const tank = pickOn(['스테인리스', '트라이탄', 'PP 항균', '직수형'], ['스테인리스', '트라이탄', 'PP', '항균', '직수']);
+      return '<div class="field"><div class="field-l">살균 방식</div><div class="pills">' + pillsHtml(sterilize) + '</div></div>' +
+             '<div class="field"><div class="field-l">위생 기능</div><div class="pills">' + pillsHtml(hygiene) + '</div></div>' +
+             '<div class="field"><div class="field-l">저수조 재질</div><div class="pills">' + pillsHtml(tank) + '</div></div>';
+    }
+    // step 2 (편의기능): 정량출수 + IoT + 알림
+    const convenience = pickOn(['정량출수', '필터교환알림', 'IoT 앱', '맞춤출수', '자가진단'], ['정량', '교환알림', 'IoT', '앱', '맞춤', '자가진단']);
+    const display = pickOn(['LED 디스플레이', 'OLED 디스플레이', '터치패널'], ['LED', 'OLED', '터치']);
+    return '<div class="field"><div class="field-l">편의 기능</div><div class="pills">' + pillsHtml(convenience) + '</div></div>' +
+           '<div class="field"><div class="field-l">디스플레이</div><div class="pills">' + pillsHtml(display) + '</div></div>';
+  }
+
+  // 패밀리 fallback — 일반 카테고리는 spec 키-값 그대로 pill로 노출
+  function genericStepFields(stepIdx, specs) {
+    const keys = Object.keys(specs).filter(k => specs[k] && specs[k].length < 40);
+    // step별로 3개씩 spec 분배 — 단, 첫 3개는 hero/spec grid에서 이미 노출되므로 다음 것부터
+    const start = 3 + stepIdx * 3;
+    const slice = keys.slice(start, start + 3);
+    if (slice.length === 0) {
+      return '<div class="field"><div class="field-l">주요 특징</div><div class="pills"><span class="pill on">기본 기능</span></div></div>';
+    }
+    return slice.map(k =>
+      '<div class="field"><div class="field-l">' + escapeHtml(k) + '</div><div class="pills"><span class="pill on">' + escapeHtml(specs[k]) + '</span></div></div>'
+    ).join('');
+  }
+
+  function stepBlock(n, title, letter, specs, family) {
+    const stepIdx = n - 1;
+    const fields = family === 'F01' ? f01StepFields(stepIdx, specs) : genericStepFields(stepIdx, specs);
+    const gradeClass = classOf(letter);
+    const gradeHtml = letter
+      ? '<span class="grade-badge ' + gradeClass + '" style="margin-left:auto">' + labelOf(letter) + '<small>' + letter + '</small></span>'
+      : '<span class="g-d" style="margin-left:auto">평가 없음</span>';
+    return '<!-- step-' + n + '-start -->\n' +
+           '            <div class="step-h"><span class="step-n">' + n + '</span><span class="step-title">' + escapeHtml(title) + '</span>' + gradeHtml + '</div>\n' +
+           '            <div class="step-sum">표준 ' + escapeHtml(title) + ' — 카테고리 기본 기능 만족 (상세는 본문 참조)</div>\n' +
+           '            <details class="step-details">\n' +
+           '              <summary>자세히 보기</summary>\n' +
+           '              ' + fields + '\n' +
+           '            </details>\n' +
+           '            <!-- step-' + n + '-end -->';
   }
 
   const chips =
@@ -275,9 +338,18 @@ function renderCard(pid, d, template) {
     '<div class="strengths">' + chips + '</div>');
   html = html.replace(/<div class="persona">[\s\S]*?<\/div>\s*\n\s*<\/div>\s*\n\s*<!-- SLOT 6/,
     '<div class="persona">\n              ' + personasHtml + '\n            </div>\n          </div>\n\n          <!-- SLOT 6');
+  // v0.5.0: 앵커 주석 기반 정규식으로 step block 교체 — 비-탐욕 종료가 내부 <details>에서 끊기던 버그 차단.
+  // template-base.html에는 <!-- step-N-start -->...<!-- step-N-end --> 구조.
+  // {{STEP_N_TITLE}} placeholder도 함께 치환.
   [1, 2, 3].forEach((n, i) => {
-    const block = stepBlock(n, titles[i], i === 0 ? perfLetter : i === 1 ? hygieneLetter : convLetter);
-    html = html.replace(new RegExp('<div class="step-h"><span class="step-n">' + n + '[\\s\\S]*?</details>'), block);
+    const stepLetter = i === 0 ? perfLetter : i === 1 ? hygieneLetter : convLetter;
+    const block = stepBlock(n, titles[i], stepLetter, d.specs, family);
+    html = html.replace(
+      new RegExp('<!-- step-' + n + '-start -->[\\s\\S]*?<!-- step-' + n + '-end -->'),
+      block
+    );
+    // {{STEP_N_TITLE}} placeholder 잔여물 제거 (replace 안 됐을 경우 안전망)
+    html = html.replace(new RegExp('{{STEP_' + n + '_TITLE}}', 'g'), titles[i]);
   });
 
   return html;

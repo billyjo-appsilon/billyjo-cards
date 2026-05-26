@@ -671,13 +671,17 @@
     '  #ai-card-root .gift-tag{ font-size:11.5px !important }',
     '}',
 
-    /* === v0.3.5: .help-pop ⓘ 툴팁 모바일 sheet 전환 + 외부 탭 자동 닫힘 === */
-    '#ai-card-root .help-pop{',
-    '  max-width:calc(100vw - 32px) !important;',
+    /* === v0.5.0: .help-pop ⓘ 툴팁 — 전 페이지 어디서든 viewport 안에 들어오게 강제 ===
+       (이전 v0.3.5는 #ai-card-root 스코프 한정 + max-width:600px만 sheet 전환 → 601~900px에서 새는 문제 해결) */
+    /* 데스크탑(≥901px) — absolute 위치 유지하되 viewport 폭에 안전하게 clamp */
+    '.help-pop, #ai-card-root .help-pop{',
+    '  max-width:min(280px, calc(100vw - 24px)) !important;',
     '  word-break:keep-all;',
+    '  box-sizing:border-box !important;',
     '}',
-    '@media (max-width:600px){',
-    '  #ai-card-root .help-pop{',
+    /* 좁은 화면(≤900px) — 항상 viewport bottom-sheet로 전환 (이전 600px → 900px 확대) */
+    '@media (max-width:900px){',
+    '  .help-pop, #ai-card-root .help-pop{',
     '    position:fixed !important;',
     '    left:12px !important; right:12px !important;',
     '    top:auto !important; bottom:96px !important;',
@@ -690,8 +694,8 @@
     '    z-index:100000 !important;',
     '    animation:bjHelpPopIn 0.2s ease-out;',
     '  }',
-    '  #ai-card-root .help[open] .help-pop::after{',
-    '    content:"ⓘ 아이콘을 다시 누르면 닫힙니다";',
+    '  .help[open] .help-pop::after, #ai-card-root .help[open] .help-pop::after{',
+    '    content:"화면 아무 곳을 눌러도 닫혀요";',
     '    display:block;',
     '    margin-top:10px; padding-top:10px;',
     '    border-top:0.5px dashed #dfdfdf;',
@@ -871,24 +875,36 @@
     if (wrapper) forceFixedStyle(wrapper);
   }
 
-  /* (c) v0.3.5: .help (ⓘ 툴팁) 외부 탭 자동 닫힘 + 1개만 열림 보장 */
+  /* (c) v0.5.0: .help (ⓘ 툴팁) 외부 탭 자동 닫힘 — 전 페이지 어디든 details.help 모두 적용
+       이전 v0.3.5는 #ai-card-root 스코프만 잡아서 rental-terms·기타 영역에서 안 닫히는 버그 해결.
+       click(capture)·touchstart(capture) 동시 등록 — 모바일 탭 즉시 반응. */
   function setupHelpClose(){
     if (window.__bjHelpCloseSetup) return;
     window.__bjHelpCloseSetup = true;
-    document.addEventListener('click', function(e){
-      var opened = document.querySelectorAll('#ai-card-root details.help[open]');
+    function closeOutside(e){
+      var opened = document.querySelectorAll('details.help[open]');
       opened.forEach(function(d){
         if (!d.contains(e.target)) d.removeAttribute('open');
       });
-    }, true);
+    }
+    document.addEventListener('click', closeOutside, true);
+    document.addEventListener('touchstart', closeOutside, { capture: true, passive: true });
     document.addEventListener('toggle', function(e){
       var t = e.target;
       if (t && t.tagName === 'DETAILS' && t.classList.contains('help') && t.open) {
-        document.querySelectorAll('#ai-card-root details.help[open]').forEach(function(d){
+        document.querySelectorAll('details.help[open]').forEach(function(d){
           if (d !== t) d.removeAttribute('open');
         });
       }
     }, true);
+    /* ESC 키로도 닫기 (접근성) */
+    document.addEventListener('keydown', function(e){
+      if (e.key === 'Escape') {
+        document.querySelectorAll('details.help[open]').forEach(function(d){
+          d.removeAttribute('open');
+        });
+      }
+    });
   }
 
   /* (d) v0.3.9: .category__wrap 자동 스크롤 정렬 — 활성(.on)이 보이는 영역 안에 오게,
