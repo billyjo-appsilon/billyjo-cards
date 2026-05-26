@@ -1,5 +1,5 @@
 /*!
- * billyjo-detailcard v0.5.27 — 상세페이지 카드 클라이언트 패치
+ * billyjo-detailcard v0.5.28 — 상세페이지 카드 클라이언트 패치
  * https://github.com/billyjo-appsilon/billyjo-detailcard
  *
  * 적용 페이지: /html/dh_prod/prod_view/*  (제품 상세 페이지)
@@ -1240,7 +1240,9 @@
       var collapsed = wrapper.classList.toggle('bj-bar-collapsed');
       wrapper.classList.toggle('bj-bar-expanded', !collapsed);
     }
-    handle.addEventListener('click', toggle);
+    /* v0.5.28: click 핸들러 제거 — setupHandleDragGesture의 mouseup/touchend 탭 분기가
+       이미 toggle을 호출함. 두 핸들러 동시 등록 시 사용자 클릭마다 두 번 토글되어
+       원래 상태로 되돌아옴 → "펼침 버튼이 안 보임" 버그. keydown만 유지. */
     handle.addEventListener('keydown', function(e){
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
     });
@@ -1346,8 +1348,10 @@
      selector: .bb-option-select (빌리조 동적 생성) + .option_select (페이지 원본)
      wrapper 안에 없으면 페이지 내 visible select를 위젯에 클론 후 양방향 sync. */
   function syncOptionSelectToHandle(wrapper, handle){
-    var SEL = '.bb-option-select, .option_select';
-    var select = wrapper.querySelector(SEL);
+    /* v0.5.28: 가드를 .bj-option-clone 한정으로 좁힘 — 빌리조의 .bb-option-select가
+       .bb-inner 안에 hidden/압축 상태로 있을 수 있어, 그것을 "이미 있다"고 판단하면
+       사용자 가시 박스가 만들어지지 않음. 우리 자체 clone(.bj-option-clone)만 신뢰. */
+    var select = wrapper.querySelector('.bj-option-clone');
     if (!select) {
       /* v0.5.17: wrapper 밖 visible select 찾아 클론 후 위젯에 삽입 */
       var allSelects = document.querySelectorAll('.option_select, .bb-option-select');
@@ -1404,15 +1408,18 @@
       optBox.appendChild(label);
       optBox.appendChild(cloneSelect);
 
-      var bbInner = wrapper.querySelector('.bb-inner');
-      var rightTop = bbInner && bbInner.querySelector('.bb-right-top');
-      if (rightTop) {
-        rightTop.insertBefore(cloneSelect, rightTop.firstChild);
+      /* v0.5.28: 삽입 위치 일원화 — 항상 라벨+select optBox로 fallback에 삽입.
+         이전: .bb-inner > .bb-right-top 분기로 optBox 없이 cloneSelect만 삽입 →
+         사용자가 "옵션 선택" 라벨을 못 보고, button 3개 사이에 압축돼 안 보임. */
+      var fb = wrapper.querySelector('.bj-bar-fallback');
+      var btns = fb && fb.querySelector('.bj-fb-btns');
+      if (btns) {
+        fb.insertBefore(optBox, btns);
+      } else if (fb) {
+        fb.appendChild(optBox);
       } else {
-        var fb = wrapper.querySelector('.bj-bar-fallback');
-        var btns = fb && fb.querySelector('.bj-fb-btns');
-        if (btns) fb.insertBefore(optBox, btns);
-        else if (fb) fb.appendChild(optBox);
+        /* .bj-bar-fallback도 없는 극단 케이스 — wrapper 마지막 자식으로 삽입 */
+        wrapper.appendChild(optBox);
       }
       select = cloneSelect;
     }
@@ -2505,14 +2512,15 @@
     });
   }
 
-  /* v0.5.27: 옵션 select 강제 보장 — 페이지에 .option_select 있고 우리 위젯에 없으면
-     매 runAll 사이클마다 syncOptionSelectToHandle 재실행. 옵션 있는 제품에서 반드시 노출. */
+  /* v0.5.28: 옵션 select 강제 보장 (v0.5.27 가드 강화) — 우리가 만든 .bj-option-clone이
+     wrapper 안에 있는 경우만 skip. 빌리조가 .bb-inner 안에 만든 .bb-option-select는
+     hidden/압축 케이스가 있으므로 무시하고 별도 라벨 박스로 명시 노출. */
   function ensureOptionSelect(){
     var wrapper = document.querySelector('.prod_view_bot.card.mt40');
     if (!wrapper) return;
-    /* 이미 위젯 안에 select 있으면 skip */
-    if (wrapper.querySelector('.bb-option-select, .option_select, .bj-option-clone')) return;
-    /* 페이지에 visible .option_select 있는지 빠르게 체크 */
+    /* 우리가 이미 만든 옵션 박스가 있으면 skip (idempotent) */
+    if (wrapper.querySelector('.bj-fb-option-box, .bj-option-clone')) return;
+    /* 페이지에 사용 가능한 .option_select 있는지 체크 */
     var pageSelects = document.querySelectorAll('.option_select, .bb-option-select');
     var hasOption = false;
     for (var i = 0; i < pageSelects.length; i++) {
@@ -2524,7 +2532,9 @@
     /* 핸들 찾기 */
     var handle = wrapper.querySelector(':scope > .bj-bar-handle');
     if (!handle) return;
-    /* syncOptionSelectToHandle 재실행 */
+    /* syncOptionSelectToHandle 재실행 — wrapper 내부 select가 .bj-option-clone이 아닌 한 새로 만듦.
+       기존 syncOptionSelectToHandle 1350 라인 가드(`wrapper.querySelector(SEL)`)도
+       .bj-option-clone 한정으로 좁혀야 동일 효과. 함수 자체에 보강 위임. */
     try { syncOptionSelectToHandle(wrapper, handle); } catch(e){}
   }
 
