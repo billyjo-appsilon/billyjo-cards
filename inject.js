@@ -499,6 +499,30 @@
     /* bb-inner padding 조정 */
     '.prod_view_bot.card.mt40 .bb-inner{ padding:14px 18px 16px !important }',
 
+    /* v0.5.5: 위젯 안 중복 콘텐츠 제거 (AI 카드 SLOT 3·5·7·8과 중복) */
+    /* (1) "렌탈사 비교·선택" 헤더 → AI 카드 SLOT 5(페르소나) / SLOT 8(LPT)이 대체 */
+    '.prod_view_bot.card.mt40 .card__top,',
+    '.prod_view_bot.card.mt40 .card__tit{',
+    '  display:none !important;',
+    '}',
+    /* (2) 렌탈사 li 카드 (icon·name·sub·month·card_sale 일체) → SLOT 8 LPT가 대체 */
+    '.prod_view_bot.card.mt40 .rantal_wrap,',
+    '.prod_view_bot.card.mt40 ul.rantal_wrap,',
+    '.prod_view_bot.card.mt40 .rantal_wrap > li{',
+    '  display:none !important;',
+    '}',
+    /* (3) 제휴카드 안내 .card_sale (위젯 안 인스턴스만) → SLOT 8 LPT가 대체 */
+    '.prod_view_bot.card.mt40 .card_sale{',
+    '  display:none !important;',
+    '}',
+    /* (4) .over 영역 (수량 +/- · 옵션 wrap · 제휴카드 등) — AI 카드에 정보 다 있음, 버튼은 핸들 우측에 별도 노출 */
+    '.prod_view_bot.card.mt40 .over,',
+    '.prod_view_bot.card.mt40 .month_click,',
+    '.prod_view_bot.card.mt40 .select__wrap,',
+    '.prod_view_bot.card.mt40 .amount__wrap{',
+    '  display:none !important;',
+    '}',
+
     /* v0.5.4: 핸들+bb-inner 병합 — bb-inner를 단일 column 레이아웃으로 재구성 */
     '.prod_view_bot.card.mt40 .bb-inner.bj-bb-inner-merged{',
     '  display:flex !important; flex-direction:column !important;',
@@ -800,6 +824,8 @@
     forceFixedStyle(wrapper);
     wrapper.classList.add('bj-bar-expanded');
 
+    /* v0.5.5: 위젯 안 .rantal_wrap·.card__tit·.card_sale 등 중복 콘텐츠는 CSS로 숨김 처리됨.
+       남는 표시 요소: 핸들(제품명+가격) + bb-inner(약정 pill + 3버튼) */
     var bbInner = wrapper.querySelector('.bb-inner');
     var prodName, priceEl, firstMonthPill;
     if (bbInner) {
@@ -807,6 +833,12 @@
       firstMonthPill = bbInner.querySelector('.bb-month-pill .bb-month-price');
       priceEl  = bbInner.querySelector('.bb-price') || firstMonthPill;
     }
+    /* fallback — .rantal_wrap 안 .month_box (네이티브 렌탈사 카드)에서 첫 가격 추출 */
+    if (!priceEl) {
+      var nativeMonth = wrapper.querySelector('.rantal_wrap .month_box .fz16');
+      if (nativeMonth) priceEl = nativeMonth;
+    }
+    /* fallback — .rantal_wrap 안 첫 .name (렌탈사명) → 핸들에는 사용 안 함, 제품명은 상단 .prod_name */
     /* v0.5.4: 핸들 텍스트는 brand prefix("세스코 - ", "쿠쿠 - ", "세스코 " 등) 제거하여 모델명만 노출 */
     var rawName = (prodName && prodName.textContent.trim()) ||
                   (document.querySelector('.prod_name b') && document.querySelector('.prod_name b').textContent.trim()) ||
