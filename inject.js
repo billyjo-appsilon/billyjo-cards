@@ -1,5 +1,5 @@
 /*!
- * billyjo-detailcard v0.5.18 — 상세페이지 카드 클라이언트 패치
+ * billyjo-detailcard v0.5.19 — 상세페이지 카드 클라이언트 패치
  * https://github.com/billyjo-appsilon/billyjo-detailcard
  *
  * 적용 페이지: /html/dh_prod/prod_view/*  (제품 상세 페이지)
@@ -429,7 +429,7 @@
     '  padding:0 !important;',
     '  margin:0 !important;',
     '  overflow:hidden !important;',
-    '  max-height:520px !important;',
+    '  max-height:380px !important;',
     '  transition:max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1), bottom 0.38s cubic-bezier(0.2, 0.9, 0.3, 1) !important;',
     '}',
     /* AI 카드 미통과 / 사용자 수동 숨김 — 화면 밖으로 slide */
@@ -449,7 +449,7 @@
     '  }',
     '}',
     'body #container .wide-inner > .prod_view_bot.card.mt40.bj-bar-expanded,',
-    '.prod_view_bot.card.mt40.bj-bar-expanded{ max-height:520px !important }',
+    '.prod_view_bot.card.mt40.bj-bar-expanded{ max-height:380px !important }',
     /* v0.5.13: collapsed max-height 64→56px (핸들 1행만 보이므로 더 콤팩트) */
     'body #container .wide-inner > .prod_view_bot.card.mt40.bj-bar-collapsed,',
     '.prod_view_bot.card.mt40.bj-bar-collapsed{ max-height:56px !important; overflow:hidden !important }',
@@ -474,7 +474,7 @@
     '}',
     '.prod_view_bot.card.mt40.bj-bar-expanded .bb-inner,',
     '.prod_view_bot.card.mt40 .bb-inner{',
-    '  overflow-y:auto; max-height:calc(520px - 64px);',
+    '  overflow-y:auto; max-height:calc(380px - 56px);',
     '}',
 
     /* 핸들 (v0.5.0: grip 강화 — 더 크고 진하게, 호버 시 브랜드 파랑) */
@@ -583,24 +583,30 @@
     '  margin:0 -2px !important;',
     '}',
     '.bj-ws-term-pills::-webkit-scrollbar{ display:none }',
+    /* v0.5.19: pill을 완전 1행 — period · price · eff 가로 배치 + 구분점 */
     '.bj-ws-term-pill{',
     '  flex:0 0 auto !important; min-width:auto !important;',
-    '  padding:6px 10px !important;',
+    '  padding:5px 11px !important;',
     '  background:#fafafa !important;',
-    '  border:1px solid #dfdfdf !important; border-radius:8px !important;',
-    '  display:flex !important; flex-direction:column !important;',
-    '  align-items:flex-start !important; gap:1px !important; cursor:pointer !important;',
+    '  border:1px solid #dfdfdf !important; border-radius:999px !important;',
+    '  display:inline-flex !important; flex-direction:row !important;',
+    '  align-items:center !important; gap:7px !important; cursor:pointer !important;',
     '  font-family:Pretendard,sans-serif !important;',
     '  transition:border-color 0.15s, background 0.15s !important;',
     '  white-space:nowrap;',
-    '  line-height:1.2;',
+    '  line-height:1.3;',
+    '  height:auto;',
     '}',
     '.bj-ws-term-pill:hover{ border-color:#0838F8 !important }',
     '.bj-ws-term-pill.active{',
     '  border-color:#0838F8 !important; background:#eff3ff !important;',
     '}',
-    '.bj-ws-term-period{ font-size:10.5px !important; color:#666 !important; font-weight:500 !important }',
-    '.bj-ws-term-price{ font-size:13px !important; font-weight:700 !important; color:#0838F8 !important }',
+    /* 각 span 사이에 분리점 */
+    '.bj-ws-term-pill > span + span::before{',
+    '  content:"·"; color:#bbb; margin-right:7px; font-weight:400;',
+    '}',
+    '.bj-ws-term-period{ font-size:11.5px !important; color:#666 !important; font-weight:500 !important }',
+    '.bj-ws-term-price{ font-size:12.5px !important; font-weight:700 !important; color:#0838F8 !important }',
     '.bj-ws-term-pill.active .bj-ws-term-price{ color:#0838F8 }',
     /* v0.5.7: BEST 자동 선택 + 카드할인 보조 라벨 */
     '.bj-ws-term-pill{ position:relative !important }',
@@ -620,9 +626,11 @@
     '  border-color:#ee0979 !important; background:#fff0f6 !important;',
     '  box-shadow:0 0 0 2px rgba(238,9,121,0.15) !important;',
     '}',
+    /* v0.5.19: eff 카드할인 — 1행 인라인, 콤팩트 + 색만 강조 */
     '.bj-ws-term-eff{',
-    '  font-size:9.5px !important; color:#ee0979 !important; font-weight:600 !important;',
-    '  margin-top:0 !important; line-height:1.1 !important;',
+    '  font-size:11px !important; color:#ee0979 !important; font-weight:600 !important;',
+    '  margin:0 !important; line-height:1.3 !important;',
+    '  display:inline !important;',
     '}',
     '.bj-ws-best-badge{',
     '  font-size:8.5px !important; padding:1px 5px !important;',
@@ -735,7 +743,11 @@
     '}',
     '@media (max-width:600px){',
     '  .bj-ws-sup-tab{ padding:5px 10px !important; font-size:11.5px !important }',
-    '  .bj-ws-term-pill{ padding:5px 9px !important; min-width:auto !important }',
+    '  .bj-ws-term-pill{ padding:4px 10px !important; min-width:auto !important; gap:5px !important }',
+    '  .bj-ws-term-period{ font-size:11px !important }',
+    '  .bj-ws-term-price{ font-size:12px !important }',
+    '  .bj-ws-term-eff{ font-size:10.5px !important }',
+    '  .bj-ws-term-pill > span + span::before{ margin-right:5px }',
     '  .bj-ws-term-period{ font-size:10.5px }',
     '  .bj-ws-term-price{ font-size:13px }',
     '}',
