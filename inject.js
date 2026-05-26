@@ -1,5 +1,5 @@
 /*!
- * billyjo-detailcard v0.5.25 — 상세페이지 카드 클라이언트 패치
+ * billyjo-detailcard v0.5.26 — 상세페이지 카드 클라이언트 패치
  * https://github.com/billyjo-appsilon/billyjo-detailcard
  *
  * 적용 페이지: /html/dh_prod/prod_view/*  (제품 상세 페이지)
@@ -608,15 +608,19 @@
     '.bj-ws-term-period{ font-size:11.5px !important; color:#666 !important; font-weight:500 !important }',
     '.bj-ws-term-price{ font-size:12.5px !important; font-weight:700 !important; color:#0838F8 !important }',
     '.bj-ws-term-pill.active .bj-ws-term-price{ color:#0838F8 }',
-    /* v0.5.7: BEST 자동 선택 + 카드할인 보조 라벨 */
+    /* v0.5.7+v0.5.26: BEST 배지 — absolute → inline 변경 (pill 안에 자연스럽게 배치) */
     '.bj-ws-term-pill{ position:relative !important }',
     '.bj-ws-best-badge{',
-    '  position:absolute !important; top:-7px !important; right:-4px !important;',
+    '  display:inline-flex !important; align-items:center !important;',
+    '  position:static !important;',
     '  background:linear-gradient(135deg,#ff6a00 0%,#ee0979 100%) !important;',
     '  color:#fff !important; font-size:9.5px !important; font-weight:800 !important;',
-    '  padding:2px 6px !important; border-radius:10px !important; letter-spacing:0.4px !important;',
-    '  box-shadow:0 2px 6px rgba(238,9,121,0.35) !important; line-height:1 !important;',
+    '  padding:2px 6px !important; border-radius:8px !important; letter-spacing:0.4px !important;',
+    '  box-shadow:0 1px 3px rgba(238,9,121,0.25) !important; line-height:1 !important;',
     '  font-family:Pretendard,sans-serif !important;',
+    '  margin-right:5px !important; flex:0 0 auto !important;',
+    '  vertical-align:middle !important;',
+    '  height:auto !important;',
     '}',
     '.bj-ws-term-pill.is-best{',
     '  border-color:#ee0979 !important; background:linear-gradient(180deg,#fff5fa 0%,#fff 100%) !important;',
@@ -632,9 +636,9 @@
     '  margin:0 !important; line-height:1.3 !important;',
     '  display:inline !important;',
     '}',
+    /* v0.5.26: inline 변환에 따라 top/right 제거 (override 안 함) */
     '.bj-ws-best-badge{',
-    '  font-size:8.5px !important; padding:1px 5px !important;',
-    '  top:-6px !important; right:-2px !important;',
+    '  font-size:9px !important; padding:2px 5px !important;',
     '}',
     '.bj-ws-best-dot{',
     '  display:inline-block !important; width:6px !important; height:6px !important;',
@@ -886,18 +890,25 @@
     '}',
     '.bj-fb-label{ font-size:11.5px; color:#6a6a6a; font-weight:600 }',
     '.bj-fb-price{ font-size:17px; font-weight:800; color:#0838F8; line-height:1.2 }',
+    /* v0.5.26: 3버튼 풀폭 stretch — 위젯 가로 폭을 균등 분배 */
     '.bj-fb-btns{',
-    '  display:flex; align-items:center; gap:8px;',
-    '  flex:0 1 auto; flex-wrap:wrap; justify-content:flex-end;',
+    '  display:flex !important; align-items:stretch !important; gap:8px !important;',
+    '  flex:1 1 100% !important; flex-wrap:nowrap !important;',
+    '  width:100% !important; justify-content:stretch !important;',
+    '  margin-top:8px !important;',
     '}',
     '.bj-fb-btns .bb-btn{',
-    '  display:inline-flex; align-items:center; gap:6px;',
-    '  padding:10px 14px; font-size:13.5px; font-weight:700;',
-    '  border-radius:8px; cursor:pointer;',
-    '  font-family:"Pretendard",sans-serif;',
+    '  flex:1 1 0 !important;',
+    '  display:inline-flex !important; align-items:center !important; justify-content:center !important; gap:6px !important;',
+    '  padding:11px 8px !important; font-size:13px !important; font-weight:700 !important;',
+    '  border-radius:8px !important; cursor:pointer !important;',
+    '  font-family:"Pretendard",sans-serif !important;',
     '  border:1px solid #dfdfdf; background:#fff; color:#2a2a2a;',
     '  transition:background 0.15s; white-space:nowrap;',
     '}',
+    /* 렌탈+사은품(주 액션)을 살짝 더 넓게 */
+    '.bj-fb-btns .bb-btn-rent,',
+    '.bj-fb-btns .bj-btn-rent-gift{ flex:1.5 1 0 !important }',
     '.bj-fb-btns .bb-btn svg{ width:16px; height:16px; fill:currentColor }',
     '.bj-fb-btns .bb-btn-cart{ background:#fff; color:#444; border:1px solid #dfdfdf }',
     '.bj-fb-btns .bb-btn-cart:hover{ background:#f4f4f4 }',
