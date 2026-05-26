@@ -499,6 +499,57 @@
     /* bb-inner padding 조정 */
     '.prod_view_bot.card.mt40 .bb-inner{ padding:14px 18px 16px !important }',
 
+    /* v0.5.6: 위젯 내 렌탈사·약정 selector */
+    '.bj-widget-selector{',
+    '  display:flex !important; flex-direction:column !important;',
+    '  gap:8px !important;',
+    '}',
+    '.bj-ws-sup-tabs{',
+    '  display:flex !important; gap:6px !important;',
+    '  overflow-x:auto !important; padding-bottom:2px;',
+    '  -webkit-overflow-scrolling:touch;',
+    '  scrollbar-width:none;',
+    '}',
+    '.bj-ws-sup-tabs::-webkit-scrollbar{ display:none }',
+    '.bj-ws-sup-tab{',
+    '  flex:0 0 auto !important; padding:6px 12px !important;',
+    '  background:#f4f4f4 !important; color:#555 !important;',
+    '  border:1px solid #e5e5e5 !important; border-radius:16px !important;',
+    '  font:600 12px Pretendard,sans-serif !important; cursor:pointer !important;',
+    '  white-space:nowrap !important;',
+    '  transition:all 0.15s !important;',
+    '}',
+    '.bj-ws-sup-tab.active{',
+    '  background:#0838F8 !important; color:#fff !important;',
+    '  border-color:#0838F8 !important;',
+    '}',
+    '.bj-ws-term-pills{',
+    '  display:flex !important; gap:8px !important; flex-wrap:wrap !important;',
+    '}',
+    '.bj-ws-term-pill{',
+    '  flex:1 1 0 !important; min-width:110px !important;',
+    '  padding:10px 12px !important;',
+    '  background:#fafafa !important;',
+    '  border:1px solid #dfdfdf !important; border-radius:10px !important;',
+    '  display:flex !important; flex-direction:column !important;',
+    '  align-items:center !important; gap:2px !important; cursor:pointer !important;',
+    '  font-family:Pretendard,sans-serif !important;',
+    '  transition:border-color 0.15s, background 0.15s !important;',
+    '}',
+    '.bj-ws-term-pill:hover{ border-color:#0838F8 !important }',
+    '.bj-ws-term-pill.active{',
+    '  border-color:#0838F8 !important; background:#eff3ff !important;',
+    '}',
+    '.bj-ws-term-period{ font-size:11px; color:#666; font-weight:500 }',
+    '.bj-ws-term-price{ font-size:14px; font-weight:700; color:#0838F8 }',
+    '.bj-ws-term-pill.active .bj-ws-term-price{ color:#0838F8 }',
+    '@media (max-width:600px){',
+    '  .bj-ws-sup-tab{ padding:5px 10px !important; font-size:11.5px !important }',
+    '  .bj-ws-term-pill{ padding:8px 10px !important; min-width:96px !important }',
+    '  .bj-ws-term-period{ font-size:10.5px }',
+    '  .bj-ws-term-price{ font-size:13px }',
+    '}',
+
     /* v0.5.5: 위젯 안 중복 콘텐츠 제거 (AI 카드 SLOT 3·5·7·8과 중복) */
     /* (1) "렌탈사 비교·선택" 헤더 → AI 카드 SLOT 5(페르소나) / SLOT 8(LPT)이 대체 */
     '.prod_view_bot.card.mt40 .card__top,',
@@ -939,10 +990,7 @@
       var fb = document.createElement('div');
       fb.className = 'bj-bar-fallback';
       fb.innerHTML =
-        '<div class="bj-fb-info">' +
-          '<span class="bj-fb-label">월 렌탈료</span>' +
-          '<span class="bj-fb-price">' + (priceText || '문의') + '</span>' +
-        '</div>' +
+        '<div class="bj-fb-selector"></div>' +  /* v0.5.6: 렌탈사·약정 selector mount */
         '<div class="bj-fb-btns">' +
           '<button type="button" class="bb-btn bb-btn-cart bj-fb-cart">' + SVG_CART + '장바구니</button>' +
           '<button type="button" class="bb-btn bb-btn-rent bj-btn-rent-gift bj-fb-rent">' + SVG_GIFT + '렌탈+사은품 신청</button>' +
@@ -963,7 +1011,128 @@
       });
     }
 
+    /* v0.5.6: 렌탈사·약정 selector — 위젯에 컴팩트 UI 빌드.
+       underlying .rantal_wrap > li 데이터를 스캔하여 [렌탈사 탭] + [약정 pill] 렌더.
+       클릭 시: (1) underlying .month_box.layer_price 실제 클릭 트리거 (가격/주문 데이터 동기화)
+                (2) 핸들 가격 + 위젯 가격 표시 갱신 */
+    buildWidgetSelector(wrapper, handle);
+
     wrapper.dataset.bjBarEnhanced = '1';
+  }
+
+  /* v0.5.6: 위젯 내 렌탈사·약정 selector 빌드 */
+  function buildWidgetSelector(wrapper, handle){
+    var lis = Array.from(wrapper.querySelectorAll('.rantal_wrap > li'));
+    if (lis.length === 0) return;
+
+    /* 데이터 수집 */
+    var suppliers = lis.map(function(li){
+      var nameEl = li.querySelector('.m_ver_txt .name, .txt .name');
+      var boxes = Array.from(li.querySelectorAll('.month_box'));
+      var terms = boxes.map(function(b){
+        return {
+          el: b,
+          month: b.dataset.month || (b.querySelector('.fz14')||{}).textContent || '',
+          monthKey: b.dataset.month_key,
+          price: b.dataset.price || ((b.querySelector('.fz16')||{}).textContent || '').replace(/[^\d,]/g,''),
+          dcprice: b.dataset.dcprice || '0',
+          cardDis: b.dataset.card_dis || '0',
+          supname: b.dataset.supname,
+          supcode: b.dataset.supcode,
+        };
+      });
+      return {
+        li: li,
+        name: nameEl ? nameEl.textContent.trim() : (terms[0] && terms[0].supname) || '렌탈사',
+        terms: terms,
+      };
+    }).filter(function(s){ return s.terms.length > 0; });
+    if (suppliers.length === 0) return;
+
+    /* selector mount 위치 — bb-inner 있으면 .bb-months 교체, 없으면 fallback .bj-fb-selector */
+    var bbInner = wrapper.querySelector('.bb-inner');
+    var mount;
+    if (bbInner) {
+      var bbMonths = bbInner.querySelector('.bb-months');
+      if (bbMonths) bbMonths.style.setProperty('display', 'none', 'important');
+      mount = document.createElement('div');
+      mount.className = 'bj-widget-selector';
+      bbInner.insertBefore(mount, bbInner.firstChild);
+    } else {
+      mount = wrapper.querySelector('.bj-fb-selector');
+      if (!mount) return;
+      mount.classList.add('bj-widget-selector');
+    }
+
+    var state = { supIdx: 0, termIdx: 0 };
+
+    function render(){
+      var sup = suppliers[state.supIdx];
+      var term = sup.terms[state.termIdx];
+      var multiSupplier = suppliers.length > 1;
+
+      var supTabs = multiSupplier
+        ? '<div class="bj-ws-sup-tabs">' +
+            suppliers.map(function(s, i){
+              return '<button type="button" class="bj-ws-sup-tab' + (i === state.supIdx ? ' active' : '') + '" data-i="' + i + '">' +
+                escapeWidgetHtml(s.name) +
+              '</button>';
+            }).join('') +
+          '</div>'
+        : '';
+
+      var termPills =
+        '<div class="bj-ws-term-pills">' +
+          sup.terms.map(function(t, i){
+            var monthly = t.price ? '월 ' + t.price + '원' : '문의';
+            return '<button type="button" class="bj-ws-term-pill' + (i === state.termIdx ? ' active' : '') + '" data-i="' + i + '">' +
+              '<span class="bj-ws-term-period">' + escapeWidgetHtml(t.month) + '</span>' +
+              '<span class="bj-ws-term-price">' + escapeWidgetHtml(monthly) + '</span>' +
+            '</button>';
+          }).join('') +
+        '</div>';
+
+      mount.innerHTML = supTabs + termPills;
+
+      /* 핸들 가격 갱신 */
+      var hp = handle.querySelector('.bj-bar-handle-price');
+      if (hp) hp.textContent = term.price ? '월 ' + term.price + '원' : '';
+    }
+
+    function selectSupplier(i){
+      if (i === state.supIdx) return;
+      state.supIdx = i;
+      state.termIdx = 0;
+      render();
+      triggerUnderlying();
+    }
+    function selectTerm(i){
+      if (i === state.termIdx) return;
+      state.termIdx = i;
+      render();
+      triggerUnderlying();
+    }
+    function triggerUnderlying(){
+      /* underlying의 .month_box.layer_price 클릭 — 가격 데이터 동기화 + 주문 시 올바른 supplier/term 사용 */
+      var t = suppliers[state.supIdx].terms[state.termIdx];
+      if (t && t.el) {
+        try { t.el.click(); } catch(_){}
+      }
+    }
+
+    mount.addEventListener('click', function(e){
+      var sup = e.target.closest('.bj-ws-sup-tab');
+      if (sup) { selectSupplier(parseInt(sup.dataset.i, 10)); return; }
+      var pill = e.target.closest('.bj-ws-term-pill');
+      if (pill) { selectTerm(parseInt(pill.dataset.i, 10)); return; }
+    });
+
+    render();
+    triggerUnderlying();  // 초기 선택 동기화
+  }
+
+  function escapeWidgetHtml(s){
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
   function preEnhance(){
