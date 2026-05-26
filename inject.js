@@ -1,5 +1,5 @@
 /*!
- * billyjo-detailcard v0.5.23 — 상세페이지 카드 클라이언트 패치
+ * billyjo-detailcard v0.5.24 — 상세페이지 카드 클라이언트 패치
  * https://github.com/billyjo-appsilon/billyjo-detailcard
  *
  * 적용 페이지: /html/dh_prod/prod_view/*  (제품 상세 페이지)
@@ -1031,6 +1031,17 @@
     '  overflow:hidden !important;',
     '}',
 
+    /* === v0.5.24: 빌리조 main inject.js의 #billyjo-bottom-bar 위젯 자체 즉시 hide ===
+       DOM 삭제 직전 paint frame 차단. JS에서 removeChild로 완전 제거. */
+    'body > #billyjo-bottom-bar,',
+    '#billyjo-bottom-bar:not(.bj-ours-keep){',
+    '  display:none !important;',
+    '  visibility:hidden !important;',
+    '  pointer-events:none !important;',
+    '  height:0 !important; overflow:hidden !important;',
+    '  transform:translateY(200px) !important;',
+    '}',
+
     /* === v0.5.22: 격상 안 된 .bb-inner는 어디에 있든 무조건 숨김 ===
        빌리조 main inject.js가 .bb-inner를 wrapper(.prod_view_bot.card.mt40) 안/밖 어디든
        동적 mount. 우리 enhanceBottomBar가 격상하면 .bj-bb-inner-merged 클래스 부착 → 보임.
@@ -1765,8 +1776,8 @@
   function setupBottomBarVisibility(){
     if (window.__bjBarVisibilitySetup) return;
 
-    var wrapper = document.querySelector('#billyjo-bottom-bar') ||
-                  document.querySelector('.prod_view_bot.card.mt40');
+    /* v0.5.24: #billyjo-bottom-bar는 우리가 DOM 삭제하므로 .prod_view_bot.card.mt40만 사용 */
+    var wrapper = document.querySelector('.prod_view_bot.card.mt40');
     if (!wrapper) return;
     var aiCard = document.querySelector('#ai-card-root');
     if (!aiCard) return;
@@ -2363,16 +2374,21 @@
     });
   }
 
-  /* v0.5.23: 격상 안 된 .bb-inner는 DOM에서 즉시 삭제 (hide 대신 완전 제거)
-     hideExternalBbInner (v0.5.21)가 display:none을 set했지만 빌리조 main inject.js가
-     다른 인라인 style을 덮어쓰면 노출 가능. DOM 삭제는 그런 race 자체를 차단. */
+  /* v0.5.23 + v0.5.24: 빌리조 main inject.js가 body에 직접 mount하는 #billyjo-bottom-bar
+     위젯 자체를 DOM 완전 삭제. 그 안의 .bb-inner도 함께 사라짐.
+     별도로 우리 .prod_view_bot.card.mt40 wrapper 밖에 mount된 격상 안 된 .bb-inner도 삭제. */
   function removeStrayBbInner(){
     var wrapper = document.querySelector('.prod_view_bot.card.mt40');
     /* 1) wrapper 안 격상 안 된 .bb-inner — enhanceBottomBar 격상 trigger 먼저 */
     if (wrapper && wrapper.querySelector('.bb-inner:not(.bj-bb-inner-merged)')) {
       try { enhanceBottomBar(); } catch(e){}
     }
-    /* 2) 격상 안 된 .bb-inner 모두 DOM 삭제 (wrapper 안 후 안 남은 것 + 밖 전부) */
+    /* 2) v0.5.24: #billyjo-bottom-bar 위젯 자체 DOM 삭제 (빌리조 본 inject.js 생성) */
+    var bjBar = document.getElementById('billyjo-bottom-bar');
+    if (bjBar && !bjBar.classList.contains('bj-ours-keep')) {
+      try { bjBar.parentNode.removeChild(bjBar); } catch(e){}
+    }
+    /* 3) 격상 안 된 .bb-inner 모두 DOM 삭제 (혹시 #billyjo-bottom-bar 밖에도 mount된 경우) */
     document.querySelectorAll('.bb-inner:not(.bj-bb-inner-merged)').forEach(function(inner){
       try {
         if (inner.parentElement) inner.parentElement.removeChild(inner);
@@ -2387,19 +2403,23 @@
     /* 영구 옵저버 — disconnect 안 함. 새 .bb-inner mount 감지 시 즉시 처리.
        콜백 lightweight (.bb-inner만 체크 + 필요시 격상/삭제). */
     var obs = new MutationObserver(function(mutations){
-      var hasNewBbInner = false;
+      var hasTarget = false;
       for (var i = 0; i < mutations.length; i++) {
         var m = mutations[i];
         if (m.type !== 'childList') continue;
         for (var j = 0; j < m.addedNodes.length; j++) {
           var n = m.addedNodes[j];
           if (n.nodeType !== 1) continue;
-          if (n.classList && n.classList.contains('bb-inner')) { hasNewBbInner = true; break; }
-          if (n.querySelector && n.querySelector('.bb-inner')) { hasNewBbInner = true; break; }
+          /* v0.5.24: #billyjo-bottom-bar 또는 .bb-inner mount 감지 */
+          if (n.id === 'billyjo-bottom-bar') { hasTarget = true; break; }
+          if (n.classList && n.classList.contains('bb-inner')) { hasTarget = true; break; }
+          if (n.querySelector && (n.querySelector('#billyjo-bottom-bar') || n.querySelector('.bb-inner'))) {
+            hasTarget = true; break;
+          }
         }
-        if (hasNewBbInner) break;
+        if (hasTarget) break;
       }
-      if (hasNewBbInner) removeStrayBbInner();
+      if (hasTarget) removeStrayBbInner();
     });
     try { obs.observe(document.body, { childList: true, subtree: true }); } catch(e){}
   }
