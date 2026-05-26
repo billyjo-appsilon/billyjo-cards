@@ -486,19 +486,32 @@
     '  overflow-y:auto; max-height:calc(520px - 64px);',
     '}',
 
-    /* 핸들 */
+    /* 핸들 (v0.5.0: grip 강화 — 더 크고 진하게, 호버 시 브랜드 파랑) */
     '.bj-bar-handle{',
     '  display:flex; align-items:center; justify-content:space-between;',
-    '  padding:16px 18px 10px; cursor:pointer; user-select:none;',
+    '  padding:20px 18px 10px; cursor:pointer; user-select:none;',
     '  background:linear-gradient(180deg, #fafafa 0%, #ffffff 100%);',
     '  border-bottom:0.5px solid #dfdfdf; gap:12px; position:relative;',
+    '  -webkit-tap-highlight-color:transparent;',
     '}',
     '.bj-bar-handle:hover{ background:#f5f5f5 }',
+    '.bj-bar-handle:hover::before{ background:#0838F8; opacity:1; width:56px }',
+    '.bj-bar-handle:active::before{ background:#0838F8; width:60px; opacity:1 }',
     '.bj-bar-handle::before{',
-    '  content:""; position:absolute; top:6px; left:50%;',
+    '  content:""; position:absolute; top:7px; left:50%;',
     '  transform:translateX(-50%);',
-    '  width:36px; height:4px; border-radius:2px;',
-    '  background:#e0e0e0; pointer-events:none;',
+    '  width:48px; height:5px; border-radius:3px;',
+    '  background:#b8b8b8; pointer-events:none;',
+    '  transition:background 0.15s, width 0.2s ease-out, opacity 0.15s;',
+    '  opacity:0.9;',
+    '}',
+    /* 접힘 상태: grip 살짝 펄스 (열기 유도) */
+    '.prod_view_bot.card.mt40.bj-bar-collapsed .bj-bar-handle::before{',
+    '  animation:bjGripBreathe 2.5s ease-in-out infinite;',
+    '}',
+    '@keyframes bjGripBreathe{',
+    '  0%,100%{ background:#b8b8b8; opacity:0.85; width:48px }',
+    '  50%{ background:#0838F8; opacity:1; width:56px }',
     '}',
     '.bj-bar-handle-text{',
     '  font-family:"Pretendard","Apple SD Gothic Neo",sans-serif;',
@@ -828,15 +841,39 @@
         rentBtn.innerHTML = SVG_GIFT + '렌탈+사은품 신청';
       }
       var rightTop = bbInner.querySelector('.bb-right-top');
-      if (rightTop && !rightTop.querySelector('.bj-btn-consult')) {
-        var consult = document.createElement('button');
-        consult.type = 'button';
-        consult.className = 'bb-btn bj-btn-consult';
-        consult.innerHTML = SVG_CHAT + '상담신청';
-        consult.addEventListener('click', function(){
-          window.location.href = '/html/dh/counsel';
-        });
-        rightTop.appendChild(consult);
+      if (rightTop) {
+        /* v0.5.0: 3버튼 보장 — 장바구니가 .bb-left에 따로 있거나 누락된 경우 rightTop으로 이동/생성 */
+        var existingCart = bbInner.querySelector('.bb-btn-cart');
+        var cartInRightTop = rightTop.querySelector('.bb-btn-cart');
+        if (!cartInRightTop) {
+          var cartBtn;
+          if (existingCart) {
+            /* .bb-left 등 다른 위치의 cart 버튼을 rightTop 맨 앞으로 이동 (단일 버튼 영역으로 통합) */
+            cartBtn = existingCart;
+          } else {
+            /* 어디에도 없으면 생성 */
+            cartBtn = document.createElement('button');
+            cartBtn.type = 'button';
+            cartBtn.className = 'bb-btn bb-btn-cart';
+            cartBtn.addEventListener('click', function(){
+              if (typeof window.shoporder === 'function') window.shoporder('cart');
+              else window.location.href = '/html/dh_order/shop_cart';
+            });
+          }
+          cartBtn.innerHTML = SVG_CART + '장바구니';
+          rightTop.insertBefore(cartBtn, rightTop.firstChild);
+        }
+        /* 상담신청 — 중복 방지 */
+        if (!rightTop.querySelector('.bj-btn-consult')) {
+          var consult = document.createElement('button');
+          consult.type = 'button';
+          consult.className = 'bb-btn bj-btn-consult';
+          consult.innerHTML = SVG_CHAT + '상담신청';
+          consult.addEventListener('click', function(){
+            window.location.href = '/html/dh/counsel';
+          });
+          rightTop.appendChild(consult);
+        }
       }
     } else {
       /* v0.4.0: .bb-inner 없을 때 fallback 박스 생성 */
@@ -1283,6 +1320,61 @@
         title.innerHTML = inner;
       }
     }
+
+    /* v0.5.0: 카드 할인이 있는 경우 #livePriceTable을 AI 카드 SLOT 8로 mount */
+    mountLptIntoCard(entries);
+  }
+
+  /* v0.5.0: AI 카드 SLOT 8(#ai-card-lpt-mount)에 약정·카드 할인가 표 mount.
+     조건: 어느 한 행이라도 monthly !== finalPrice (실제 카드 할인 적용) → 표 노출.
+     모든 행이 monthly === finalPrice면 카드 할인 없는 제품 → 섹션 hidden 유지. */
+  function mountLptIntoCard(entries){
+    var section = document.getElementById('ai-card-lpt-section');
+    var mount = document.getElementById('ai-card-lpt-mount');
+    if (!section || !mount) return;
+    if (!entries || !entries.length) { section.hidden = true; return; }
+
+    function digits(s){ return parseInt(String(s||'').replace(/[^\d]/g,''),10) || 0; }
+    var hasDiscount = entries.some(function(e){
+      return e.monthly && e.finalPrice && digits(e.monthly) !== digits(e.finalPrice);
+    });
+    if (!hasDiscount) { section.hidden = true; return; }
+
+    /* mount 안에 컴팩트 표 직접 생성 (#livePriceTable DOM 이동 대신 복제) — 본문 LPT는 그대로 두고
+       카드 내부에 독립 인스턴스. underlying 재렌더와 충돌 없음. */
+    var mgmtSet = {};
+    entries.forEach(function(e){ if (e.mgmt) mgmtSet[e.mgmt] = true; });
+    var needMgmtPrefix = Object.keys(mgmtSet).length > 1;
+
+    var rows = entries.map(function(e){
+      var termText = needMgmtPrefix && e.mgmt ? '[' + e.mgmt + '] ' + e.term : e.term;
+      var monthly = e.monthly || e.finalPrice || '—';
+      var final = e.finalPrice || '—';
+      var saved = '';
+      if (e.monthly && e.finalPrice) {
+        var d = digits(e.monthly) - digits(e.finalPrice);
+        if (d > 0) saved = '<span style="color:#e84a4a;font-size:11px;margin-left:4px">−' + d.toLocaleString() + '원</span>';
+      }
+      return '<tr style="border-bottom:0.5px solid #eee">' +
+        '<td style="padding:10px 8px;text-align:center;font-weight:600;font-size:13px">' + escapeHtml(termText) + '</td>' +
+        '<td style="padding:10px 8px;text-align:center;color:#444;font-size:13px">' + escapeHtml(monthly) + '</td>' +
+        '<td style="padding:10px 8px;text-align:center;color:#0838f8;font-weight:700;font-size:14px">' + escapeHtml(final) + saved + '</td>' +
+        '</tr>';
+    }).join('');
+
+    mount.innerHTML =
+      '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">' +
+        '<table style="width:100%;min-width:280px;border-collapse:collapse;font-family:Pretendard,sans-serif;background:#fff;border-radius:8px;overflow:hidden;border:1px solid #e5e8ee">' +
+          '<thead><tr style="background:#0838f8;color:#fff;font-size:12px">' +
+            '<th style="padding:9px 8px;text-align:center;font-weight:600">약정기간</th>' +
+            '<th style="padding:9px 8px;text-align:center;font-weight:600">월 렌탈료</th>' +
+            '<th style="padding:9px 8px;text-align:center;font-weight:600">카드 할인가</th>' +
+          '</tr></thead>' +
+          '<tbody>' + rows + '</tbody>' +
+        '</table>' +
+      '</div>';
+    section.hidden = false;
+    section.dataset.bjLptMounted = '1';
   }
 
   function escapeHtml(s){
