@@ -1,5 +1,5 @@
 /*!
- * billyjo-detailcard v0.5.28 — 상세페이지 카드 클라이언트 패치
+ * billyjo-detailcard v0.5.29 — 상세페이지 카드 클라이언트 패치
  * https://github.com/billyjo-appsilon/billyjo-detailcard
  *
  * 적용 페이지: /html/dh_prod/prod_view/*  (제품 상세 페이지)
@@ -1408,9 +1408,13 @@
       optBox.appendChild(label);
       optBox.appendChild(cloneSelect);
 
-      /* v0.5.28: 삽입 위치 일원화 — 항상 라벨+select optBox로 fallback에 삽입.
-         이전: .bb-inner > .bb-right-top 분기로 optBox 없이 cloneSelect만 삽입 →
-         사용자가 "옵션 선택" 라벨을 못 보고, button 3개 사이에 압축돼 안 보임. */
+      /* v0.5.29: 삽입 위치 — 우선순위
+         (1) .bj-bar-fallback 있으면 그 안 .bj-fb-btns 앞 (라벨 박스로 명시 노출)
+         (2) .bb-inner 있는 페이지(18055 등 LG·코웨이 풀 위젯 케이스): .bb-inner 앞에
+             삽입 → 핸들 → 옵션 박스 → .bb-inner 순으로 가시 영역에 들어감.
+             wrapper.appendChild로 끝에 붙이면 .bb-inner의 overflow:auto + max-height
+             324px 다음 행에 위치해 wrapper의 380px max-height에 잘려 안 보임.
+         (3) 그 외 — wrapper 끝에 append */
       var fb = wrapper.querySelector('.bj-bar-fallback');
       var btns = fb && fb.querySelector('.bj-fb-btns');
       if (btns) {
@@ -1418,8 +1422,12 @@
       } else if (fb) {
         fb.appendChild(optBox);
       } else {
-        /* .bj-bar-fallback도 없는 극단 케이스 — wrapper 마지막 자식으로 삽입 */
-        wrapper.appendChild(optBox);
+        var bbInnerEl = wrapper.querySelector('.bb-inner');
+        if (bbInnerEl) {
+          wrapper.insertBefore(optBox, bbInnerEl);
+        } else {
+          wrapper.appendChild(optBox);
+        }
       }
       select = cloneSelect;
     }
