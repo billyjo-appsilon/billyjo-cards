@@ -1,5 +1,5 @@
 /*!
- * billyjo-detailcard v0.5.31 — 상세페이지 카드 클라이언트 패치
+ * billyjo-detailcard v0.5.32 — 상세페이지 카드 클라이언트 패치
  * https://github.com/billyjo-appsilon/billyjo-detailcard
  *
  * 적용 페이지: /html/dh_prod/prod_view/*  (제품 상세 페이지)
@@ -620,6 +620,14 @@
     '.bj-ws-term-period{ font-size:11.5px !important; color:#666 !important; font-weight:500 !important }',
     '.bj-ws-term-price{ font-size:12.5px !important; font-weight:700 !important; color:#0838F8 !important }',
     '.bj-ws-term-pill.active .bj-ws-term-price{ color:#0838F8 }',
+    /* v0.5.32: 카드할인 있는 pill에서 정가 strike-through 보조 노출 */
+    '.bj-ws-term-orig{',
+    '  font-size:10.5px !important; color:#aaa !important; font-weight:500 !important;',
+    '  text-decoration:line-through !important;',
+    '  margin-left:2px !important;',
+    '}',
+    '.bj-ws-term-pill.has-card-dc .bj-ws-term-price{ color:#ee0979 !important }',
+    '.bj-ws-term-pill.has-card-dc.active .bj-ws-term-price{ color:#ee0979 !important }',
     /* v0.5.7+v0.5.26: BEST 배지 — absolute → inline 변경 (pill 안에 자연스럽게 배치) */
     '.bj-ws-term-pill{ position:relative !important }',
     '.bj-ws-best-badge{',
@@ -1389,6 +1397,13 @@
       cloneSelect.classList.add('bb-option-select', 'bj-option-clone');
       cloneSelect.removeAttribute('onchange');
       cloneSelect.value = orig.value;
+      /* v0.5.32: 클릭 동작 강화 — wrapper z-index:99999 환경에서도 native select dropdown
+         정상 동작 보장. disabled 속성·인라인 pointer-events:none 등 클론에 따라온 잠재 차단 해제. */
+      cloneSelect.removeAttribute('disabled');
+      cloneSelect.disabled = false;
+      cloneSelect.style.cssText = 'pointer-events:auto !important; cursor:pointer !important; ' +
+        'position:relative !important; z-index:2 !important; ' +
+        'opacity:1 !important; visibility:visible !important; display:block !important;';
       /* 양방향 sync */
       cloneSelect.addEventListener('change', function(){
         orig.value = cloneSelect.value;
@@ -1634,15 +1649,17 @@
       var termPills =
         '<div class="bj-ws-term-pills">' +
           sup.terms.map(function(t, i){
-            /* v0.5.31: pill 컴팩트화 — "월 39,900원" → "39,900" (월/원 텍스트 제거,
-               헤더 라벨로 단위 추론). 카드할인 eff 라벨은 pill에서 제거 — active pill의
-               경우 핸들 가격(.bj-bar-handle-price)에 이미 노출되어 정보 중복. */
-            var monthly = t.price ? t.price : '문의';
+            /* v0.5.32: 카드할인 있으면 카드가 메인 + 정가 strike-through 보조 노출.
+               컴팩트 유지하면서 제휴카드 할인 정보 함께 출력. */
+            var hasCardDc = t.effective > 0 && t.effective < t.priceNum;
+            var mainPrice = hasCardDc ? t.effective.toLocaleString() : (t.price || '문의');
+            var origLabel = hasCardDc ? '<span class="bj-ws-term-orig">' + t.price + '</span>' : '';
             var bestBadge = t.isBest ? '<span class="bj-ws-best-badge">BEST</span>' : '';
-            return '<button type="button" class="bj-ws-term-pill' + (i === state.termIdx ? ' active' : '') + (t.isBest ? ' is-best' : '') + '" data-i="' + i + '">' +
+            return '<button type="button" class="bj-ws-term-pill' + (i === state.termIdx ? ' active' : '') + (t.isBest ? ' is-best' : '') + (hasCardDc ? ' has-card-dc' : '') + '" data-i="' + i + '">' +
               bestBadge +
               '<span class="bj-ws-term-period">' + escapeWidgetHtml(t.month) + '</span>' +
-              '<span class="bj-ws-term-price">' + escapeWidgetHtml(monthly) + '</span>' +
+              '<span class="bj-ws-term-price">' + escapeWidgetHtml(mainPrice) + '</span>' +
+              origLabel +
             '</button>';
           }).join('') +
         '</div>';
