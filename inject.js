@@ -1,5 +1,5 @@
 /*!
- * billyjo-detailcard v0.5.17 — 상세페이지 카드 클라이언트 패치
+ * billyjo-detailcard v0.5.18 — 상세페이지 카드 클라이언트 패치
  * https://github.com/billyjo-appsilon/billyjo-detailcard
  *
  * 적용 페이지: /html/dh_prod/prod_view/*  (제품 상세 페이지)
@@ -572,25 +572,35 @@
     '  background:#0838F8 !important; color:#fff !important;',
     '  border-color:#0838F8 !important;',
     '}',
+    /* v0.5.18: 약정 pill 1행 가로 스와이프 + 컴팩트화 (이전 2행 wrap → 1행 nowrap) */
     '.bj-ws-term-pills{',
-    '  display:flex !important; gap:8px !important; flex-wrap:wrap !important;',
+    '  display:flex !important; gap:6px !important;',
+    '  flex-wrap:nowrap !important;',
+    '  overflow-x:auto !important; overflow-y:hidden !important;',
+    '  -webkit-overflow-scrolling:touch;',
+    '  scrollbar-width:none; -ms-overflow-style:none;',
+    '  padding:2px 2px 4px !important;',
+    '  margin:0 -2px !important;',
     '}',
+    '.bj-ws-term-pills::-webkit-scrollbar{ display:none }',
     '.bj-ws-term-pill{',
-    '  flex:1 1 0 !important; min-width:110px !important;',
-    '  padding:10px 12px !important;',
+    '  flex:0 0 auto !important; min-width:auto !important;',
+    '  padding:6px 10px !important;',
     '  background:#fafafa !important;',
-    '  border:1px solid #dfdfdf !important; border-radius:10px !important;',
+    '  border:1px solid #dfdfdf !important; border-radius:8px !important;',
     '  display:flex !important; flex-direction:column !important;',
-    '  align-items:center !important; gap:2px !important; cursor:pointer !important;',
+    '  align-items:flex-start !important; gap:1px !important; cursor:pointer !important;',
     '  font-family:Pretendard,sans-serif !important;',
     '  transition:border-color 0.15s, background 0.15s !important;',
+    '  white-space:nowrap;',
+    '  line-height:1.2;',
     '}',
     '.bj-ws-term-pill:hover{ border-color:#0838F8 !important }',
     '.bj-ws-term-pill.active{',
     '  border-color:#0838F8 !important; background:#eff3ff !important;',
     '}',
-    '.bj-ws-term-period{ font-size:11px; color:#666; font-weight:500 }',
-    '.bj-ws-term-price{ font-size:14px; font-weight:700; color:#0838F8 }',
+    '.bj-ws-term-period{ font-size:10.5px !important; color:#666 !important; font-weight:500 !important }',
+    '.bj-ws-term-price{ font-size:13px !important; font-weight:700 !important; color:#0838F8 !important }',
     '.bj-ws-term-pill.active .bj-ws-term-price{ color:#0838F8 }',
     /* v0.5.7: BEST 자동 선택 + 카드할인 보조 라벨 */
     '.bj-ws-term-pill{ position:relative !important }',
@@ -611,8 +621,12 @@
     '  box-shadow:0 0 0 2px rgba(238,9,121,0.15) !important;',
     '}',
     '.bj-ws-term-eff{',
-    '  font-size:10.5px !important; color:#ee0979 !important; font-weight:600 !important;',
-    '  margin-top:2px !important;',
+    '  font-size:9.5px !important; color:#ee0979 !important; font-weight:600 !important;',
+    '  margin-top:0 !important; line-height:1.1 !important;',
+    '}',
+    '.bj-ws-best-badge{',
+    '  font-size:8.5px !important; padding:1px 5px !important;',
+    '  top:-6px !important; right:-2px !important;',
     '}',
     '.bj-ws-best-dot{',
     '  display:inline-block !important; width:6px !important; height:6px !important;',
@@ -677,6 +691,41 @@
     '  box-shadow:0 0 0 0 rgba(8,56,248,0) !important;',
     '  transition:border-color 0.15s, box-shadow 0.15s;',
     '}',
+    /* v0.5.18: 버튼 그룹으로 대체된 select는 숨김 (value sync 위해 DOM은 유지) */
+    '.bj-option-select-replaced{ display:none !important }',
+    /* v0.5.18: 옵션 버튼 그룹 — 가로 1행 스와이프 */
+    '.bj-option-buttons{',
+    '  display:flex !important; gap:6px !important;',
+    '  flex-wrap:nowrap !important;',
+    '  overflow-x:auto !important; overflow-y:hidden !important;',
+    '  -webkit-overflow-scrolling:touch;',
+    '  scrollbar-width:none; -ms-overflow-style:none;',
+    '  margin:6px 0 8px !important; padding:2px 2px 4px !important;',
+    '}',
+    '.bj-option-buttons::-webkit-scrollbar{ display:none }',
+    '.bj-option-btn{',
+    '  flex:0 0 auto !important;',
+    '  padding:8px 14px !important;',
+    '  background:#fff !important;',
+    '  border:1px solid #dfdfdf !important; border-radius:999px !important;',
+    '  font-family:Pretendard,sans-serif !important;',
+    '  font-size:12.5px !important; font-weight:600 !important; color:#555 !important;',
+    '  cursor:pointer !important; white-space:nowrap;',
+    '  transition:all 0.15s !important;',
+    '  line-height:1.2 !important;',
+    '}',
+    '.bj-option-btn:hover{',
+    '  border-color:#0838F8 !important; color:#0838F8 !important;',
+    '  background:#f5f8ff !important;',
+    '}',
+    '.bj-option-btn.active{',
+    '  background:#0838F8 !important; color:#fff !important;',
+    '  border-color:#0838F8 !important; font-weight:700 !important;',
+    '  box-shadow:0 2px 6px rgba(8,56,248,0.2) !important;',
+    '}',
+    '@media (max-width:600px){',
+    '  .bj-option-btn{ padding:7px 12px !important; font-size:11.5px !important }',
+    '}',
     '.bj-bb-inner-merged .bb-option-select:focus,',
     '.bj-bb-inner-merged .option_select:focus,',
     '.bj-bar-fallback .bb-option-select:focus,',
@@ -686,7 +735,7 @@
     '}',
     '@media (max-width:600px){',
     '  .bj-ws-sup-tab{ padding:5px 10px !important; font-size:11.5px !important }',
-    '  .bj-ws-term-pill{ padding:8px 10px !important; min-width:96px !important }',
+    '  .bj-ws-term-pill{ padding:5px 9px !important; min-width:auto !important }',
     '  .bj-ws-term-period{ font-size:10.5px }',
     '  .bj-ws-term-price{ font-size:13px }',
     '}',
@@ -1299,6 +1348,49 @@
       select.addEventListener('change', refreshChip);
       select.dataset.bjOptionBound = '1';
     }
+    /* v0.5.18: 옵션 ≤4개면 select를 가로 버튼 그룹으로 대체. 5개+ 또는 옵션 길이가 길면 select 유지 */
+    buildOptionButtonGroup(wrapper, select, refreshChip);
+  }
+
+  /* v0.5.18: 옵션 select를 가로 버튼 그룹으로 렌더 (≤4개 + 평균 글자 ≤8자) */
+  function buildOptionButtonGroup(wrapper, select, refreshChip){
+    if (!select || select.dataset.bjOptionGroupBuilt) return;
+    /* placeholder 제외한 실제 옵션 */
+    var realOpts = Array.from(select.options).filter(function(o){ return o.value !== ''; });
+    if (realOpts.length === 0 || realOpts.length > 4) return;
+    /* 옵션 라벨 평균 길이 — 길면 줄바꿈으로 버튼이 커지니 select 유지 */
+    var avgLen = realOpts.reduce(function(s,o){ return s + o.textContent.trim().length; }, 0) / realOpts.length;
+    if (avgLen > 10) return;
+    /* 버튼 그룹 컨테이너 — select 직전에 삽입 */
+    var group = document.createElement('div');
+    group.className = 'bj-option-buttons';
+    group.setAttribute('role', 'radiogroup');
+    group.setAttribute('aria-label', '옵션 선택');
+    realOpts.forEach(function(opt){
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'bj-option-btn';
+      btn.dataset.value = opt.value;
+      btn.setAttribute('role', 'radio');
+      btn.textContent = opt.textContent.trim();
+      if (select.value === opt.value) btn.classList.add('active');
+      btn.addEventListener('click', function(){
+        select.value = opt.value;
+        try { select.dispatchEvent(new Event('change', { bubbles: true })); } catch(_){}
+        refreshGroup();
+      });
+      group.appendChild(btn);
+    });
+    function refreshGroup(){
+      Array.from(group.children).forEach(function(b){
+        b.classList.toggle('active', b.dataset.value === select.value);
+      });
+    }
+    select.parentNode.insertBefore(group, select);
+    select.classList.add('bj-option-select-replaced');
+    /* select 변경 외부에서도 group sync */
+    select.addEventListener('change', refreshGroup);
+    select.dataset.bjOptionGroupBuilt = '1';
   }
 
   /* v0.5.6: 위젯 내 렌탈사·약정 selector 빌드 */
