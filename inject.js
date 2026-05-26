@@ -396,6 +396,7 @@
     /* specificity (0,1,4,0) 동급 + cascade 후순 */
     'body #container .wide-inner > .prod_view_bot.card.mt40,',
     '.prod_view_bot.card.mt40{',
+    '  display:block !important;',  /* v0.5.3: 빌리조 underlying이 display:none으로 숨김 → 명시 override */
     '  position:fixed !important;',
     '  bottom:0 !important;',
     '  left:0 !important; right:0 !important;',
@@ -996,6 +997,8 @@
     }
     function apply(){
       var show = (pastTrigger || shownOnce) && !manualHide;
+      /* v0.5.3: display:block 항상 강제 (billyjo underlying이 display:none 설정) */
+      wrapper.style.setProperty('display', 'block', 'important');
       if (show) {
         wrapper.classList.remove('bj-bar-slide-hidden');
         wrapper.classList.add('show');
