@@ -807,11 +807,12 @@
       firstMonthPill = bbInner.querySelector('.bb-month-pill .bb-month-price');
       priceEl  = bbInner.querySelector('.bb-price') || firstMonthPill;
     }
-    /* v0.5.4: 핸들 텍스트는 brand prefix("세스코 - ", "쿠쿠 - " 등) 제거하여 모델명만 노출 */
+    /* v0.5.4: 핸들 텍스트는 brand prefix("세스코 - ", "쿠쿠 - ", "세스코 " 등) 제거하여 모델명만 노출 */
     var rawName = (prodName && prodName.textContent.trim()) ||
                   (document.querySelector('.prod_name b') && document.querySelector('.prod_name b').textContent.trim()) ||
                   '렌탈 신청';
-    var nameText = rawName.replace(/^[가-힣A-Za-z0-9]+\s*[-·]\s*/, '');
+    var KNOWN_BRANDS = /^(세스코|코웨이|쿠쿠|SK매직|sk매직|LG|LG전자|삼성|삼성전자|위닉스|루헨스|쿠첸|바디프랜드|보람피플|BS렌탈|BS ON|현대렌탈서비스|위덱|위더스렌탈|자이글|렌타나|스마트렌탈|지니원|코지마|드롱기|유라|일렉트로룩스|인켈|로보락|파나소닉|기아|현대|KT)\s*[-·]?\s*/;
+    var nameText = rawName.replace(KNOWN_BRANDS, '').trim() || rawName;
     var priceText = (priceEl && priceEl.textContent.trim()) ||
                     (document.querySelector('.top_min_price b') && '월 ' + document.querySelector('.top_min_price b').textContent.trim() + '원') ||
                     '';
