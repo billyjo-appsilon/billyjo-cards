@@ -1,5 +1,5 @@
 /*!
- * billyjo-detailcard v0.5.45 — 상세페이지 카드 클라이언트 패치
+ * billyjo-detailcard v0.5.46 — 상세페이지 카드 클라이언트 패치
  * https://github.com/billyjo-appsilon/billyjo-detailcard
  *
  * 적용 페이지: /html/dh_prod/prod_view/*  (제품 상세 페이지)
@@ -717,7 +717,9 @@
     '  border-radius:999px !important;',
     '  background:#e8edff !important; color:#0838F8 !important;',
     '  font-size:11.5px !important; font-weight:700 !important;',
-    '  margin-right:8px !important; vertical-align:middle !important;',
+    /* v0.5.46: chip이 price 우측에 배치되므로 margin-right → margin-left + flex:0 0 auto */
+    '  margin-left:8px !important; flex:0 0 auto !important;',
+    '  vertical-align:middle !important;',
     '  line-height:1.2 !important; cursor:pointer !important;',
     '  border:1px solid #c8d4f0 !important;',
     '  font-family:Pretendard,sans-serif !important;',
@@ -1032,7 +1034,7 @@
     '  .bj-bar-handle{ padding:11px 14px 5px }',
     '  .bj-bar-handle-text{ font-size:12px }',
     '  .bj-bar-handle-price{ font-size:13px }',
-    '  .bj-bar-handle-option{ font-size:11px !important; padding:2px 8px !important; max-width:90px; margin-right:6px !important }',
+    '  .bj-bar-handle-option{ font-size:11px !important; padding:2px 8px !important; max-width:90px; margin-left:6px !important }',
     '  .bj-bar-handle-toggle{ width:34px; height:22px; font-size:12px }',
     '  .prod_view_bot.card.mt40 .bb-inner{ padding:8px 14px !important }',
     '  .bj-btn-consult{ padding:7px 11px; font-size:12.5px }',
@@ -1551,7 +1553,8 @@
       chip.setAttribute('role', 'button');
       chip.setAttribute('tabindex', '0');
       chip.setAttribute('aria-label', '옵션 선택');
-      handleText.insertBefore(chip, handleText.firstChild);
+      /* v0.5.46: chip 위치 — handleText의 마지막 자식 (price 우측). 이전엔 firstChild. */
+      handleText.appendChild(chip);
       /* 칩 클릭 시 위젯 펼침 + select 포커스 */
       chip.addEventListener('click', function(e){
         e.stopPropagation();
@@ -1565,6 +1568,9 @@
           chip.click();
         }
       });
+    } else if (chip !== handleText.lastElementChild) {
+      /* v0.5.46: 이전 버전에서 firstChild로 삽입된 chip이 남아있으면 우측으로 재배치 */
+      handleText.appendChild(chip);
     }
     function refreshChip(){
       var v = select.value;
