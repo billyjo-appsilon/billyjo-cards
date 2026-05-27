@@ -3062,6 +3062,8 @@
   }
 
   function runAll(){
+    /* v0.5.66: highlight는 다른 함수 throw에 영향 받지 않게 최우선 호출 */
+    try { highlightPartnershipCardForProduct(); } catch(e){ document.body && (document.body.dataset.bjPhpDebug = 'runAllErr:' + e.message); }
     injectCSS();
     tagHeaderDom();
     enhanceBottomBar();
@@ -3071,7 +3073,6 @@
     addOwnershipNotice();    /* v0.5.47: 반납 조건 아닌 제품에 '만기 후 소유권 이전' chip */
     personalizePersonaIcons(); /* v0.5.59: 페르소나 카드 아이콘 (현재 1인·신혼 샘플) */
     arrangePersonaLevelMobile(); /* v0.5.61: 모바일에서 추천강도 라벨을 페르소나명 옆으로 */
-    highlightPartnershipCardForProduct(); /* v0.5.65: 제휴카드 페이지에서 ?bj= 렌탈사 강조 */
     fetchAndInjectAICard();
     hideOriginalSpecsAndSimplifyLpt();
     setupBottomBarVisibility();
