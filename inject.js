@@ -1,5 +1,5 @@
 /*!
- * billyjo-detailcard v0.5.41 — 상세페이지 카드 클라이언트 패치
+ * billyjo-detailcard v0.5.42 — 상세페이지 카드 클라이언트 패치
  * https://github.com/billyjo-appsilon/billyjo-detailcard
  *
  * 적용 페이지: /html/dh_prod/prod_view/*  (제품 상세 페이지)
@@ -1000,9 +1000,26 @@
        v0.5.37: collapsed 높이 축소에 맞춰 padding-bottom 동기 축소 */
     'body{ padding-bottom:72px !important }',
 
+    /* v0.5.42: 빌리조 quick-call/top floating 버튼(.new-qb, .goTop)을 위젯과 겹치지 않게
+       위로 올림. :has()로 wrapper 상태 추적해서 collapsed/expanded/dismiss 자동 조정. */
+    '.new-qb, .goTop{',
+    '  bottom:60px !important;',  /* collapsed 48px + 12px 여백 */
+    '  transition:bottom 0.32s cubic-bezier(0.4, 0, 0.2, 1) !important;',
+    '}',
+    'body:has(.prod_view_bot.card.mt40.bj-bar-expanded) .new-qb,',
+    'body:has(.prod_view_bot.card.mt40.bj-bar-expanded) .goTop{',
+    '  bottom:calc(min(440px, 75vh) + 12px) !important;',  /* expanded max-height + 여백 */
+    '}',
+    'body:has(.prod_view_bot.card.mt40.bj-bar-slide-hidden) .new-qb,',
+    'body:has(.prod_view_bot.card.mt40.bj-bar-slide-hidden) .goTop{',
+    '  bottom:12px !important;',  /* dismiss 시 원래 위치 */
+    '}',
+
     /* 모바일 컴팩트 */
     '@media (max-width:600px){',
     '  body{ padding-bottom:64px !important }',
+    /* v0.5.42: 모바일 collapsed 44px + 12px 여백 */
+    '  .new-qb, .goTop{ bottom:56px !important }',
     /* v0.5.37: 모바일 핸들도 위아래 padding 축소 */
     '  .bj-bar-handle{ padding:11px 14px 5px }',
     '  .bj-bar-handle-text{ font-size:12px }',
