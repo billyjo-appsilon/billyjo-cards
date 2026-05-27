@@ -1,5 +1,5 @@
 /*!
- * billyjo-detailcard v0.5.47 — 상세페이지 카드 클라이언트 패치
+ * billyjo-detailcard v0.5.48 — 상세페이지 카드 클라이언트 패치
  * https://github.com/billyjo-appsilon/billyjo-detailcard
  *
  * 적용 페이지: /html/dh_prod/prod_view/*  (제품 상세 페이지)
@@ -2024,11 +2024,19 @@
       rt.dataset.bjOwnershipChecked = 'returnable';
       return;
     }
-    /* row 추가 — 다른 .rt-r와 동일 구조, .rt-v에 chip 강조 */
+    /* row 추가 — 다른 .rt-r와 동일 구조, .rt-v에 chip 강조.
+       v0.5.48: .rt-l '소유권' 옆 ⓘ details.help 자동 부착. setupHelpClose가 글로벌
+       selector라 외부 클릭/ESC 닫힘 + 1개만 열림 자동 처리. */
+    var helpHtml =
+      '<details class="help"><summary aria-label="소유권 이전 설명"></summary>' +
+      '<div class="help-pop"><strong>약정 기간 만료 시 제품 소유권이 고객에게 이전됩니다.</strong>' +
+      ' 별도 비용 없이 자동 전환되며, 만기 이후에는 자유롭게 사용·양도 가능합니다.' +
+      ' 빌리조 렌탈 상품은 본사 정책상 대부분 소유권 이전형이며,' +
+      ' 반납 조건 제품은 상품명·상세에 명시되어 있습니다.</div></details>';
     var row = document.createElement('div');
     row.className = 'rt-r bj-ownership-row';
     row.innerHTML =
-      '<span class="rt-l">소유권</span>' +
+      '<span class="rt-l" data-bj-help-added="1">소유권 ' + helpHtml + '</span>' +
       '<span class="rt-v bj-ownership-chip">만기 후 소유권 이전</span>';
     rt.appendChild(row);
     rt.dataset.bjOwnershipChecked = 'ownership';
