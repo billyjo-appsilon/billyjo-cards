@@ -378,14 +378,41 @@
     - `<details class="step-details">` 안에 `<summary>` 다음으로 `<div class="field">`만 둘 것. 추가 `<details>` 중첩 시 anchor 주석 반드시 사용
     - 신규 카드 작성·기존 카드 fix 모두 `scripts/template-base.html`을 표준 골격으로 사용
 
-    **(B) SLOT 8 약정·카드 할인가 — 카드 내부 항상 노출**:
+    **(B) SLOT 8 약정·카드 할인가 — 카드 내부 항상 노출 (v0.5.39~v0.5.41 갱신)**:
     - 카드 할인 유무에 **관계없이** 항상 SLOT 8 (`#ai-card-lpt-section`) 노출
     - 카드 할인 있음(`monthly !== finalPrice`): 3컬럼 표 (약정기간 / 월 렌탈료 / 카드 할인가 + 절감액 -원 마크)
     - 카드 할인 없음: 2컬럼 표 (약정기간 / 월 렌탈료)
-    - 본문 `#livePriceTable`은 카드 내부 mount 성공 시 `display:none` — **단일 출처(카드 내부) 원칙**
+    - **표 위 제품 정보 헤더 `#lptTitle` 항상 노출** (v0.5.39): 1행 제품명(15px Bold 흰 글씨, 'LG구독 -' 같은 brand prefix 제거), 2행 모델명·관리주기(12px opacity:0.85). 파란 #0838f8 배경.
+    - **lptTitle과 표 단일 outer wrapper로 통합** (v0.5.41): 별도 div 2개 두면 border 차이로 1-2px width 어긋남 → outer가 border + radius + overflow:hidden 단일 관리, title/표는 같은 가로 폭 보장.
+    - **본문 LPT 광범위 hide** (v0.5.40): `hideDuplicateBodyLpt()` 3단계 selector — (1) `#livePriceTable` + 부모 wrapper (2) thead text 매칭 `약정 + (월 렌탈료|카드 할인가|할인가)` (3) h2/h3/h4/.sec-t에 '약정·카드 할인가' 헤더 갖는 section. **AI 카드(`#ai-card-root`)·하단 위젯(`.prod_view_bot.card.mt40`)·hero(`.prod_view_top`) 외부에 한정** (protected 영역). `mountLptIntoCard` + `runAll` 매 cycle 호출 — 빌리조 본문 재렌더에도 안정.
     - inject.js `mountLptIntoCard()`가 `populateLptFromMonthBoxes` 마지막에 자동 호출
 
     **(C) 일괄 fix 도구**: 기존 카드의 누출 구조는 `scripts/fix-cards.js` 일회성 실행으로 anchor-comment 구조 + SLOT 8 placeholder 일괄 주입. v0.5.0 이전 카드는 모두 이 도구로 갱신 완료(2026-05-26 fix-cards 3,222개).
+
+29. **빌리조 floating 버튼 위치 자동 조정 (v0.5.42 신설)**: 빌리조 본 페이지의 fixed-position floating 버튼들(`.new-qb` quick-call + `.goTop` 맨 위로)이 우리 하단 위젯(`.prod_view_bot.card.mt40`)과 시각적으로 겹치지 않도록 **CSS `:has()` 선택자만으로 wrapper 상태에 따라 bottom 자동 조정** (JS·MutationObserver 불필요):
+
+    ```css
+    /* 기본 (위젯 collapsed) — 핸들 위로 */
+    .new-qb, .goTop {
+      bottom: 60px !important;  /* collapsed 48px + 12px 여백 */
+      transition: bottom 0.32s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+    /* 위젯 펼침 — 펼친 위젯 위로 */
+    body:has(.prod_view_bot.card.mt40.bj-bar-expanded) .new-qb,
+    body:has(.prod_view_bot.card.mt40.bj-bar-expanded) .goTop {
+      bottom: calc(min(440px, 75vh) + 12px) !important;
+    }
+    /* 위젯 dismiss (사용자 드래그 ≥120px) — 원래 위치 복귀 */
+    body:has(.prod_view_bot.card.mt40.bj-bar-slide-hidden) .new-qb,
+    body:has(.prod_view_bot.card.mt40.bj-bar-slide-hidden) .goTop {
+      bottom: 12px !important;
+    }
+    @media (max-width:600px) {
+      .new-qb, .goTop { bottom: 56px !important }  /* 모바일 44px + 12px */
+    }
+    ```
+
+    `transition: bottom 0.32s`는 위젯 max-height transition과 같은 timing으로 동기 부드러운 이동. 토글 시점에 두 요소가 함께 움직여 자연스러운 UX. 신규 빌리조 floating 요소 추가 시 이 selector 리스트에 동일 패턴으로 등록 (절대 규칙 #25 하단 위젯과 짝).
 
 28. **상단 카테고리바 + 신혼부부 패키지 (v0.5.1)**: 사이트 전역 promotion 항목(예: 신혼부부 패키지)은 **플로팅 fab 금지**, **`.category__wrap` 상단 카테고리바 첫 항목으로 삽입**.
     - 클래스: `.bj-newlywed-cat` (다른 promotion도 `.bj-{name}-cat` 패턴)
@@ -509,3 +536,5 @@
 - v0.5.32~v0.5.33 (2026-05-27): **카드/정가 라벨 명시 + 색상 옵션 항상 버튼 그룹**. (v0.5.32) 약정 pill에 카드할인가 + 정가 strike-through 함께 노출, 색상만으로 구분 어렵던 문제 해소. (v0.5.33) pill 2행 마크업 — 1행 [BEST + 약정기간], 2행 [카드 라벨+가격 / 정가 라벨+가격]. 카드 라벨 핑크 #ffe1ee + 정가 라벨 회색. **색상 옵션 항상 버튼 그룹으로** — buildOptionButtonGroup 옵션 개수·길이 제한 폐기, shortenOptionLabel로 접두어(솔리드/메탈릭) + 후미 모델코드(WB/AS 등) 제거 → "솔리드크림화이트 WB" → "크림화이트". select.style.display:none 폐기 (iOS Safari의 fixed wrapper 안 select picker 알려진 버그 원천 차단). 전체 라벨은 button.title hover 노출.
 - v0.5.34~v0.5.35 (2026-05-27): **펼침 토글 회귀 fix + native select 가드**. (v0.5.34) enhanceBottomBar 매 호출 시 `wrapper.classList.add('bj-bar-expanded')`가 가드 *전*에 있어 사용자가 collapsed로 토글한 직후 runAll 재실행되면 expanded 강제 추가 → 두 class 공존 → CSS cascade로 collapsed 이김 → "펼침 버튼 눌러도 안 펼쳐짐" 증상. 가드 안으로 이동 + forceFixedStyle도 1회 가드. toggleExpanded 명시적 분기로 두 class 동시/부재 비정상 상태 안전. max-height 380→min(440px, 75vh). drag onMove의 transform:translateY(0) 부작용 제거. (v0.5.35) syncOptionSelectToHandle의 `wrapper.contains(s)` 가드 폐기 — 18055 page는 native .option_select가 wrapper 내부 .rantal_wrap > .option__wrap 위치라 가드에 걸려 skip되던 버그. 우리 자체 .bj-option-clone만 skip하도록 좁힘. Playwright 검증으로 7/7 통과.
 - v0.5.36~v0.5.38 (2026-05-27): **시각 정리 + grip hit area + help 통합**. (v0.5.36) .bj-ws-term-pill border-radius 999px(캡슐) → 8px(코너 네모). (v0.5.37) 하단 위젯 위아래 여백 11곳 일괄 축소 — 핸들 padding 20/10 → 14/6, collapsed max-height 56→48px, body padding-bottom 88→72px, fallback padding 14/16 → 8/10, 버튼 padding 11→8px, pill padding 5→3px 등. 화면 점유 ~15% 감소. (v0.5.38) **grip 바 hit area 확장** — `.bj-bar-handle::before`는 visible bar 그대로 두고(pointer-events:none) `.bj-bar-handle::after`로 120×18px transparent hit zone 추가. grip 바 자체 + 주변 영역 어디 눌러도 핸들 mousedown 위임 → 토글 작동. **rental-terms help 통합** — '약정 기간'·'의무 사용 기간' 두 ⓘ를 분리 노출하면 정보 단편화 + 화면 가림 중복 → '약정 기간' 라벨에만 통합 박스 하나로 두 개념을 `<br><br>` 분리해 함께 노출. '의무 사용 기간' 라벨은 ⓘ 추가하지 않음. 절대 규칙 #26 (C) 신설.
+- v0.5.39~v0.5.41 (2026-05-27): **LPT(약정·카드 할인가) 표 정비 + 본문 중복 hide**. (v0.5.39) `mountLptIntoCard`에 표 위 제품 정보 헤더(`#lptTitle`) 추가 — 1행 제품명(15px Bold 흰 글씨, 'LG구독 -' 같은 brand prefix 제거), 2행 모델명·관리주기(12px opacity:0.85). 파란 #0838f8 배경. (v0.5.40) **본문 LPT 중복 hide** — `hideDuplicateBodyLpt()` 3단계: (1) `#livePriceTable` + 부모 wrapper (2) thead에 '약정' + ('월 렌탈료'|'카드 할인가'|'할인가') 패턴 갖는 모든 table — text 기반 매칭으로 다양한 페이지 구조 robust (3) h2/h3/h4/.sec-t에 '약정·카드 할인가' 등 헤더 갖는 section. 모두 protected 영역(`#ai-card-root`·`.prod_view_bot.card.mt40`·`.prod_view_top`) 외부 한정. `mountLptIntoCard` + `runAll` 매 cycle 호출 — 빌리조 본문 재렌더에도 안정. (v0.5.41) lptTitle과 표 width 불일치 fix — 이전 별도 div 2개 (title full width + 표 wrapper with border) → outer wrapper 하나로 통합 (border + radius + overflow:hidden 단일 관리). 절대 규칙 #27 갱신 — SLOT 8 mount 시 lptTitle 표 위 항상 노출 + 본문 LPT 광범위 hide 의무.
+- v0.5.42 (2026-05-27): **빌리조 floating 버튼 자동 위치 조정 (절대 규칙 #29 신설)**. 빌리조 페이지 floating 버튼 `.new-qb`(quick-call: q_call_red·q_call) + `.goTop`(맨 위로: q_top·m_top)이 fixed positioning이라 하단 위젯과 시각적으로 겹침. JS 없이 CSS `:has()` 선택자로 wrapper 상태 추적 → 3-state bottom 자동 조정: (a) 기본 collapsed `bottom:60px` (48 + 12) — 위젯 핸들 위로 (b) `body:has(.bj-bar-expanded)` 시 `bottom:calc(min(440px, 75vh) + 12px)` — 펼친 위젯 위로 (c) `body:has(.bj-bar-slide-hidden)` 시 `bottom:12px` — dismiss 시 원래 위치 복귀. `transition:bottom 0.32s cubic-bezier(0.4, 0, 0.2, 1)`로 위젯 max-height transition과 동기 부드러운 이동. 모바일(≤600px) collapsed 44px 기준 `bottom:56px`. JS·MutationObserver 불필요 — 순수 CSS.
