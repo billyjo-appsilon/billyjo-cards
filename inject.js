@@ -1,5 +1,5 @@
 /*!
- * billyjo-detailcard v0.5.62 — 상세페이지 카드 클라이언트 패치
+ * billyjo-detailcard v0.5.63 — 상세페이지 카드 클라이언트 패치
  * https://github.com/billyjo-appsilon/billyjo-detailcard
  *
  * 적용 페이지: /html/dh_prod/prod_view/*  (제품 상세 페이지)
@@ -1570,6 +1570,16 @@
           if (/색상|컬러|옵션|타입|용량|사이즈/.test(ths[ti].textContent)) {
             labelText = ths[ti].textContent.trim(); break;
           }
+        }
+      }
+      /* v0.5.63: 옵션 값이 색상명이면 nearTh 라벨('타입' 등) 무시하고 '색상'으로 강제.
+         빌리조 페이지의 nearTh는 보통 '타입'·'옵션'으로 일반화돼 있어 실제 값(색상)과 불일치. */
+      var optTexts = Array.from(orig.options).filter(function(o){ return o.value !== ''; }).map(function(o){ return o.textContent; });
+      if (optTexts.length > 0) {
+        var COLOR_KEYWORDS = /화이트|블랙|그레이|그레이스|실버|골드|베이지|브라운|핑크|블루|그린|레드|네이비|아이보리|크림|챠콜|차콜|민트|라벤더|로즈|샤페|아쿠아|투명|오트밀|피치|머스타드|silver|gold|black|white|gray|grey|brown|pink|blue|green|red|navy|beige|ivory|cream/i;
+        var colorMatchCount = optTexts.filter(function(t){ return COLOR_KEYWORDS.test(t); }).length;
+        if (colorMatchCount / optTexts.length >= 0.5) {
+          labelText = '색상';
         }
       }
       var label = document.createElement('div');
