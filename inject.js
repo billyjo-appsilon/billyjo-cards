@@ -26,6 +26,12 @@
 (function(){
   'use strict';
 
+  /* v0.5.66 diag: IIFE 진입 시 즉시 marker — body 없으면 readyState 추적 */
+  try {
+    if (document.body) document.body.dataset.bjIifeEntered = '1';
+    else document.addEventListener('DOMContentLoaded', function(){ document.body.dataset.bjIifeEntered = 'dcl'; });
+  } catch(_){}
+
   // v0.5.1: 신혼부부 패키지 — 플로팅 fab 폐기, 상단 카테고리바(.category__wrap)에 항목 추가.
   (function injectNewlywedInCategoryBar(){
     function getCommit(){
