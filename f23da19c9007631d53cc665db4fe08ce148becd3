@@ -1,0 +1,13 @@
+🏁 frontend 완료 1차 (2026-05-28)
+
+상담신청 modal/4자리 코드/상담사 직통번호 안내 + tel: 통화 연결 UI 완료.
+admin2 backend의 POST /v1/consult/quick-assign 연동만 남음.
+
+연동 방법: 사이트 어딘가에서
+  window.__bjConsultApiUrl = 'https://admin2.appsilon.kr';
+설정. inject.js가 자동으로 fetch 시도, 실패 시 mock fallback.
+
+다음 단계 (backend):
+- admin2 DB migration: alembic upgrade head
+- 상담사 데이터 입력 (consultants 테이블, avg_conversion_rate + phone)
+- 호스팅 결정 + 도메인 연결
