@@ -1,5 +1,5 @@
 /*!
- * billyjo-detailcard v0.5.35 — 상세페이지 카드 클라이언트 패치
+ * billyjo-detailcard v0.5.36 — 상세페이지 카드 클라이언트 패치
  * https://github.com/billyjo-appsilon/billyjo-detailcard
  *
  * 적용 페이지: /html/dh_prod/prod_view/*  (제품 상세 페이지)
@@ -597,12 +597,13 @@
     '}',
     '.bj-ws-term-pills::-webkit-scrollbar{ display:none }',
     /* v0.5.19: pill을 완전 1행 — period · price 가로 배치 + 구분점
-       v0.5.31: padding/gap 축소로 가로 길이 컴팩트화 */
+       v0.5.31: padding/gap 축소로 가로 길이 컴팩트화
+       v0.5.36: border-radius 999px(캡슐) → 8px(코너만 둥근 네모) */
     '.bj-ws-term-pill{',
     '  flex:0 0 auto !important; min-width:auto !important;',
     '  padding:4px 8px !important;',
     '  background:#fafafa !important;',
-    '  border:1px solid #dfdfdf !important; border-radius:999px !important;',
+    '  border:1px solid #dfdfdf !important; border-radius:8px !important;',
     '  display:inline-flex !important; flex-direction:row !important;',
     '  align-items:center !important; gap:5px !important; cursor:pointer !important;',
     '  font-family:Pretendard,sans-serif !important;',
