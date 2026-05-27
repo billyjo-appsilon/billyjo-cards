@@ -1,5 +1,5 @@
 /*!
- * billyjo-detailcard v0.5.36 — 상세페이지 카드 클라이언트 패치
+ * billyjo-detailcard v0.5.37 — 상세페이지 카드 클라이언트 패치
  * https://github.com/billyjo-appsilon/billyjo-detailcard
  *
  * 적용 페이지: /html/dh_prod/prod_view/*  (제품 상세 페이지)
@@ -451,8 +451,9 @@
     'body #container .wide-inner > .prod_view_bot.card.mt40.bj-bar-expanded,',
     '.prod_view_bot.card.mt40.bj-bar-expanded{ max-height:min(440px, 75vh) !important }',
     /* v0.5.13: collapsed max-height 64→56px (핸들 1행만 보이므로 더 콤팩트) */
+    /* v0.5.37: collapsed max-height 56→48px (핸들 padding 축소 동기) */
     'body #container .wide-inner > .prod_view_bot.card.mt40.bj-bar-collapsed,',
-    '.prod_view_bot.card.mt40.bj-bar-collapsed{ max-height:56px !important; overflow:hidden !important }',
+    '.prod_view_bot.card.mt40.bj-bar-collapsed{ max-height:48px !important; overflow:hidden !important }',
     /* v0.5.13: collapsed 시 핸들만 노출 — 모든 fallback 콘텐츠 숨김 (렌탈사 selector·약정 pill·3버튼 영역 포함) */
     '.prod_view_bot.card.mt40.bj-bar-collapsed .card__top,',
     '.prod_view_bot.card.mt40.bj-bar-collapsed .card__tit,',
@@ -476,7 +477,7 @@
     '}',
     '.prod_view_bot.card.mt40.bj-bar-expanded .bb-inner,',
     '.prod_view_bot.card.mt40 .bb-inner{',
-    '  overflow-y:auto; max-height:calc(min(440px, 75vh) - 56px);',
+    '  overflow-y:auto; max-height:calc(min(440px, 75vh) - 48px);',
     '}',
     /* v0.5.34: 펼친 위젯 전체에 세로 스크롤 보장 — 콘텐츠가 max-height 초과 시 본 컨테이너에서 스크롤 */
     '.prod_view_bot.card.mt40.bj-bar-expanded{ overflow-y:auto !important }',
@@ -484,7 +485,8 @@
     /* 핸들 (v0.5.0: grip 강화 — 더 크고 진하게, 호버 시 브랜드 파랑) */
     '.bj-bar-handle{',
     '  display:flex; align-items:center; justify-content:space-between;',
-    '  padding:20px 18px 10px; cursor:pointer; user-select:none;',
+    /* v0.5.37: 위아래 padding 축소 — grip 영역만 확보(상단 16px), 하단 6px */
+    '  padding:14px 18px 6px; cursor:pointer; user-select:none;',
     '  background:linear-gradient(180deg, #fafafa 0%, #ffffff 100%);',
     '  border-bottom:0.5px solid #dfdfdf; gap:12px; position:relative;',
     '  -webkit-tap-highlight-color:transparent;',
@@ -631,14 +633,15 @@
     '}',
     '.bj-ws-term-pill.has-card-dc .bj-ws-term-price{ color:#ee0979 !important }',
     '.bj-ws-term-pill.has-card-dc.active .bj-ws-term-price{ color:#ee0979 !important }',
-    /* v0.5.33: pill 2행 마크업 + "카드/정가" 라벨 */
+    /* v0.5.33: pill 2행 마크업 + "카드/정가" 라벨
+       v0.5.37: padding/gap 축소 — 위아래 더 컴팩트 */
     '.bj-ws-term-pill-2row{',
-    '  flex-direction:column !important; gap:2px !important;',
-    '  padding:5px 10px !important; align-items:center !important;',
+    '  flex-direction:column !important; gap:1px !important;',
+    '  padding:3px 9px !important; align-items:center !important;',
     '}',
     '.bj-ws-term-row1, .bj-ws-term-row2{',
     '  display:inline-flex !important; align-items:center !important;',
-    '  gap:4px !important; line-height:1.2 !important;',
+    '  gap:4px !important; line-height:1.15 !important;',
     '}',
     '.bj-ws-term-price-lbl{',
     '  font-size:9px !important; font-weight:700 !important;',
@@ -907,11 +910,12 @@
     '.bj-btn-consult:hover{ background:#e8edff !important }',
     '.bj-btn-consult svg{ width:18px; height:18px; fill:currentColor }',
 
-    /* v0.4.0: fallback 박스 — .bb-inner 없을 때 위젯 자체 콘텐츠 */
+    /* v0.4.0: fallback 박스 — .bb-inner 없을 때 위젯 자체 콘텐츠
+       v0.5.37: 위아래 padding + gap 축소 */
     '.bj-bar-fallback{',
-    '  padding:14px 18px 16px !important;',
+    '  padding:8px 18px 10px !important;',
     '  display:flex !important; align-items:center !important;',
-    '  justify-content:space-between !important; gap:14px !important;',
+    '  justify-content:space-between !important; gap:8px !important;',
     '  flex-wrap:wrap !important;',
     '  font-family:"Pretendard","Apple SD Gothic Neo",sans-serif !important;',
     '}',
@@ -919,8 +923,9 @@
     /* v0.5.25: 옵션 select wrapper 박스 — fallback 위젯 안에 라벨+드롭다운 명확 노출 */
     '.bj-fb-option-box{',
     '  display:flex !important; flex-direction:row !important;',
-    '  align-items:center !important; gap:10px !important;',
-    '  margin:0 0 8px !important; padding:8px 12px !important;',
+    '  align-items:center !important; gap:8px !important;',
+    /* v0.5.37: 위아래 padding 축소 + margin 축소 */
+    '  margin:0 0 4px !important; padding:5px 10px !important;',
     '  background:#f7f9ff !important;',
     '  border:1px solid #d6e0fb !important; border-radius:8px !important;',
     '  width:100% !important; flex:1 1 100% !important;',
@@ -943,17 +948,18 @@
     '}',
     '.bj-fb-label{ font-size:11.5px; color:#6a6a6a; font-weight:600 }',
     '.bj-fb-price{ font-size:17px; font-weight:800; color:#0838F8; line-height:1.2 }',
-    /* v0.5.26: 3버튼 풀폭 stretch — 위젯 가로 폭을 균등 분배 */
+    /* v0.5.26: 3버튼 풀폭 stretch — 위젯 가로 폭을 균등 분배
+       v0.5.37: 위 margin + 버튼 위아래 padding 축소 */
     '.bj-fb-btns{',
     '  display:flex !important; align-items:stretch !important; gap:8px !important;',
     '  flex:1 1 100% !important; flex-wrap:nowrap !important;',
     '  width:100% !important; justify-content:stretch !important;',
-    '  margin-top:8px !important;',
+    '  margin-top:4px !important;',
     '}',
     '.bj-fb-btns .bb-btn{',
     '  flex:1 1 0 !important;',
     '  display:inline-flex !important; align-items:center !important; justify-content:center !important; gap:6px !important;',
-    '  padding:11px 8px !important; font-size:13px !important; font-weight:700 !important;',
+    '  padding:8px 8px !important; font-size:13px !important; font-weight:700 !important;',
     '  border-radius:8px !important; cursor:pointer !important;',
     '  font-family:"Pretendard",sans-serif !important;',
     '  border:1px solid #dfdfdf; background:#fff; color:#2a2a2a;',
@@ -966,33 +972,36 @@
     '.bj-fb-btns .bb-btn-cart{ background:#fff; color:#444; border:1px solid #dfdfdf }',
     '.bj-fb-btns .bb-btn-cart:hover{ background:#f4f4f4 }',
     '@media (max-width:600px){',
-    '  .bj-bar-fallback{ padding:12px 14px 14px !important; gap:10px !important }',
+    /* v0.5.37: 모바일도 위아래 padding 축소 */
+    '  .bj-bar-fallback{ padding:6px 12px 8px !important; gap:6px !important }',
     '  .bj-fb-label{ font-size:11px }',
     '  .bj-fb-price{ font-size:15.5px }',
     '  .bj-fb-btns{ gap:6px; width:100%; justify-content:stretch }',
-    '  .bj-fb-btns .bb-btn{ padding:9px 11px; font-size:12.5px; flex:1 1 auto; justify-content:center }',
+    '  .bj-fb-btns .bb-btn{ padding:7px 11px; font-size:12.5px; flex:1 1 auto; justify-content:center }',
     '  .bj-fb-btns .bb-btn-cart{ flex:0 0 auto; min-width:60px }',
     '}',
     '@media (max-width:400px){',
-    '  .bj-fb-btns .bb-btn{ padding:8px 8px; font-size:11.5px }',
+    '  .bj-fb-btns .bb-btn{ padding:6px 8px; font-size:11.5px }',
     '  .bj-fb-btns .bb-btn svg{ width:14px; height:14px }',
     '}',
 
-    /* body 하단 패딩 — fixed 위젯이 마지막 콘텐츠 가리지 않게 */
-    'body{ padding-bottom:88px !important }',
+    /* body 하단 패딩 — fixed 위젯이 마지막 콘텐츠 가리지 않게
+       v0.5.37: collapsed 높이 축소에 맞춰 padding-bottom 동기 축소 */
+    'body{ padding-bottom:72px !important }',
 
     /* 모바일 컴팩트 */
     '@media (max-width:600px){',
-    '  body{ padding-bottom:80px !important }',
-    '  .bj-bar-handle{ padding:14px 14px 8px }',
+    '  body{ padding-bottom:64px !important }',
+    /* v0.5.37: 모바일 핸들도 위아래 padding 축소 */
+    '  .bj-bar-handle{ padding:11px 14px 5px }',
     '  .bj-bar-handle-text{ font-size:12px }',
     '  .bj-bar-handle-price{ font-size:13px }',
     '  .bj-bar-handle-option{ font-size:11px !important; padding:2px 8px !important; max-width:90px; margin-right:6px !important }',
     '  .bj-bar-handle-toggle{ width:34px; height:22px; font-size:12px }',
-    '  .prod_view_bot.card.mt40 .bb-inner{ padding:12px 14px !important }',
-    '  .bj-btn-consult{ padding:9px 11px; font-size:12.5px }',
+    '  .prod_view_bot.card.mt40 .bb-inner{ padding:8px 14px !important }',
+    '  .bj-btn-consult{ padding:7px 11px; font-size:12.5px }',
     '  .bb-btn-rent.bj-btn-rent-gift{ font-size:13px }',
-    '  .prod_view_bot.card.mt40.bj-bar-collapsed{ max-height:52px !important }',
+    '  .prod_view_bot.card.mt40.bj-bar-collapsed{ max-height:44px !important }',
     '}',
 
     /* === v0.3.4: 카드 너비 확장 (.wide-inner 1480px) === */
