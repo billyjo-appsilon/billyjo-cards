@@ -1,5 +1,5 @@
 /*!
- * billyjo-detailcard v0.5.39 — 상세페이지 카드 클라이언트 패치
+ * billyjo-detailcard v0.5.40 — 상세페이지 카드 클라이언트 패치
  * https://github.com/billyjo-appsilon/billyjo-detailcard
  *
  * 적용 페이지: /html/dh_prod/prod_view/*  (제품 상세 페이지)
@@ -2446,26 +2446,73 @@
     section.hidden = false;
     section.dataset.bjLptMounted = '1';
 
-    /* v0.5.1+v0.5.39: 본문 #livePriceTable + wrapper 숨김 — 카드 내부 SLOT 8이 단일 출처.
-       이전엔 #livePriceTable만 hide했는데 그 부모 wrapper(약정·카드 할인가 라벨, 안내 문구
-       포함)가 보여 사용자가 중복 인식. wrapper도 함께 hide. */
-    var bodyLpt = document.getElementById('livePriceTable');
-    if (bodyLpt && bodyLpt.id !== mount.id) {
-      bodyLpt.style.setProperty('display', 'none', 'important');
+    /* v0.5.1+v0.5.39+v0.5.40: 본문 LPT 중복 광범위 hide — AI 카드에 단일 출처 보장.
+       3단계:
+       (1) #livePriceTable + 그 부모 wrapper
+       (2) thead에 "약정+(월렌탈료|카드할인가)" 패턴 갖는 모든 table (text 기반 매칭)
+       (3) 텍스트에 "약정·카드 할인가" 라벨 갖는 본문 section
+       모두 카드 내부(#ai-card-root)·하단 위젯(.prod_view_bot.card.mt40)·hero
+       (.prod_view_top) 외부에 한정. */
+    hideDuplicateBodyLpt();
+  }
+
+  function hideDuplicateBodyLpt(){
+    function isInProtected(el){
+      return !!(el && (
+        el.closest('#ai-card-root') ||
+        el.closest('.prod_view_bot.card.mt40') ||
+        el.closest('.prod_view_top')
+      ));
+    }
+    function hideWithWrapper(el){
+      if (!el || isInProtected(el)) return;
+      el.style.setProperty('display', 'none', 'important');
+      el.dataset.bjLptDupHidden = '1';
       /* 가장 가까운 의미있는 wrapper(section/article/div with significant class)도 hide */
-      var ancestor = bodyLpt.parentElement;
-      var depth = 0;
-      while (ancestor && depth < 4) {
-        var cls = String(ancestor.className || '');
-        if (/price|rental|약정|table_wrap|sec/i.test(cls) && !ancestor.closest('#ai-card-root')) {
-          ancestor.style.setProperty('display', 'none', 'important');
-          ancestor.dataset.bjLptWrapperHidden = '1';
+      var anc = el.parentElement, depth = 0;
+      while (anc && depth < 4) {
+        if (isInProtected(anc)) break;
+        var cls = String(anc.className || '');
+        if (/price|rental|약정|table_wrap|sec|lpt/i.test(cls)) {
+          anc.style.setProperty('display', 'none', 'important');
+          anc.dataset.bjLptDupHidden = '1';
           break;
         }
-        ancestor = ancestor.parentElement;
+        anc = anc.parentElement;
         depth++;
       }
     }
+
+    /* (1) #livePriceTable */
+    var lpt = document.getElementById('livePriceTable');
+    if (lpt) hideWithWrapper(lpt);
+
+    /* (2) thead text pattern */
+    document.querySelectorAll('table').forEach(function(table){
+      if (isInProtected(table)) return;
+      if (table.dataset.bjLptDupHidden) return;
+      var thead = table.querySelector('thead') || table.querySelector('tr:first-child');
+      if (!thead) return;
+      var headText = (thead.textContent || '').replace(/\s+/g, ' ');
+      /* "약정" + ("월 렌탈료" | "카드 할인가" | "할인가") — LPT 표 시그니처 */
+      if (/약정/.test(headText) && /(월\s*렌탈료|카드.*할인가|^.*할인가.*$)/.test(headText)) {
+        hideWithWrapper(table);
+      }
+    });
+
+    /* (3) 본문 section with "약정·카드 할인가" 또는 유사 헤더 */
+    document.querySelectorAll('h2, h3, h4, .sec-t, .section-title, [class*="title"]').forEach(function(h){
+      if (isInProtected(h)) return;
+      var t = (h.textContent || '').replace(/\s+/g, '');
+      if (/약정[·.]?카드할인가|약정카드할인가|월렌탈료표|카드할인가표/.test(t)) {
+        /* 헤더 자신 + 다음 sibling (보통 표 wrapper)도 hide */
+        var section = h.closest('section, article, .sec, .section') || h.parentElement;
+        if (section && !isInProtected(section)) {
+          section.style.setProperty('display', 'none', 'important');
+          section.dataset.bjLptDupHidden = '1';
+        }
+      }
+    });
   }
 
   function escapeHtml(s){
@@ -2729,6 +2776,7 @@
     hideExternalBbInner();    /* v0.5.21: 매 호출마다 외부 .bb-inner 즉시 숨김 */
     watchForBbInner();        /* v0.5.21: 영구 옵저버 설치 (한 번만) */
     ensureOptionSelect();     /* v0.5.27: 옵션 select 위젯에 노출 보장 */
+    hideDuplicateBodyLpt();   /* v0.5.40: 본문 LPT 중복 hide (빌리조 재렌더 대응) */
   }
 
   injectCSS();      // CSS 즉시 — head 있으면
