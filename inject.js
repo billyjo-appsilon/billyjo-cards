@@ -1,5 +1,5 @@
 /*!
- * billyjo-detailcard v0.5.66 — 상세페이지 카드 클라이언트 패치
+ * billyjo-detailcard v0.5.67 — 상세페이지 카드 클라이언트 패치
  * https://github.com/billyjo-appsilon/billyjo-detailcard
  *
  * 적용 페이지: /html/dh_prod/prod_view/*  (제품 상세 페이지)
@@ -26,11 +26,45 @@
 (function(){
   'use strict';
 
-  /* v0.5.66 diag: IIFE 진입 시 즉시 marker — body 없으면 readyState 추적 */
+  /* v0.5.66 diag: IIFE 진입 시 즉시 marker */
   try {
     if (document.body) document.body.dataset.bjIifeEntered = '1';
     else document.addEventListener('DOMContentLoaded', function(){ document.body.dataset.bjIifeEntered = 'dcl'; });
   } catch(_){}
+
+  /* v0.5.67: partnership_card 페이지 highlight — runAll 의존 안 함, 즉시 + DOMContentLoaded 직접 호출 */
+  function bjHighlightPartnership(){
+    try {
+      if (!/\/html\/dh\/partnership_card/.test(location.pathname)) return;
+      if (document.getElementById('bj-partnership-highlight')) return;
+      var params = new URLSearchParams(location.search);
+      var supName = params.get('bj');
+      if (!supName) return;
+      document.body && (document.body.dataset.bjPhpStatus = 'enter:' + supName);
+      var lis = document.querySelectorAll('li');
+      var targetLi = null;
+      for (var i = 0; i < lis.length; i++) {
+        var titEl = lis[i].querySelector('.tit__param01');
+        if (titEl && titEl.textContent.indexOf(supName) >= 0) { targetLi = lis[i]; break; }
+      }
+      if (!targetLi) { document.body && (document.body.dataset.bjPhpStatus = 'noMatch'); return; }
+      var wrap = document.createElement('div');
+      wrap.id = 'bj-partnership-highlight';
+      var labelHtml = '<div class="bj-php-label"><span class="bj-php-icon">📌</span><span>지금 보신 제품의 렌탈사 <strong>' + supName.replace(/[<>&]/g,'') + '</strong> 제휴카드입니다</span></div>';
+      wrap.innerHTML = labelHtml + '<div class="bj-php-clone"></div>';
+      wrap.querySelector('.bj-php-clone').appendChild(targetLi.cloneNode(true));
+      var content = document.querySelector('.wide-inner .content') || document.querySelector('.wide-inner') || document.querySelector('#container') || document.body;
+      content.insertBefore(wrap, content.firstChild);
+      document.body.dataset.bjPhpStatus = 'inserted';
+      setTimeout(function(){ try { wrap.scrollIntoView({ behavior:'smooth', block:'start' }); } catch(_){} }, 300);
+    } catch(e) {
+      document.body && (document.body.dataset.bjPhpStatus = 'err:' + (e && e.message || e));
+    }
+  }
+  /* 즉시 + 여러 타이밍 시도 */
+  if (document.body) bjHighlightPartnership();
+  document.addEventListener('DOMContentLoaded', bjHighlightPartnership);
+  [200, 600, 1500, 3000].forEach(function(d){ setTimeout(bjHighlightPartnership, d); });
 
   // v0.5.1: 신혼부부 패키지 — 플로팅 fab 폐기, 상단 카테고리바(.category__wrap)에 항목 추가.
   (function injectNewlywedInCategoryBar(){
