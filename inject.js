@@ -1,5 +1,5 @@
 /*!
- * billyjo-detailcard v0.5.52 — 상세페이지 카드 클라이언트 패치
+ * billyjo-detailcard v0.5.53 — 상세페이지 카드 클라이언트 패치
  * https://github.com/billyjo-appsilon/billyjo-detailcard
  *
  * 적용 페이지: /html/dh_prod/prod_view/*  (제품 상세 페이지)
@@ -1006,12 +1006,18 @@
     '  .bj-fb-btns .bb-btn svg{ width:14px; height:14px }',
     '}',
 
-    /* v0.5.47: 만기 후 소유권 이전 chip — 반납 조건 아닌 제품에 자동 추가 */
+    /* v0.5.47: 만기 후 소유권 이전 chip — 반납 조건 아닌 제품에 자동 추가
+       v0.5.53: 모든 .rt-r 사이 통일 dashed (PC도 모바일과 동일). ownership row만의
+       노란 #f0e5b8 차별화 폐기 → 회색 #c8cdd6으로 통일감 우선. */
+    '#ai-card-root .rental-terms .rt-r + .rt-r{',
+    '  border-top:1px dashed #c8cdd6 !important;',
+    '  padding-top:8px !important; margin-top:8px !important;',
+    '}',
     '#ai-card-root .rental-terms .bj-ownership-row{',
     '  display:flex !important; align-items:center !important;',
     '  justify-content:space-between !important;',
-    '  padding-top:10px !important; margin-top:6px !important;',
-    '  border-top:1px dashed #f0e5b8 !important;',
+    '  border-top:1px dashed #c8cdd6 !important;',
+    '  padding-top:8px !important; margin-top:8px !important;',
     '}',
     '#ai-card-root .rental-terms .bj-ownership-row .rt-l{',
     '  color:#555 !important; font-weight:600 !important;',
@@ -1029,17 +1035,7 @@
     '  content:"✓ "; font-weight:700;',
     '}',
     '@media (max-width:600px){',
-    /* v0.5.51+v0.5.52: 모바일에서 모든 .rt-r 사이 통일된 dashed 분리선.
-       색상을 잘 보이는 #c8cdd6으로 (이전 #e5e7eb 너무 옅어 안 보임 신고). */
-    '  #ai-card-root .rental-terms .rt-r + .rt-r{',
-    '    border-top:1px dashed #c8cdd6 !important;',
-    '    padding-top:8px !important; margin-top:8px !important;',
-    '  }',
-    /* ownership row도 동일 통일 톤 */
-    '  #ai-card-root .rental-terms .bj-ownership-row{',
-    '    border-top:1px dashed #c8cdd6 !important;',
-    '    padding-top:8px !important; margin-top:8px !important;',
-    '  }',
+    /* v0.5.53: dashed 패턴은 기본 룰로 이동 (PC도 동일 적용). 모바일은 chip 컴팩트만 유지. */
     '  #ai-card-root .rental-terms .bj-ownership-chip{',
     '    font-size:12px !important; padding:2px 8px !important;',
     '    box-shadow:none !important;',
