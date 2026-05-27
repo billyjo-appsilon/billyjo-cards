@@ -1,5 +1,5 @@
 /*!
- * billyjo-detailcard v0.5.46 — 상세페이지 카드 클라이언트 패치
+ * billyjo-detailcard v0.5.47 — 상세페이지 카드 클라이언트 패치
  * https://github.com/billyjo-appsilon/billyjo-detailcard
  *
  * 적용 페이지: /html/dh_prod/prod_view/*  (제품 상세 페이지)
@@ -1006,6 +1006,32 @@
     '  .bj-fb-btns .bb-btn svg{ width:14px; height:14px }',
     '}',
 
+    /* v0.5.47: 만기 후 소유권 이전 chip — 반납 조건 아닌 제품에 자동 추가 */
+    '#ai-card-root .rental-terms .bj-ownership-row{',
+    '  display:flex !important; align-items:center !important;',
+    '  justify-content:space-between !important;',
+    '  padding-top:10px !important; margin-top:6px !important;',
+    '  border-top:1px dashed #f0e5b8 !important;',
+    '}',
+    '#ai-card-root .rental-terms .bj-ownership-row .rt-l{',
+    '  color:#555 !important; font-weight:600 !important;',
+    '}',
+    '#ai-card-root .rental-terms .bj-ownership-chip{',
+    '  display:inline-block !important;',
+    '  background:#ffd000 !important; color:#3a2a00 !important;',
+    '  padding:5px 12px !important; border-radius:6px !important;',
+    '  font-weight:800 !important; font-size:12.5px !important;',
+    '  font-family:Pretendard,sans-serif !important;',
+    '  letter-spacing:0.2px !important; line-height:1.3 !important;',
+    '  box-shadow:0 1px 3px rgba(255,208,0,0.35) !important;',
+    '}',
+    '#ai-card-root .rental-terms .bj-ownership-chip::before{',
+    '  content:"✓ "; font-weight:700;',
+    '}',
+    '@media (max-width:600px){',
+    '  #ai-card-root .rental-terms .bj-ownership-chip{ font-size:12px !important; padding:4px 10px !important }',
+    '}',
+
     /* body 하단 패딩 — fixed 위젯이 마지막 콘텐츠 가리지 않게
        v0.5.37: collapsed 높이 축소에 맞춰 padding-bottom 동기 축소 */
     'body{ padding-bottom:72px !important }',
@@ -1978,6 +2004,36 @@
     });
   }
 
+  /* v0.5.47: 만기 후 소유권 이전 안내 chip — 반납 조건 제품 외에는 자동 추가.
+     본사 정책: 렌탈 상품은 보통 약정 만기 후 소유권 이전 가능. "반납" 조건만 예외.
+     판정: 페이지 어디든 "반납" 키워드(반납제품/반납조건/반납형/반납 후 등) 있으면 skip. */
+  function addOwnershipNotice(){
+    var rt = document.querySelector('#ai-card-root .rental-terms');
+    if (!rt) return;
+    if (rt.querySelector('.bj-ownership-row')) return;  /* idempotent */
+
+    /* 반납 조건 검출 — 제품명 + 상세 영역 텍스트에 "반납" 키워드 검사 */
+    var checkAreas = [
+      document.querySelector('.prod_name'),
+      document.querySelector('#ai-card-root'),
+      document.querySelector('.prod_view_top'),
+    ].filter(Boolean);
+    var combinedText = checkAreas.map(function(el){ return el.textContent || ''; }).join(' ');
+    /* "반납제품", "반납 제품", "반납조건", "반납형", "반납이 원칙", "반납 후 환불 불가" 등 */
+    if (/반납\s*(제품|조건|형|이|후|만|상품)/.test(combinedText) || /반납\s*[\(\[]/.test(combinedText)) {
+      rt.dataset.bjOwnershipChecked = 'returnable';
+      return;
+    }
+    /* row 추가 — 다른 .rt-r와 동일 구조, .rt-v에 chip 강조 */
+    var row = document.createElement('div');
+    row.className = 'rt-r bj-ownership-row';
+    row.innerHTML =
+      '<span class="rt-l">소유권</span>' +
+      '<span class="rt-v bj-ownership-chip">만기 후 소유권 이전</span>';
+    rt.appendChild(row);
+    rt.dataset.bjOwnershipChecked = 'ownership';
+  }
+
   // ─────────────────────────────────────────────────────────────────────────
   // 2.y) 하단 위젯 가시성 — AI 카드 완전 통과 후 노출 + 드래그 게스처 (v0.5.2)
   //
@@ -2805,6 +2861,7 @@
     setupHelpClose();
     alignCategoryScroll();
     addRentalTermsHelp();
+    addOwnershipNotice();    /* v0.5.47: 반납 조건 아닌 제품에 '만기 후 소유권 이전' chip */
     fetchAndInjectAICard();
     hideOriginalSpecsAndSimplifyLpt();
     setupBottomBarVisibility();
