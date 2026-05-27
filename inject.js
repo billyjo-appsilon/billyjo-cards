@@ -1,5 +1,5 @@
 /*!
- * billyjo-detailcard v0.5.43 — 상세페이지 카드 클라이언트 패치
+ * billyjo-detailcard v0.5.44 — 상세페이지 카드 클라이언트 패치
  * https://github.com/billyjo-appsilon/billyjo-detailcard
  *
  * 적용 페이지: /html/dh_prod/prod_view/*  (제품 상세 페이지)
@@ -730,15 +730,17 @@
     '.bj-bar-handle-option:hover{',
     '  background:#dde6ff !important; border-color:#0838F8 !important;',
     '}',
+    /* v0.5.44: is-empty 색상 빨강(경고) → 빌리조 테마 금색.
+       빨강은 위험/에러 인식 → 옵션 미선택은 위험이 아닌 유도성 알림 → 금색이 적절. */
     '.bj-bar-handle-option.is-empty{',
-    '  background:#fef2f2 !important; color:#b91c1c !important;',
-    '  border-color:#fca5a5 !important;',
+    '  background:#fff8e1 !important; color:#b45309 !important;',
+    '  border-color:#fcd34d !important;',
     '  animation:bjOptionPulse 1.6s ease-in-out infinite;',
     '}',
-    '.bj-bar-handle-option.is-empty::before{ content:"⚠ "; opacity:1 }',
+    '.bj-bar-handle-option.is-empty::before{ content:"✦ "; opacity:1 }',
     '@keyframes bjOptionPulse{',
-    '  0%,100%{ transform:scale(1); box-shadow:0 0 0 0 rgba(220,38,38,0.35) }',
-    '  50%{ transform:scale(1.03); box-shadow:0 0 0 4px rgba(220,38,38,0) }',
+    '  0%,100%{ transform:scale(1); box-shadow:0 0 0 0 rgba(245,158,11,0.4) }',
+    '  50%{ transform:scale(1.03); box-shadow:0 0 0 4px rgba(245,158,11,0) }',
     '}',
     /* v0.5.15: 위젯 펼친 영역의 .bb-option-select 스타일 — 가독성·터치 영역 확보 */
     '.bj-bb-inner-merged .bb-option-select,',
