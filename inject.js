@@ -1,5 +1,5 @@
 /*!
- * billyjo-detailcard v0.5.55 — 상세페이지 카드 클라이언트 패치
+ * billyjo-detailcard v0.5.56 — 상세페이지 카드 클라이언트 패치
  * https://github.com/billyjo-appsilon/billyjo-detailcard
  *
  * 적용 페이지: /html/dh_prod/prod_view/*  (제품 상세 페이지)
@@ -636,11 +636,12 @@
     '.bj-ws-term-period{ font-size:11.5px !important; color:#666 !important; font-weight:500 !important }',
     '.bj-ws-term-price{ font-size:12.5px !important; font-weight:700 !important; color:#0838F8 !important }',
     '.bj-ws-term-pill.active .bj-ws-term-price{ color:#0838F8 }',
-    /* v0.5.32: 카드할인 있는 pill에서 정가 strike-through 보조 노출 */
+    /* v0.5.32+v0.5.56: 정가 보조 라벨 — 카드 할인 없이 일반 결제하는 사용자에게도
+       유효한 가격이므로 strike-through 제거 + 진회색으로 명확 표기. */
     '.bj-ws-term-orig{',
-    '  font-size:10.5px !important; color:#aaa !important; font-weight:500 !important;',
-    '  text-decoration:line-through !important;',
+    '  font-size:11px !important; color:#555 !important; font-weight:600 !important;',
     '  margin-left:2px !important;',
+    '  text-decoration:none !important;',
     '}',
     '.bj-ws-term-pill.has-card-dc .bj-ws-term-price{ color:#ee0979 !important }',
     '.bj-ws-term-pill.has-card-dc.active .bj-ws-term-price{ color:#ee0979 !important }',
