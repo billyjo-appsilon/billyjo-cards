@@ -1,5 +1,5 @@
 /*!
- * billyjo-detailcard v0.5.33 — 상세페이지 카드 클라이언트 패치
+ * billyjo-detailcard v0.5.34 — 상세페이지 카드 클라이언트 패치
  * https://github.com/billyjo-appsilon/billyjo-detailcard
  *
  * 적용 페이지: /html/dh_prod/prod_view/*  (제품 상세 페이지)
@@ -429,7 +429,7 @@
     '  padding:0 !important;',
     '  margin:0 !important;',
     '  overflow:hidden !important;',
-    '  max-height:380px !important;',
+    '  max-height:min(440px, 75vh) !important;',
     '  transition:max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1), bottom 0.38s cubic-bezier(0.2, 0.9, 0.3, 1) !important;',
     '}',
     /* AI 카드 미통과 / 사용자 수동 숨김 — 화면 밖으로 slide */
@@ -449,7 +449,7 @@
     '  }',
     '}',
     'body #container .wide-inner > .prod_view_bot.card.mt40.bj-bar-expanded,',
-    '.prod_view_bot.card.mt40.bj-bar-expanded{ max-height:380px !important }',
+    '.prod_view_bot.card.mt40.bj-bar-expanded{ max-height:min(440px, 75vh) !important }',
     /* v0.5.13: collapsed max-height 64→56px (핸들 1행만 보이므로 더 콤팩트) */
     'body #container .wide-inner > .prod_view_bot.card.mt40.bj-bar-collapsed,',
     '.prod_view_bot.card.mt40.bj-bar-collapsed{ max-height:56px !important; overflow:hidden !important }',
@@ -476,8 +476,10 @@
     '}',
     '.prod_view_bot.card.mt40.bj-bar-expanded .bb-inner,',
     '.prod_view_bot.card.mt40 .bb-inner{',
-    '  overflow-y:auto; max-height:calc(380px - 56px);',
+    '  overflow-y:auto; max-height:calc(min(440px, 75vh) - 56px);',
     '}',
+    /* v0.5.34: 펼친 위젯 전체에 세로 스크롤 보장 — 콘텐츠가 max-height 초과 시 본 컨테이너에서 스크롤 */
+    '.prod_view_bot.card.mt40.bj-bar-expanded{ overflow-y:auto !important }',
 
     /* 핸들 (v0.5.0: grip 강화 — 더 크고 진하게, 호버 시 브랜드 파랑) */
     '.bj-bar-handle{',
@@ -1218,8 +1220,11 @@
     var wrapper = document.querySelector('.prod_view_bot.card.mt40');
     if (!wrapper) return;
 
-    forceFixedStyle(wrapper);
-    wrapper.classList.add('bj-bar-expanded');
+    /* v0.5.34: forceFixedStyle은 1회만 호출 — 매 runAll 호출 시 cssText에 누적되는 문제 차단 */
+    if (!wrapper.dataset.bjFixedStyled) {
+      forceFixedStyle(wrapper);
+      wrapper.dataset.bjFixedStyled = '1';
+    }
 
     /* v0.5.14: bb-inner가 늦게 들어왔는데 우리 fallback이 이미 있으면 fallback 제거 후 격상 시도 */
     var currBbInner = wrapper.querySelector('.bb-inner');
@@ -1232,6 +1237,9 @@
         return;  /* 이미 격상 완료 */
       }
     }
+    /* v0.5.34: 무조건 'bj-bar-expanded' add는 가드 안으로 — 매 runAll 호출 시
+       사용자가 collapsed로 토글한 직후 expanded class를 강제 추가하면 두 class 공존 →
+       CSS cascade로 collapsed(뒤에 정의)가 이김 → "펼침 안 됨" 증상. 첫 실행 시만 default. */
 
     /* v0.5.5: 위젯 안 .rantal_wrap·.card__tit·.card_sale 등 중복 콘텐츠는 CSS로 숨김 처리됨.
        남는 표시 요소: 핸들(제품명+가격) + bb-inner(약정 pill + 3버튼) */
@@ -2039,12 +2047,12 @@
       var dy = t.clientY - startY;
       var dx = t.clientX - startX;
       if (Math.abs(dy) > DRAG_TAP_THRESHOLD || Math.abs(dx) > DRAG_TAP_THRESHOLD) moved = true;
-      // 시각 피드백 — 아래로 드래그 시 위젯이 손가락 따라 따라옴 (제스처 응답성)
-      if (dy > 0) {
+      /* v0.5.34: dy>10일 때만 transform 적용 — 탭 시점(dy≈0)에 transform:translateY(0)을
+         박으면 1500px 이상 PC의 CSS transform:translateX(-50%) 위치 보정이 깨져
+         위젯이 오프셋되는 잠재 버그 차단 */
+      if (dy > DRAG_TAP_THRESHOLD) {
         dragOffset = Math.min(dy, 200);
         wrapper.style.setProperty('transform', 'translateY(' + dragOffset + 'px)', 'important');
-      } else {
-        wrapper.style.setProperty('transform', 'translateY(0)', 'important');
       }
       if (e.cancelable && Math.abs(dy) > DRAG_TAP_THRESHOLD) e.preventDefault();
     }
@@ -2079,8 +2087,17 @@
       startY = null; startX = null; moved = false;
     }
     function toggleExpanded(){
-      var collapsed = wrapper.classList.toggle('bj-bar-collapsed');
-      wrapper.classList.toggle('bj-bar-expanded', !collapsed);
+      /* v0.5.34: 명시적 토글 — 현재 expanded면 collapsed로, 그 외(collapsed/none)는 expanded로.
+         이전 단순 toggle은 class가 둘 다 없거나 둘 다 있는 비정상 상태에서 의도와 다르게 동작. */
+      var isExpandedNow = wrapper.classList.contains('bj-bar-expanded') &&
+                           !wrapper.classList.contains('bj-bar-collapsed');
+      if (isExpandedNow) {
+        wrapper.classList.remove('bj-bar-expanded');
+        wrapper.classList.add('bj-bar-collapsed');
+      } else {
+        wrapper.classList.remove('bj-bar-collapsed');
+        wrapper.classList.add('bj-bar-expanded');
+      }
     }
 
     handle.addEventListener('mousedown', onStart);
