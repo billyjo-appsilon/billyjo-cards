@@ -1,5 +1,5 @@
 /*!
- * billyjo-detailcard v0.5.63 — 상세페이지 카드 클라이언트 패치
+ * billyjo-detailcard v0.5.64 — 상세페이지 카드 클라이언트 패치
  * https://github.com/billyjo-appsilon/billyjo-detailcard
  *
  * 적용 페이지: /html/dh_prod/prod_view/*  (제품 상세 페이지)
@@ -529,9 +529,24 @@
     '  display:flex; align-items:center; gap:8px;',
     '}',
     '.bj-bar-handle-price{ color:#0838F8; font-weight:800; font-size:14px }',
-    /* v0.5.60: 가격 옆 ⓘ — drag gesture/핸들 토글과 충돌 안 나게 z-index 보강 + summary 클릭 영역 */
-    '.bj-card-help{ display:inline-block !important; position:relative !important; vertical-align:middle !important; margin-left:3px !important }',
-    '.bj-card-help > summary{ cursor:pointer !important; position:relative !important; z-index:2 !important }',
+    /* v0.5.60+v0.5.64: 핸들 ⓘ는 폐기, 약정 pill 아래 가로 안내 chip으로 변경 */
+    '.bj-card-info-chip{',
+    '  display:flex !important; align-items:center !important; gap:8px !important;',
+    '  margin-top:8px !important; padding:8px 12px !important;',
+    '  background:linear-gradient(135deg, #fff8e7 0%, #fff 100%) !important;',
+    '  border:1px solid #ffd000 !important; border-radius:8px !important;',
+    '  text-decoration:none !important;',
+    '  font-family:Pretendard,sans-serif !important; font-size:12.5px !important;',
+    '  color:#3a2a00 !important; line-height:1.3 !important;',
+    '  transition:background 0.15s, transform 0.1s !important;',
+    '}',
+    '.bj-card-info-chip:hover{ background:#fff3cc !important; transform:translateY(-1px) !important }',
+    '.bj-card-info-chip strong{ color:#0838F8 !important; font-weight:800 !important; margin-left:2px }',
+    '.bj-card-info-icon{ font-size:15px; flex:0 0 auto }',
+    '.bj-card-info-arrow{ margin-left:auto; flex:0 0 auto; font-weight:700; color:#0838F8 }',
+    '@media (max-width:600px){',
+    '  .bj-card-info-chip{ font-size:11.5px !important; padding:7px 10px !important; gap:6px !important }',
+    '}',
     '.bj-bar-handle-toggle{',
     '  width:36px; height:24px; border-radius:6px;',
     '  background:transparent; border:1px solid #dfdfdf;',
@@ -1837,39 +1852,26 @@
           }).join('') +
         '</div>';
 
-      mount.innerHTML = supTabs + termPills;
+      /* v0.5.64: 카드할인 있는 약정이 하나라도 있으면 약정 pill 아래 카드 안내 chip 표시.
+         핸들 ⓘ 대신 펼친 위젯 안에 명시적 link — 사용자가 카드가 보면서 바로 옆 확인. */
+      var hasAnyCardDc = sup.terms.some(function(t){ return t.effective > 0 && t.effective < t.priceNum; });
+      var cardNotice = hasAnyCardDc ?
+        '<a href="/html/dh/partnership_card" class="bj-card-info-chip" target="_blank" rel="noopener">' +
+          '<span class="bj-card-info-icon">💳</span>' +
+          '<span>어떤 카드로 할인되나요? <strong>제휴카드 안내</strong></span>' +
+          '<span class="bj-card-info-arrow">→</span>' +
+        '</a>' : '';
 
-      /* v0.5.7: 핸들 가격 — 카드할인 있으면 "월 N원 (카드 M원)" 형식
-         v0.5.60: 카드할인 있을 때 ⓘ details.help 추가 — 제휴카드 안내 페이지 링크
-         v0.5.62: 핸들 BEST 배지 제거 — 약정 pill의 .bj-ws-best-badge와 중복. */
+      mount.innerHTML = supTabs + termPills + cardNotice;
+
+      /* v0.5.64: 핸들 가격 단순화 — 정가 월 N원만 표시. 카드할인가는 펼친 위젯
+         약정 pill에 노출(중복 회피). 핸들 ⓘ도 제거 — 안내는 별도 chip으로 노출. */
       var hp = handle.querySelector('.bj-bar-handle-price');
       if (hp) {
-        var hasCardDc = term.effective > 0 && term.effective < term.priceNum;
-        var cardHelp = hasCardDc ?
-          '<details class="help bj-card-help">' +
-            '<summary aria-label="제휴카드 안내"></summary>' +
-            '<div class="help-pop">' +
-              '<strong>제휴카드 청구할인 적용가입니다.</strong> 롯데·삼성·NH·KB국민 등 렌탈사별 제휴카드로 결제 시 매월 청구액에서 자동 할인됩니다.' +
-              '<br><br>' +
-              '<strong>어떤 카드를 써야 할인되나요?</strong> 렌탈사마다 제휴카드와 할인액이 다릅니다. 정확한 카드 종류·할인 조건은 아래 페이지에서 확인하세요.' +
-              '<br><br>' +
-              '<a href="/html/dh/partnership_card" style="display:inline-block;padding:8px 14px;background:#0838F8;color:#fff;border-radius:6px;text-decoration:none;font-weight:700">제휴카드 안내 페이지로 이동 →</a>' +
-            '</div>' +
-          '</details>' : '';
-        if (hasCardDc) {
-          hp.innerHTML = '카드 월 ' + term.effective.toLocaleString() + '원 ' + cardHelp + ' <small style="color:#888;font-weight:400;font-size:11px">(정가 월 ' + term.price + '원)</small>';
-        } else if (term.price) {
+        if (term.price) {
           hp.innerHTML = '월 ' + term.price + '원';
         } else {
           hp.innerHTML = '문의';
-        }
-        /* v0.5.60: ⓘ summary 클릭이 핸들의 drag gesture로 bubble하지 않게 stopPropagation.
-           매 render마다 다시 등록 (innerHTML 교체로 element 새로 생김). */
-        var cardSummary = hp.querySelector('.bj-card-help summary');
-        if (cardSummary) {
-          ['click', 'mousedown', 'touchstart'].forEach(function(evt){
-            cardSummary.addEventListener(evt, function(e){ e.stopPropagation(); }, evt === 'touchstart' ? { passive: true } : false);
-          });
         }
       }
     }
