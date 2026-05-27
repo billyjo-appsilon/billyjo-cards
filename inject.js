@@ -1,5 +1,5 @@
 /*!
- * billyjo-detailcard v0.5.42 — 상세페이지 카드 클라이언트 패치
+ * billyjo-detailcard v0.5.43 — 상세페이지 카드 클라이언트 패치
  * https://github.com/billyjo-appsilon/billyjo-detailcard
  *
  * 적용 페이지: /html/dh_prod/prod_view/*  (제품 상세 페이지)
@@ -1349,7 +1349,9 @@
 
     /* v0.4.0: SVG 아이콘 */
     var SVG_GIFT = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-1.34-3-3-3-1.05 0-1.96.54-2.5 1.35l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83 8.62 12 11 8.76l1-1.36 1 1.36L15.38 12 17 10.83 14.92 8H20v6z"/></svg>';
-    var SVG_CHAT = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>';
+    /* v0.5.43: 상담신청 아이콘 — 채팅 말풍선 → 전화 수화기 (Material 'phone' icon).
+       사용자 요청: 상담은 전화 통화로 진행되므로 직관적 phone 아이콘이 적절. */
+    var SVG_PHONE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>';
     var SVG_CART = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12L8.1 13h7.45c.75 0 1.41-.41 1.75-1.03L21.7 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>';
 
     // 버튼 격상 또는 fallback 생성
@@ -1387,7 +1389,7 @@
           var consult = document.createElement('button');
           consult.type = 'button';
           consult.className = 'bb-btn bj-btn-consult';
-          consult.innerHTML = SVG_CHAT + '상담신청';
+          consult.innerHTML = SVG_PHONE + '상담신청';
           consult.addEventListener('click', function(){
             window.location.href = '/html/dh/counsel';
           });
@@ -1403,7 +1405,7 @@
         '<div class="bj-fb-btns">' +
           '<button type="button" class="bb-btn bb-btn-cart bj-fb-cart">' + SVG_CART + '장바구니</button>' +
           '<button type="button" class="bb-btn bb-btn-rent bj-btn-rent-gift bj-fb-rent">' + SVG_GIFT + '렌탈+사은품 신청</button>' +
-          '<button type="button" class="bb-btn bj-btn-consult bj-fb-consult">' + SVG_CHAT + '상담신청</button>' +
+          '<button type="button" class="bb-btn bj-btn-consult bj-fb-consult">' + SVG_PHONE + '상담신청</button>' +
         '</div>';
       wrapper.appendChild(fb);
 
