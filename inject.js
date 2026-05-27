@@ -1,5 +1,5 @@
 /*!
- * billyjo-detailcard v0.5.60 — 상세페이지 카드 클라이언트 패치
+ * billyjo-detailcard v0.5.61 — 상세페이지 카드 클라이언트 패치
  * https://github.com/billyjo-appsilon/billyjo-detailcard
  *
  * 적용 페이지: /html/dh_prod/prod_view/*  (제품 상세 페이지)
@@ -970,6 +970,15 @@
     '  .bj-fb-option-label{ font-size:12px !important }',
     '  .bj-fb-option-box .bb-option-select,',
     '  .bj-fb-option-box .option_select{ font-size:12px !important; min-width:100px !important; padding:7px 28px 7px 10px !important }',
+    /* v0.5.61: 모바일에서 .rec-p-level-N을 .rec-p-title 안 inline 배치 (JS DOM 이동 후) */
+    '  #ai-card-root .rec-p-title{',
+    '    display:flex !important; align-items:center !important;',
+    '    gap:8px !important; flex-wrap:wrap !important;',
+    '  }',
+    '  #ai-card-root .rec-p-title [class^="rec-p-level"],',
+    '  #ai-card-root .rec-p-title [class*=" rec-p-level"]{',
+    '    flex:0 0 auto !important;',
+    '  }',
     '}',
     '.bj-fb-label{ font-size:11.5px; color:#6a6a6a; font-weight:600 }',
     '.bj-fb-price{ font-size:17px; font-weight:800; color:#0838F8; line-height:1.2 }',
@@ -2108,6 +2117,35 @@
     });
   }
 
+  /* v0.5.61: 모바일(≤600px)에서 .rec-p-level-N(매우 추천 등)을 .rec-p-title 옆으로
+     DOM 이동 → 세로 공간 절약 + 페르소나명과 함께 직관적 그룹화. PC는 원래 위치 유지. */
+  function arrangePersonaLevelMobile(){
+    var isMobile = window.matchMedia('(max-width: 600px)').matches;
+    document.querySelectorAll('#ai-card-root .p').forEach(function(card){
+      var pTop = card.querySelector('.p-top');
+      var titleEl = card.querySelector('.rec-p-title');
+      var levelEl = card.querySelector('[class^="rec-p-level"], [class*=" rec-p-level"]');
+      if (!pTop || !titleEl || !levelEl) return;
+      if (isMobile) {
+        if (levelEl.parentElement !== titleEl) {
+          titleEl.appendChild(levelEl);
+          levelEl.dataset.bjMovedMobile = '1';
+        }
+      } else if (levelEl.dataset.bjMovedMobile && levelEl.parentElement === titleEl) {
+        pTop.appendChild(levelEl);
+        delete levelEl.dataset.bjMovedMobile;
+      }
+    });
+  }
+  /* viewport 변화 시 재배치 */
+  if (!window.__bjPersonaLevelResize) {
+    window.__bjPersonaLevelResize = true;
+    window.addEventListener('resize', function(){
+      if (window.__bjPersonaLevelResizeTimer) clearTimeout(window.__bjPersonaLevelResizeTimer);
+      window.__bjPersonaLevelResizeTimer = setTimeout(arrangePersonaLevelMobile, 100);
+    });
+  }
+
   // ─────────────────────────────────────────────────────────────────────────
   // 2.y) 하단 위젯 가시성 — AI 카드 완전 통과 후 노출 + 드래그 게스처 (v0.5.2)
   //
@@ -2937,6 +2975,7 @@
     addRentalTermsHelp();
     addOwnershipNotice();    /* v0.5.47: 반납 조건 아닌 제품에 '만기 후 소유권 이전' chip */
     personalizePersonaIcons(); /* v0.5.59: 페르소나 카드 아이콘 (현재 1인·신혼 샘플) */
+    arrangePersonaLevelMobile(); /* v0.5.61: 모바일에서 추천강도 라벨을 페르소나명 옆으로 */
     fetchAndInjectAICard();
     hideOriginalSpecsAndSimplifyLpt();
     setupBottomBarVisibility();
