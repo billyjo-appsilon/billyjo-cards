@@ -1,5 +1,5 @@
 /*!
- * billyjo-detailcard v0.5.48 — 상세페이지 카드 클라이언트 패치
+ * billyjo-detailcard v0.5.49 — 상세페이지 카드 클라이언트 패치
  * https://github.com/billyjo-appsilon/billyjo-detailcard
  *
  * 적용 페이지: /html/dh_prod/prod_view/*  (제품 상세 페이지)
@@ -1139,7 +1139,11 @@
        v0.5.10: JS 위치 보정 (setupHelpClose에서 transform 조정) 시 부드럽게 슬라이드되도록 transition */
     '.help-pop, #ai-card-root .help-pop{',
     '  max-width:min(280px, calc(100vw - 24px)) !important;',
-    '  word-break:keep-all;',
+    /* v0.5.49: 빌리조 페이지에서 .help-pop이 white-space:nowrap을 상속받아 텍스트가
+       한 줄로 펼쳐지는 문제. normal로 강제 + overflow-wrap:anywhere로 긴 단어도 wrap 보장. */
+    '  white-space:normal !important;',
+    '  word-break:keep-all !important;',
+    '  overflow-wrap:anywhere !important;',
     '  box-sizing:border-box !important;',
     '  transition:transform 0.12s ease-out;',
     '}',
@@ -1153,6 +1157,9 @@
     '    width:auto !important; max-width:none !important;',
     '    padding:14px 16px !important;',
     '    font-size:13px !important; line-height:1.65 !important;',
+    /* v0.5.49: 모바일에서도 white-space:normal 명시 (specificity 안전) */
+    '    white-space:normal !important;',
+    '    overflow-wrap:anywhere !important;',
     '    border-radius:10px !important;',
     '    box-shadow:0 -8px 24px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05) !important;',
     '    z-index:100000 !important;',
