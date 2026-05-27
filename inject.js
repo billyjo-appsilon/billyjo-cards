@@ -1,5 +1,5 @@
 /*!
- * billyjo-detailcard v0.5.50 — 상세페이지 카드 클라이언트 패치
+ * billyjo-detailcard v0.5.51 — 상세페이지 카드 클라이언트 패치
  * https://github.com/billyjo-appsilon/billyjo-detailcard
  *
  * 적용 페이지: /html/dh_prod/prod_view/*  (제품 상세 페이지)
@@ -1029,11 +1029,16 @@
     '  content:"✓ "; font-weight:700;',
     '}',
     '@media (max-width:600px){',
-    /* v0.5.50: 모바일에서 ownership row를 다른 .rt-r와 동일 정렬 (수평 baseline).
-       padding-top/margin-top/border-top 제거 + chip 컴팩트화로 row height 일관. */
+    /* v0.5.51: 모바일에서 모든 .rt-r 사이 통일된 dashed 분리선 — 약정/의무/위약금/소유권
+       row 모두 동일 패턴 (시각 일관). 첫 row는 .rt-r + .rt-r adjacent selector라 영향 없음. */
+    '  #ai-card-root .rental-terms .rt-r + .rt-r{',
+    '    border-top:1px dashed #e5e7eb !important;',
+    '    padding-top:6px !important; margin-top:6px !important;',
+    '  }',
+    /* ownership row는 v0.5.47 노란 dashed 룰을 위 일반 룰로 override — 같은 통일 톤 */
     '  #ai-card-root .rental-terms .bj-ownership-row{',
-    '    padding-top:0 !important; margin-top:0 !important;',
-    '    border-top:0 !important;',
+    '    border-top:1px dashed #e5e7eb !important;',
+    '    padding-top:6px !important; margin-top:6px !important;',
     '  }',
     '  #ai-card-root .rental-terms .bj-ownership-chip{',
     '    font-size:12px !important; padding:2px 8px !important;',
