@@ -1,5 +1,5 @@
 /*!
- * billyjo-detailcard v0.5.65 — 상세페이지 카드 클라이언트 패치
+ * billyjo-detailcard v0.5.66 — 상세페이지 카드 클라이언트 패치
  * https://github.com/billyjo-appsilon/billyjo-detailcard
  *
  * 적용 페이지: /html/dh_prod/prod_view/*  (제품 상세 페이지)
@@ -2139,41 +2139,48 @@
   /* v0.5.65: 제휴카드 안내 페이지에서 ?bj=<렌탈사명> param 받아 해당 렌탈사 섹션을
      페이지 맨 위에 복제 + 강조 박스. 사용자가 제품에서 진입 시 바로 본인 카드 확인. */
   function highlightPartnershipCardForProduct(){
-    if (!/\/html\/dh\/partnership_card/.test(location.pathname)) return;
-    if (document.getElementById('bj-partnership-highlight')) return;
-    var params = new URLSearchParams(location.search);
-    var supName = params.get('bj');
-    if (!supName) return;
-    /* 매칭 li 찾기 — .tit__param01 텍스트에 supName 포함 */
-    var targetLi = null;
-    var lis = document.querySelectorAll('li');
-    for (var i = 0; i < lis.length; i++) {
-      var titEl = lis[i].querySelector('.tit__param01');
-      if (!titEl) continue;
-      if (titEl.textContent.indexOf(supName) >= 0) { targetLi = lis[i]; break; }
+    try {
+      if (!/\/html\/dh\/partnership_card/.test(location.pathname)) return;
+      if (document.getElementById('bj-partnership-highlight')) return;
+      var params = new URLSearchParams(location.search);
+      var supName = params.get('bj');
+      if (!supName) return;
+      /* v0.5.66: body에 진단 marker — 함수 실행 추적 */
+      document.body.dataset.bjPhpDebug = 'enter:' + supName;
+      var targetLi = null;
+      var lis = document.querySelectorAll('li');
+      for (var i = 0; i < lis.length; i++) {
+        var titEl = lis[i].querySelector('.tit__param01');
+        if (!titEl) continue;
+        if (titEl.textContent.indexOf(supName) >= 0) { targetLi = lis[i]; break; }
+      }
+      if (!targetLi) {
+        document.body.dataset.bjPhpDebug = 'noMatch:' + supName;
+        return;
+      }
+      document.body.dataset.bjPhpDebug = 'matched';
+      var wrap = document.createElement('div');
+      wrap.id = 'bj-partnership-highlight';
+      wrap.innerHTML =
+        '<div class="bj-php-label">' +
+          '<span class="bj-php-icon">📌</span>' +
+          '<span>지금 보신 제품의 렌탈사 <strong>' + escapeWidgetHtml(supName) + '</strong> 제휴카드입니다</span>' +
+        '</div>' +
+        '<div class="bj-php-clone"></div>';
+      var clone = targetLi.cloneNode(true);
+      wrap.querySelector('.bj-php-clone').appendChild(clone);
+      var content = document.querySelector('.wide-inner .content') ||
+                    document.querySelector('.wide-inner') ||
+                    document.querySelector('#container') ||
+                    document.body;
+      content.insertBefore(wrap, content.firstChild);
+      document.body.dataset.bjPhpDebug = 'inserted';
+      setTimeout(function(){
+        wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 300);
+    } catch (e) {
+      document.body.dataset.bjPhpDebug = 'error:' + (e && e.message || e);
     }
-    if (!targetLi) return;
-    /* 복제 + 강조 wrap 생성 */
-    var wrap = document.createElement('div');
-    wrap.id = 'bj-partnership-highlight';
-    wrap.innerHTML =
-      '<div class="bj-php-label">' +
-        '<span class="bj-php-icon">📌</span>' +
-        '<span>지금 보신 제품의 렌탈사 <strong>' + escapeWidgetHtml(supName) + '</strong> 제휴카드입니다</span>' +
-      '</div>' +
-      '<div class="bj-php-clone"></div>';
-    var clone = targetLi.cloneNode(true);
-    wrap.querySelector('.bj-php-clone').appendChild(clone);
-    /* 페이지 main content 최상단에 prepend */
-    var content = document.querySelector('.wide-inner .content') ||
-                  document.querySelector('.wide-inner') ||
-                  document.querySelector('#container') ||
-                  document.body;
-    content.insertBefore(wrap, content.firstChild);
-    /* 페이지 진입 시 강조 영역으로 스크롤 (header 높이 고려) */
-    setTimeout(function(){
-      wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 300);
   }
 
   /* v0.5.59: 페르소나 카드 아이콘 — 페르소나 제목 텍스트에 따라 고객을 묘사하는
