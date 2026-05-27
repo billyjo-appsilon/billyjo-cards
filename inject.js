@@ -1,5 +1,5 @@
 /*!
- * billyjo-detailcard v0.5.67 — 상세페이지 카드 클라이언트 패치
+ * billyjo-detailcard v0.5.68 — 상세페이지 카드 클라이언트 패치
  * https://github.com/billyjo-appsilon/billyjo-detailcard
  *
  * 적용 페이지: /html/dh_prod/prod_view/*  (제품 상세 페이지)
@@ -26,13 +26,9 @@
 (function(){
   'use strict';
 
-  /* v0.5.66 diag: IIFE 진입 시 즉시 marker */
-  try {
-    if (document.body) document.body.dataset.bjIifeEntered = '1';
-    else document.addEventListener('DOMContentLoaded', function(){ document.body.dataset.bjIifeEntered = 'dcl'; });
-  } catch(_){}
-
-  /* v0.5.67: partnership_card 페이지 highlight — runAll 의존 안 함, 즉시 + DOMContentLoaded 직접 호출 */
+  /* v0.5.67: 제휴카드 안내 페이지(/html/dh/partnership_card)에서 ?bj=<렌탈사명> param 받아
+     해당 렌탈사 섹션을 페이지 맨 위에 복제 + 강조 박스. 사용자가 제품에서 진입 시 본인 카드 즉시 확인.
+     runAll 흐름과 독립 — IIFE 진입 즉시 + DOMContentLoaded + setTimeout 4단계로 안정 실행. */
   function bjHighlightPartnership(){
     try {
       if (!/\/html\/dh\/partnership_card/.test(location.pathname)) return;
@@ -40,28 +36,31 @@
       var params = new URLSearchParams(location.search);
       var supName = params.get('bj');
       if (!supName) return;
-      document.body && (document.body.dataset.bjPhpStatus = 'enter:' + supName);
       var lis = document.querySelectorAll('li');
       var targetLi = null;
       for (var i = 0; i < lis.length; i++) {
         var titEl = lis[i].querySelector('.tit__param01');
         if (titEl && titEl.textContent.indexOf(supName) >= 0) { targetLi = lis[i]; break; }
       }
-      if (!targetLi) { document.body && (document.body.dataset.bjPhpStatus = 'noMatch'); return; }
+      if (!targetLi) return;
       var wrap = document.createElement('div');
       wrap.id = 'bj-partnership-highlight';
-      var labelHtml = '<div class="bj-php-label"><span class="bj-php-icon">📌</span><span>지금 보신 제품의 렌탈사 <strong>' + supName.replace(/[<>&]/g,'') + '</strong> 제휴카드입니다</span></div>';
-      wrap.innerHTML = labelHtml + '<div class="bj-php-clone"></div>';
+      var safeName = supName.replace(/[<>&"']/g, '');
+      wrap.innerHTML =
+        '<div class="bj-php-label">' +
+          '<span class="bj-php-icon">📌</span>' +
+          '<span>지금 보신 제품의 렌탈사 <strong>' + safeName + '</strong> 제휴카드입니다</span>' +
+        '</div>' +
+        '<div class="bj-php-clone"></div>';
       wrap.querySelector('.bj-php-clone').appendChild(targetLi.cloneNode(true));
-      var content = document.querySelector('.wide-inner .content') || document.querySelector('.wide-inner') || document.querySelector('#container') || document.body;
+      var content = document.querySelector('.wide-inner .content') ||
+                    document.querySelector('.wide-inner') ||
+                    document.querySelector('#container') ||
+                    document.body;
       content.insertBefore(wrap, content.firstChild);
-      document.body.dataset.bjPhpStatus = 'inserted';
       setTimeout(function(){ try { wrap.scrollIntoView({ behavior:'smooth', block:'start' }); } catch(_){} }, 300);
-    } catch(e) {
-      document.body && (document.body.dataset.bjPhpStatus = 'err:' + (e && e.message || e));
-    }
+    } catch(_) {}
   }
-  /* 즉시 + 여러 타이밍 시도 */
   if (document.body) bjHighlightPartnership();
   document.addEventListener('DOMContentLoaded', bjHighlightPartnership);
   [200, 600, 1500, 3000].forEach(function(d){ setTimeout(bjHighlightPartnership, d); });
@@ -2176,53 +2175,6 @@
     rt.dataset.bjOwnershipChecked = 'ownership';
   }
 
-  /* v0.5.65: 제휴카드 안내 페이지에서 ?bj=<렌탈사명> param 받아 해당 렌탈사 섹션을
-     페이지 맨 위에 복제 + 강조 박스. 사용자가 제품에서 진입 시 바로 본인 카드 확인. */
-  function highlightPartnershipCardForProduct(){
-    try {
-      if (!/\/html\/dh\/partnership_card/.test(location.pathname)) return;
-      if (document.getElementById('bj-partnership-highlight')) return;
-      var params = new URLSearchParams(location.search);
-      var supName = params.get('bj');
-      if (!supName) return;
-      /* v0.5.66: body에 진단 marker — 함수 실행 추적 */
-      document.body.dataset.bjPhpDebug = 'enter:' + supName;
-      var targetLi = null;
-      var lis = document.querySelectorAll('li');
-      for (var i = 0; i < lis.length; i++) {
-        var titEl = lis[i].querySelector('.tit__param01');
-        if (!titEl) continue;
-        if (titEl.textContent.indexOf(supName) >= 0) { targetLi = lis[i]; break; }
-      }
-      if (!targetLi) {
-        document.body.dataset.bjPhpDebug = 'noMatch:' + supName;
-        return;
-      }
-      document.body.dataset.bjPhpDebug = 'matched';
-      var wrap = document.createElement('div');
-      wrap.id = 'bj-partnership-highlight';
-      wrap.innerHTML =
-        '<div class="bj-php-label">' +
-          '<span class="bj-php-icon">📌</span>' +
-          '<span>지금 보신 제품의 렌탈사 <strong>' + escapeWidgetHtml(supName) + '</strong> 제휴카드입니다</span>' +
-        '</div>' +
-        '<div class="bj-php-clone"></div>';
-      var clone = targetLi.cloneNode(true);
-      wrap.querySelector('.bj-php-clone').appendChild(clone);
-      var content = document.querySelector('.wide-inner .content') ||
-                    document.querySelector('.wide-inner') ||
-                    document.querySelector('#container') ||
-                    document.body;
-      content.insertBefore(wrap, content.firstChild);
-      document.body.dataset.bjPhpDebug = 'inserted';
-      setTimeout(function(){
-        wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 300);
-    } catch (e) {
-      document.body.dataset.bjPhpDebug = 'error:' + (e && e.message || e);
-    }
-  }
-
   /* v0.5.59: 페르소나 카드 아이콘 — 페르소나 제목 텍스트에 따라 고객을 묘사하는
      Tabler 아이콘으로 자동 매핑. 샘플 단계 — 우선 "1인·신혼"만 적용, 사용자 확인 후 확장. */
   var PERSONA_ICON_MAP = [
@@ -3102,8 +3054,6 @@
   }
 
   function runAll(){
-    /* v0.5.66: highlight는 다른 함수 throw에 영향 받지 않게 최우선 호출 */
-    try { highlightPartnershipCardForProduct(); } catch(e){ document.body && (document.body.dataset.bjPhpDebug = 'runAllErr:' + e.message); }
     injectCSS();
     tagHeaderDom();
     enhanceBottomBar();
