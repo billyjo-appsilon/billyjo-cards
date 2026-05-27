@@ -1,5 +1,5 @@
 /*!
- * billyjo-detailcard v0.5.40 — 상세페이지 카드 클라이언트 패치
+ * billyjo-detailcard v0.5.41 — 상세페이지 카드 클라이언트 패치
  * https://github.com/billyjo-appsilon/billyjo-detailcard
  *
  * 적용 페이지: /html/dh_prod/prod_view/*  (제품 상세 페이지)
@@ -2426,22 +2426,27 @@
     var modelText = modelEl ? modelEl.textContent.trim() : '';
     /* 제품명에 prefix 브랜드 prefix 너무 길면 자르기: 'LG구독 - LG전자 정수기 ...' → 'LG전자 정수기 ...' */
     prodName = prodName.replace(/^[A-Z가-힣]+\s*구독\s*[-·]\s*/, '').trim();
+    /* v0.5.41: title + 표를 단일 outer wrapper 안에 배치해 width 통일.
+       이전: title은 mount 직접 자식 (full width), 표 wrapper는 별도 div with border →
+       border 1px 차이로 두 박스 가로 폭 안 맞음 (사용자 시각 어긋남 신고). */
     var titleHtml = '';
     if (prodName) {
       titleHtml =
-        '<div id="lptTitle" style="background:#0838f8;color:#fff;text-align:center;padding:14px 20px;font-size:15px;font-weight:700;border-radius:8px 8px 0 0;font-family:Pretendard,sans-serif;line-height:1.4">' +
+        '<div id="lptTitle" style="background:#0838f8;color:#fff;text-align:center;padding:14px 20px;font-size:15px;font-weight:700;border-bottom:1px solid rgba(255,255,255,0.2);font-family:Pretendard,sans-serif;line-height:1.4">' +
           escapeHtml(prodName) +
           (modelText ? '<br><span style="font-size:12px;opacity:0.85;font-weight:400">' + escapeHtml(modelText) + '</span>' : '') +
         '</div>';
     }
 
     mount.innerHTML =
-      titleHtml +
-      '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid #e5e8ee;' + (titleHtml ? 'border-top:0;border-radius:0 0 8px 8px' : 'border-radius:8px') + '">' +
-        '<table style="width:100%;min-width:240px;border-collapse:collapse;font-family:Pretendard,sans-serif;background:#fff">' +
-          '<thead><tr style="background:#0838f8;color:#fff;font-size:12px">' + headerCols + '</tr></thead>' +
-          '<tbody>' + rows + '</tbody>' +
-        '</table>' +
+      '<div style="border:1px solid #e5e8ee;border-radius:8px;overflow:hidden;background:#fff">' +
+        titleHtml +
+        '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">' +
+          '<table style="width:100%;min-width:240px;border-collapse:collapse;font-family:Pretendard,sans-serif;background:#fff">' +
+            '<thead><tr style="background:#0838f8;color:#fff;font-size:12px">' + headerCols + '</tr></thead>' +
+            '<tbody>' + rows + '</tbody>' +
+          '</table>' +
+        '</div>' +
       '</div>';
     section.hidden = false;
     section.dataset.bjLptMounted = '1';
