@@ -1,5 +1,5 @@
 /*!
- * billyjo-detailcard v0.5.64 — 상세페이지 카드 클라이언트 패치
+ * billyjo-detailcard v0.5.65 — 상세페이지 카드 클라이언트 패치
  * https://github.com/billyjo-appsilon/billyjo-detailcard
  *
  * 적용 페이지: /html/dh_prod/prod_view/*  (제품 상세 페이지)
@@ -546,6 +546,40 @@
     '.bj-card-info-arrow{ margin-left:auto; flex:0 0 auto; font-weight:700; color:#0838F8 }',
     '@media (max-width:600px){',
     '  .bj-card-info-chip{ font-size:11.5px !important; padding:7px 10px !important; gap:6px !important }',
+    '}',
+
+    /* v0.5.65: 제휴카드 페이지 상단 강조 박스 */
+    '#bj-partnership-highlight{',
+    '  margin:20px 0 30px !important; padding:0 !important;',
+    '  border:2px solid #ffd000 !important; border-radius:12px !important;',
+    '  background:linear-gradient(180deg, #fff8e7 0%, #fff 60%) !important;',
+    '  box-shadow:0 4px 12px rgba(255,208,0,0.2) !important;',
+    '  overflow:hidden !important;',
+    '}',
+    '#bj-partnership-highlight .bj-php-label{',
+    '  display:flex !important; align-items:center !important; gap:8px !important;',
+    '  background:#ffd000 !important; color:#3a2a00 !important;',
+    '  padding:10px 16px !important;',
+    '  font-family:Pretendard,sans-serif !important;',
+    '  font-size:14px !important; font-weight:700 !important;',
+    '  letter-spacing:0.2px !important; line-height:1.4 !important;',
+    '}',
+    '#bj-partnership-highlight .bj-php-label strong{',
+    '  color:#0838F8 !important; font-weight:800 !important;',
+    '}',
+    '#bj-partnership-highlight .bj-php-icon{',
+    '  font-size:18px !important; flex:0 0 auto !important;',
+    '}',
+    '#bj-partnership-highlight .bj-php-clone{',
+    '  padding:16px !important; background:#fff !important;',
+    '}',
+    '#bj-partnership-highlight .bj-php-clone li{',
+    '  list-style:none !important; margin:0 !important; padding:0 !important;',
+    '}',
+    '@media (max-width:600px){',
+    '  #bj-partnership-highlight{ margin:12px 0 20px !important; border-radius:10px !important }',
+    '  #bj-partnership-highlight .bj-php-label{ font-size:12.5px !important; padding:8px 12px !important }',
+    '  #bj-partnership-highlight .bj-php-clone{ padding:12px !important }',
     '}',
     '.bj-bar-handle-toggle{',
     '  width:36px; height:24px; border-radius:6px;',
@@ -1853,12 +1887,14 @@
         '</div>';
 
       /* v0.5.64: 카드할인 있는 약정이 하나라도 있으면 약정 pill 아래 카드 안내 chip 표시.
-         핸들 ⓘ 대신 펼친 위젯 안에 명시적 link — 사용자가 카드가 보면서 바로 옆 확인. */
+         v0.5.65: chip href에 현재 active 렌탈사명 ?bj= param 추가 → 이동 페이지에서 해당
+         렌탈사 카드 섹션을 맨 위에 강조 표시 (highlightPartnershipCardForProduct). */
       var hasAnyCardDc = sup.terms.some(function(t){ return t.effective > 0 && t.effective < t.priceNum; });
+      var supParam = sup.name ? '?bj=' + encodeURIComponent(sup.name) : '';
       var cardNotice = hasAnyCardDc ?
-        '<a href="/html/dh/partnership_card" class="bj-card-info-chip" target="_blank" rel="noopener">' +
+        '<a href="/html/dh/partnership_card' + supParam + '" class="bj-card-info-chip" target="_blank" rel="noopener">' +
           '<span class="bj-card-info-icon">💳</span>' +
-          '<span>어떤 카드로 할인되나요? <strong>제휴카드 안내</strong></span>' +
+          '<span>' + (sup.name ? '<strong>' + escapeWidgetHtml(sup.name) + '</strong> ' : '') + '제휴카드 안내 보기</span>' +
           '<span class="bj-card-info-arrow">→</span>' +
         '</a>' : '';
 
@@ -2098,6 +2134,46 @@
       '<span class="rt-v bj-ownership-chip">만기 후 소유권 이전</span>';
     rt.appendChild(row);
     rt.dataset.bjOwnershipChecked = 'ownership';
+  }
+
+  /* v0.5.65: 제휴카드 안내 페이지에서 ?bj=<렌탈사명> param 받아 해당 렌탈사 섹션을
+     페이지 맨 위에 복제 + 강조 박스. 사용자가 제품에서 진입 시 바로 본인 카드 확인. */
+  function highlightPartnershipCardForProduct(){
+    if (!/\/html\/dh\/partnership_card/.test(location.pathname)) return;
+    if (document.getElementById('bj-partnership-highlight')) return;
+    var params = new URLSearchParams(location.search);
+    var supName = params.get('bj');
+    if (!supName) return;
+    /* 매칭 li 찾기 — .tit__param01 텍스트에 supName 포함 */
+    var targetLi = null;
+    var lis = document.querySelectorAll('li');
+    for (var i = 0; i < lis.length; i++) {
+      var titEl = lis[i].querySelector('.tit__param01');
+      if (!titEl) continue;
+      if (titEl.textContent.indexOf(supName) >= 0) { targetLi = lis[i]; break; }
+    }
+    if (!targetLi) return;
+    /* 복제 + 강조 wrap 생성 */
+    var wrap = document.createElement('div');
+    wrap.id = 'bj-partnership-highlight';
+    wrap.innerHTML =
+      '<div class="bj-php-label">' +
+        '<span class="bj-php-icon">📌</span>' +
+        '<span>지금 보신 제품의 렌탈사 <strong>' + escapeWidgetHtml(supName) + '</strong> 제휴카드입니다</span>' +
+      '</div>' +
+      '<div class="bj-php-clone"></div>';
+    var clone = targetLi.cloneNode(true);
+    wrap.querySelector('.bj-php-clone').appendChild(clone);
+    /* 페이지 main content 최상단에 prepend */
+    var content = document.querySelector('.wide-inner .content') ||
+                  document.querySelector('.wide-inner') ||
+                  document.querySelector('#container') ||
+                  document.body;
+    content.insertBefore(wrap, content.firstChild);
+    /* 페이지 진입 시 강조 영역으로 스크롤 (header 높이 고려) */
+    setTimeout(function(){
+      wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 300);
   }
 
   /* v0.5.59: 페르소나 카드 아이콘 — 페르소나 제목 텍스트에 따라 고객을 묘사하는
@@ -2988,6 +3064,7 @@
     addOwnershipNotice();    /* v0.5.47: 반납 조건 아닌 제품에 '만기 후 소유권 이전' chip */
     personalizePersonaIcons(); /* v0.5.59: 페르소나 카드 아이콘 (현재 1인·신혼 샘플) */
     arrangePersonaLevelMobile(); /* v0.5.61: 모바일에서 추천강도 라벨을 페르소나명 옆으로 */
+    highlightPartnershipCardForProduct(); /* v0.5.65: 제휴카드 페이지에서 ?bj= 렌탈사 강조 */
     fetchAndInjectAICard();
     hideOriginalSpecsAndSimplifyLpt();
     setupBottomBarVisibility();
