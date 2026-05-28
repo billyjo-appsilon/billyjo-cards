@@ -1,5 +1,5 @@
 /*!
- * billyjo-detailcard v0.5.70 — 상세페이지 카드 클라이언트 패치
+ * billyjo-detailcard v0.5.71 — 상세페이지 카드 클라이언트 패치
  * https://github.com/billyjo-appsilon/billyjo-detailcard
  *
  * 적용 페이지: /html/dh_prod/prod_view/*  (제품 상세 페이지)
@@ -1529,9 +1529,10 @@
   }
   function assignConsultant(){
     /* v0.5.70: default endpoint = https://admin2.billyjo.co.kr/v1/consult/quick-assign.
+       v0.5.71: SSL 발급 대기 중 임시 vercel.app URL 사용 — 자동 발급 완료 후 admin2.billyjo.co.kr로 복귀 예정.
        호스트 override 필요 시 window.__bjConsultApiUrl 설정.
        admin2 backend 5xx/4xx/network error → mock fallback (사용자 경험 끊김 없음). */
-    var base = window.__bjConsultApiUrl || 'https://admin2.billyjo.co.kr';
+    var base = window.__bjConsultApiUrl || 'https://billyjo-admin2.vercel.app';
     var prodId = (location.pathname.match(/prod_view\/(\d+)/) || [])[1] || null;
     var prodName = (document.querySelector('.prod_name b') || document.querySelector('.prod_name') || {}).textContent;
     return fetch(base + '/v1/consult/quick-assign', {
