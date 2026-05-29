@@ -414,6 +414,29 @@
 
     `transition: bottom 0.32s`는 위젯 max-height transition과 같은 timing으로 동기 부드러운 이동. 토글 시점에 두 요소가 함께 움직여 자연스러운 UX. 신규 빌리조 floating 요소 추가 시 이 selector 리스트에 동일 패턴으로 등록 (절대 규칙 #25 하단 위젯과 짝).
 
+30. **빌리조 로고 표기 — 한글·영문 cross-fade 패턴 (2026-05-30 신설)**: 빌리조 브랜드 로고는 **한글 로고(`빌리조`)** + **영문 로고(`billyjo`)** 두 가지가 공식 자산. UI에 노출할 때 **둘 중 하나만 정적 표시하지 말고, 2초마다 cross-fade로 번갈아 표시**한다 (브랜드 아이덴티티 양쪽 자연 강조).
+
+    **자산 파일** (admin2_frontend public 기준 / inject.js에서도 동일 패턴):
+    - `빌리조로고_투명.png` (ko) / `빌리조영문로고_투명.png` (en)
+
+    **CSS 패턴 (admin2 적용 그대로 — inject.js 신규 brand 영역 추가 시 재사용)**:
+    ```css
+    .bj-logo-swap-stack { position:relative; display:inline-block; width:max-content }
+    .bj-logo-img { display:block; width:auto; object-fit:contain }
+    .bj-logo-ko { position:relative; animation:bjLogoKo 4s infinite ease-in-out }
+    .bj-logo-en { position:absolute; inset:0; animation:bjLogoEn 4s infinite ease-in-out }
+    @keyframes bjLogoKo { 0%,45%{opacity:1} 55%,95%{opacity:0} 100%{opacity:1} }
+    @keyframes bjLogoEn { 0%,45%{opacity:0} 55%,95%{opacity:1} 100%{opacity:0} }
+    @media (prefers-reduced-motion: reduce) {
+      .bj-logo-ko { animation:none; opacity:1 } .bj-logo-en { animation:none; opacity:0 }
+    }
+    ```
+    - 4초 cycle = ko 1.5s 표시 + 0.5s fade + en 1.5s 표시 + 0.5s fade
+    - **prefers-reduced-motion 사용자**는 한글 정적 표시 (접근성 필수)
+    - 두 이미지 절대 위치로 겹쳐 stacking (CLS 방지)
+    - 박스 너비는 `width: max-content`로 두 이미지 중 넓은 쪽 자동 fit
+    - **금지**: 빌리조 본 사이트 헤더 로고(`.logo > img`)는 본사 자산이므로 swap 적용 금지. 우리가 만든 영역(향후 `.bj-bar-handle` brand badge 등)에만 적용.
+
 28. **상단 카테고리바 + 신혼부부 패키지 (v0.5.1)**: 사이트 전역 promotion 항목(예: 신혼부부 패키지)은 **플로팅 fab 금지**, **`.category__wrap` 상단 카테고리바 첫 항목으로 삽입**.
     - 클래스: `.bj-newlywed-cat` (다른 promotion도 `.bj-{name}-cat` 패턴)
     - 스타일: 다른 카테고리 항목과 동일 폰트/높이, 단 브랜드 파랑(`#0838F8`) + Bold(700)로 강조
