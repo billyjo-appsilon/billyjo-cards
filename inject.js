@@ -1,5 +1,5 @@
 /*!
- * billyjo-detailcard v0.5.73 — 상세페이지 카드 클라이언트 패치
+ * billyjo-detailcard v0.5.74 — 상세페이지 카드 클라이언트 패치
  * https://github.com/billyjo-appsilon/billyjo-detailcard
  *
  * 적용 페이지: /html/dh_prod/prod_view/*  (제품 상세 페이지)
@@ -3280,7 +3280,7 @@
       /* 원본 img를 한글 로고로 교체 + transition */
       img.src = BJ_LOGO_KO;
       img.classList.add('bj-logo-alt-ko');
-      img.style.transition = 'opacity 0.6s ease-in-out';
+      img.style.transition = 'opacity 0.2s ease-in-out';
       img.style.opacity = '1';
       /* 영문 로고를 같은 위치에 absolute로 겹치기 (원본 img 스타일 상속) */
       var enImg = img.cloneNode(false);
@@ -3295,7 +3295,7 @@
       enImg.style.height = '100%';
       enImg.style.objectFit = 'contain';
       enImg.style.opacity = '0';
-      enImg.style.transition = 'opacity 0.6s ease-in-out';
+      enImg.style.transition = 'opacity 0.2s ease-in-out';
       enImg.style.pointerEvents = 'none';
       parent.appendChild(enImg);
     });
