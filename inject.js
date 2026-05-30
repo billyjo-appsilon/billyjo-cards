@@ -1,5 +1,5 @@
 /*!
- * billyjo-detailcard v0.5.72 — 상세페이지 카드 클라이언트 패치
+ * billyjo-detailcard v0.5.73 — 상세페이지 카드 클라이언트 패치
  * https://github.com/billyjo-appsilon/billyjo-detailcard
  *
  * 적용 페이지: /html/dh_prod/prod_view/*  (제품 상세 페이지)
@@ -3259,9 +3259,62 @@
     try { syncOptionSelectToHandle(wrapper, handle); } catch(e){}
   }
 
+  /* v0.5.73: 빌리조 본 사이트 헤더 로고를 한글/영문 2초 cross-fade.
+     admin2에 호스팅된 PNG를 사용 (같은 .billyjo.co.kr sub-domain).
+     img 두 장을 부모 안에 absolute로 겹치고 opacity 토글 → 깜빡임 없는 부드러운 fade. */
+  var BJ_LOGO_KO = 'https://admin2.billyjo.co.kr/logo/billyjo-ko.png';
+  var BJ_LOGO_EN = 'https://admin2.billyjo.co.kr/logo/billyjo-en.png';
+  function alternateBillyjoLogo(){
+    var logos = document.querySelectorAll('.logo > img, header .logo img');
+    if (!logos.length) return;
+    logos.forEach(function(img){
+      if (img.dataset.bjLogoAlt) return;
+      var parent = img.parentNode;
+      if (!parent) return;
+      img.dataset.bjLogoAlt = '1';
+      /* 부모를 relative로 (이미 relative면 그대로) */
+      var cs = window.getComputedStyle(parent);
+      if (cs.position === 'static') {
+        parent.style.position = 'relative';
+      }
+      /* 원본 img를 한글 로고로 교체 + transition */
+      img.src = BJ_LOGO_KO;
+      img.classList.add('bj-logo-alt-ko');
+      img.style.transition = 'opacity 0.6s ease-in-out';
+      img.style.opacity = '1';
+      /* 영문 로고를 같은 위치에 absolute로 겹치기 (원본 img 스타일 상속) */
+      var enImg = img.cloneNode(false);
+      enImg.removeAttribute('id');
+      enImg.classList.remove('bj-logo-alt-ko');
+      enImg.classList.add('bj-logo-alt-en');
+      enImg.src = BJ_LOGO_EN;
+      enImg.style.position = 'absolute';
+      enImg.style.left = '0';
+      enImg.style.top = '0';
+      enImg.style.width = '100%';
+      enImg.style.height = '100%';
+      enImg.style.objectFit = 'contain';
+      enImg.style.opacity = '0';
+      enImg.style.transition = 'opacity 0.6s ease-in-out';
+      enImg.style.pointerEvents = 'none';
+      parent.appendChild(enImg);
+    });
+    /* 인터벌은 1회만 등록 (idempotent) */
+    if (window.__bjLogoAltInterval) return;
+    window.__bjLogoAltInterval = setInterval(function(){
+      var ko = document.querySelectorAll('img.bj-logo-alt-ko');
+      var en = document.querySelectorAll('img.bj-logo-alt-en');
+      if (!ko.length || !en.length) return;
+      var showEn = ko[0].style.opacity !== '0';
+      ko.forEach(function(i){ i.style.opacity = showEn ? '0' : '1'; });
+      en.forEach(function(i){ i.style.opacity = showEn ? '1' : '0'; });
+    }, 2000);
+  }
+
   function runAll(){
     injectCSS();
     tagHeaderDom();
+    alternateBillyjoLogo();
     enhanceBottomBar();
     setupHelpClose();
     alignCategoryScroll();
