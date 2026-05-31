@@ -130,12 +130,14 @@ function extractMeta(html, prodNo) {
 }
 
 function isBusinessGrade(meta) {
-  // 형태/유형에서 업소·대용량 표기 감지
+  // 업소용/대용량 표기 감지 — formFactor/sizeType/specs만 (productNameMeta는
+  // 본문 누출 위험 있어 제외). '스탠드'는 정수기 가정용 분류에도 사용되어 키워드에서 제거.
   const flags = [
-    meta.formFactor, meta.sizeType, meta.specs && meta.specs['규격'],
-    meta.specs && meta.specs['타입'], meta.productNameMeta,
+    meta.formFactor, meta.sizeType,
+    meta.specs && meta.specs['규격'],
+    meta.specs && meta.specs['타입'],
   ].filter(Boolean).join(' ');
-  return /업소|사무용|오피스|대용량|스탠드/.test(flags);
+  return /업소|사무용|오피스|대용량/.test(flags);
 }
 
 function main() {
