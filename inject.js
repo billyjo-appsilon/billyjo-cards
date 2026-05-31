@@ -3407,7 +3407,10 @@
   }
 
   /* v0.5.71: enhanceBottomBar 1회 가드로 buildWidgetSelector가 LPT 채워지기 전에만 실행되는 문제 보강.
-     LPT signature가 변경(또는 채워짐)되면 약정 pill을 새 데이터(타사보상 포함)로 재빌드. */
+     LPT signature가 변경(또는 채워짐)되면 약정 pill을 새 데이터(타사보상 포함)로 재빌드.
+
+     주의: `.bj-fb-selector`와 `.bj-widget-selector`가 같은 element에 부여되므로 prev 제거 금지.
+     buildWidgetSelector는 mount.innerHTML 재할당하므로 그대로 호출하면 idempotent. */
   function refreshWidgetSelectorIfLptChanged() {
     var wrapper = document.querySelector('.prod_view_bot.card.mt40');
     if (!wrapper || !wrapper.dataset.bjBarEnhanced) return;
@@ -3418,8 +3421,6 @@
     wrapper.dataset.bjLastWidgetSig = sig;
     var handle = wrapper.querySelector('.bj-bar-handle');
     if (!handle) return;
-    var prev = wrapper.querySelector('.bj-widget-selector');
-    if (prev && prev.parentNode) prev.parentNode.removeChild(prev);
     try { buildWidgetSelector(wrapper, handle); } catch(_) {}
   }
 
