@@ -110,13 +110,24 @@ function extractMeta(html, prodNo) {
     if (out.personas.length >= 3) break;
   }
 
-  // 카테고리 키워드 추정
+  // 카테고리 키워드 추정 (확장 — admin2 CATEGORY_HINTS와 정렬).
+  // ※ 이름이 모델코드뿐이면 여기서 null → build 후 `node scripts/enrich-categories.js`가
+  //   prod_view cate_no(사이트 자체 카테고리 ID)로 권위 있게 보강한다 (룰북 #20).
   const productName = out.productNameMeta || '';
-  if (/정수기/.test(productName) || /정수/.test(specs['기능'] || '')) out.category = '정수기';
+  const fnText = specs['기능'] || '';
+  if (/냉온정수기|얼음정수기|직수정수기|정수전용|정수기|정수/.test(productName) || /정수/.test(fnText)) out.category = '정수기';
+  else if (/공기청정기|공기청정|청정기|에어워셔/.test(productName)) out.category = '공기청정기';
   else if (/비데/.test(productName)) out.category = '비데';
-  else if (/공기청정기/.test(productName)) out.category = '공기청정기';
-  else if (/매트리스/.test(productName)) out.category = '매트리스';
-  else if (/안마/.test(productName)) out.category = '안마의자';
+  else if (/매트리스|토퍼|모션베드/.test(productName)) out.category = '매트리스';
+  else if (/안마의자|안마/.test(productName)) out.category = '안마의자';
+  else if (/세탁기|드럼세탁|통돌이/.test(productName)) out.category = '세탁기';
+  else if (/건조기/.test(productName)) out.category = '건조기';
+  else if (/김치냉장고|와인냉장고|냉동고|냉장고/.test(productName)) out.category = '냉장고';
+  else if (/식기세척기|식세기/.test(productName)) out.category = '식기세척기';
+  else if (/스타일러|에어드레서|의류관리기/.test(productName)) out.category = '의류관리기';
+  else if (/에어컨|냉난방기/.test(productName)) out.category = '에어컨';
+  else if (/제습기/.test(productName)) out.category = '제습기';
+  else if (/연수기|이온수기/.test(productName)) out.category = '연수기';
 
   // productName — 브랜드 + 형태 + 모델
   if (out.brand && out.modelCode) {
