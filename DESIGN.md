@@ -340,13 +340,43 @@ cross-fade as the admin (`billyjo-ko.png` / `billyjo-en.png` hosted on admin2), 
 becomes KO, an absolute `width/height:100%; object-fit:contain` clone is the EN overlay.
 Applied to the header logo (`.logo > img`, Module B) and the **mobile slide-out menu logo**
 (`.aside__top .top__logo img`, Module A — it appears on every page, shrunk to `width:92px`
-on ≤768px). See CLAUDE.md #30.
+on ≤768px). See CLAUDE.md #30. **Gotcha:** never restyle a cross-fade host with
+`position: static !important` — the cross-fade sets the host `position: relative` inline
+(non-`!important`), and a `static !important` override unhooks the absolute EN overlay so it
+flies to the nearest positioned ancestor (it once landed over the hamburger). Use
+`position: relative` when left-aligning the logo.
+
+**Header layout must be patched in Module A (global), not Module B.** The PC/mobile header
+redesign runs in Module A on *every* page, so its overlap protection must live there too —
+not only on `/prod_view/`. Two rules (CLAUDE.md #21e):
+- **PC** — tag `bj-inj-row` / `bj-inj-left` / `bj-inj-right` on the rebuilt row at creation,
+  and ship the `≤1500px` flex-wrap + `≤1024px` row-split CSS in Module A. `flex-wrap` only
+  wraps on real overflow, so wide screens stay single-row; without it, `.gnb__right`
+  (고객센터·장바구니) paints over the categories on home/list pages.
+- **Mobile** — the header is a left-aligned `[햄버거][로고]` group: the logo is **in-flow**
+  immediately right of the hamburger (not absolute-centered), with utility icons pushed
+  right by `margin-left:auto`. If a page's `.header__top` logo slot is empty, JS relocates
+  `a.logo` to just after the hamburger (no-op if absent).
 
 **Mobile category bar (`.category__wrap`).** The Module-A header-redesign category strip
 is a centered/left wrap with **tight spacing** (`gap: 6px 9px`, `padding: 8px 10px`); the
 cloned fixed scroll-header bar (`.bj-sh-cat`) matches. Active item + the promo entry
 (`.bj-newlywed-cat` 💍) use brand blue. (Distinct from the Module-B `.mobile__gnb` swipe
 bar in CLAUDE.md #20.)
+
+### Injected overlays — modal / popup (`#bj-consult-modal`, `.help-pop`)
+inject.js builds its own overlays (the 상담신청 consult modal, the ⓘ help-pop). Two
+invariants (CLAUDE.md #31):
+- **Always scope `box-sizing: border-box` to all descendants + the container**, and put
+  `overflow-x: hidden` on the scroll container. A `width:100%` button or `flex:1` cell with
+  padding/border but no border-box overflows the card → its `overflow-y:auto` makes
+  `overflow-x` compute to `auto` → a horizontal scrollbar, and the overflow also throws off
+  centered content. The single box-sizing fix removes the scrollbar *and* re-centers the CTA.
+- The consult modal is `position:fixed; inset:0; padding:16px`; the card is
+  `max-width:420px; width:100%; max-height:92vh; border-radius:18px`. The primary CTA
+  (`.bj-cta`, brand-blue fill, phone SVG, "지금 ○○○님과 통화") is `display:flex;
+  align-items:center; justify-content:center` so icon+label center as one unit. A 4-digit
+  auto-sent code box sits above it.
 
 ## Adjacent storefront components
 
@@ -410,6 +440,9 @@ Body gets `padding-bottom` so it never covers the last content.
   monochrome-blue except the one sanctioned warm-orange surface (the reco top-pick hero).
 - Label the purchase action **"렌탈+사은품 신청"** with the gift icon — never bare "렌탈
   신청", never a phone icon.
+- Put header layout patches + overlap protection in Module A (global), since the redesign
+  runs on every page; keep the mobile header a left-aligned `[햄버거][로고]` group.
+- Scope `box-sizing: border-box` + `overflow-x: hidden` on every injected modal/popup.
 
 **Don't**
 - Don't call AI at page load — generation-time only (rule #11).
@@ -424,3 +457,9 @@ Body gets `padding-bottom` so it never covers the last content.
   are adjacent systems with their own palettes by design.
 - Don't apply the logo cross-fade to the original rentalshop logo file directly — always
   swap to the admin2-hosted `billyjo-ko/en.png` first (CLAUDE.md #30).
+- Don't set `position: static !important` on a cross-fade host (e.g. `a.logo`) — it unhooks
+  the absolute EN overlay's anchor; use `position: relative` (CLAUDE.md #30).
+- Don't leave header overlap protection in Module B only — non-product pages then regress
+  (rightGroup over categories). Tag `bj-inj-*` + breakpoint CSS in Module A (CLAUDE.md #21e).
+- Don't ship an injected overlay without scoped `box-sizing: border-box` — it causes a
+  horizontal scrollbar and off-center content (CLAUDE.md #31).

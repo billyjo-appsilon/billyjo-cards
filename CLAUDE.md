@@ -169,6 +169,10 @@
 
     **(d) 공통**: `.hamburger__btn` 숨김 (좌측 상단 햄버거는 `.gnb__hamburger`만 유지 — `.mobile__aside` 사이드 메뉴 JS와 연동). 제품 다중 이미지 썸네일(`.prod_thumbs li a`)에 `border:1px solid #dfdfdf` 추가.
 
+    **(e) 헤더 패치는 반드시 모듈 A(전역)에 둔다 (v0.7.x 신설)**: PC/모바일 헤더 리디자인 자체는 모듈 A의 `DOMContentLoaded` 핸들러에서 전 페이지 실행되는데, 이를 보호하는 CSS·DOM 태깅이 모듈 B(`prod_view` 전용)에만 있으면 **비-상세 페이지(홈·목록)에서 보호가 빠져 회귀**한다. 두 가지 전역화 필수:
+    - **PC `.bj-inj-*` 클래스 태깅 + 좁은 폭 보호 CSS를 모듈 A에서 직접 부여**: dRow/leftGroup/rightGroup 생성 시 `bj-inj-row`/`bj-inj-left`/`bj-inj-right` 클래스를 바로 붙이고, `≤1500px` flex-wrap(실제 넘칠 때만 동작 → 넓은 화면 무영향) + `≤1024px` rightGroup 별도 행 분리 CSS를 모듈 A에 둔다. 안 그러면 비-상세 PC에서 rightGroup(고객센터·장바구니)이 카테고리 위로 침범. (모듈 B tagInject의 `if(!...contains('bj-inj-row'))` 가드 덕분에 prod_view에서 중복 부여 무해.)
+    - **모바일 헤더는 `[햄버거][로고]` 좌측 그룹**: 로고를 absolute 중앙정렬하지 말고 **`.header__top` 안 햄버거 바로 오른쪽에 in-flow 좌측정렬**. 일부 페이지는 `.header__top`의 로고 슬롯이 비어 있으므로(`<!-- 로고 -->` 주석만), JS로 `header` 내 `a.logo`를 찾아 햄버거 다음으로 이동(없으면 no-op). **로고는 반드시 `position:relative`(static 금지)** — 절대 규칙 #30 cross-fade 오버레이 anchor 보존 위해. 우측 아이콘(`#bj-header-icons`)은 `margin-left:auto`로 우측 유지.
+
 22. **Hero 재배치 (Option C, v0.2.7)**: 절대 규칙 #1의 "7개 슬롯 구조"는 유지하되, **SLOT 1 메타 + SLOT 2 게이지+4지표는 `.prod_view_top.right`(이미지+가격 hero 영역)로 이전 가능**. 페이지에서 제품명·모델명이 `.prod_view_top.right`에 이미 있어 SLOT 1과 중복되고, 평가 결과(게이지)를 첫 화면에 노출해 의사결정을 가속하기 위함.
 
     **이전 대상**:
@@ -441,6 +445,8 @@
     - **모바일 사이드(aside) 슬라이드 메뉴 로고(`.aside__top .top__logo img`)** — 모듈 A(전역, `billyjoAsideLogo`)에서 적용. aside 메뉴는 전 페이지 공통이라 prod_view 전용 모듈 B에 둘 수 없음 → 별도 IIFE. dataset `bjAsideLogoAlt`·class `bj-aside-logo-ko/en`·`window.__bjAsideLogoInterval` 가드. 스킨 지연 렌더 대비 `setupAsideLogo()` 400ms×15 재시도. **모바일 크기 축소 필수** — `@media(max-width:768px){ .aside__top .top__logo{ display:inline-block; position:relative } .aside__top .top__logo img{ width:92px } }` (기존 풀폭 대비 대폭 축소, en overlay가 ko 크기에 정확히 겹치도록 부모 inline-block+relative).
     - **이전 금지 규칙 폐기 사유**: v0.5.43 시점 "본 사이트 헤더 로고는 본사 자산이라 swap 금지"였으나, 한글/영문 공식 자산을 우리가 admin2에 호스팅·교체하므로 본사 자산 훼손 아님 → 헤더·aside 양쪽 적용으로 확대. 신규 brand 영역(`.bj-bar-handle` 등) 추가 시 동일 패턴 재사용.
 
+    **⚠️ positioning context 보존 (v0.7.x 신설 — 회귀 1건 발생)**: JS setInterval 방식 cross-fade는 EN clone을 `position:absolute`로 겹치고, anchor 기준이 되도록 `parent.style.position='relative'`를 **인라인(비-important)** 으로 박는다. 그러므로 cross-fade가 적용된 요소(`a.logo` 등)를 CSS로 재스타일할 때 **절대 `position:static !important`를 주지 말 것** — 인라인 relative를 override해 anchor가 풀리면 EN 오버레이가 상위 positioned 조상(`.header__top` 등) 기준 `top:0;left:0;100%×100%`로 퍼져 **엉뚱한 위치(예: 햄버거 위)에 영문 로고가 뜬다**. 좌측정렬 등 레이아웃이 필요하면 `position:relative`(in-flow 유지 + anchor 보존)를 쓴다.
+
 28. **상단 카테고리바 + 신혼부부 패키지 (v0.5.1)**: 사이트 전역 promotion 항목(예: 신혼부부 패키지)은 **플로팅 fab 금지**, **`.category__wrap` 상단 카테고리바 첫 항목으로 삽입**.
     - 클래스: `.bj-newlywed-cat` (다른 promotion도 `.bj-{name}-cat` 패턴)
     - 스타일: 다른 카테고리 항목과 동일 폰트/높이, 단 브랜드 파랑(`#0838F8`) + Bold(700)로 강조
@@ -466,6 +472,14 @@
     **모바일 sheet에는 닫기 안내 ::after 필수**: `content:"화면 아무 곳을 눌러도 닫혀요"` — 사용자가 닫는 방법을 모르는 일 방지.
 
     **(C) rental-terms 약정·의무 사용 기간은 한 박스로 통합 (v0.5.38 신설)**: 동일 행에 인접한 두 개념은 각각 ⓘ를 만들지 말고 **개념적으로 상위인 라벨(이 경우 "약정 기간")에 통합 박스 하나만** 부착. 통합 박스는 두 개념을 `<br><br>`로 분리해 같이 노출 (`<strong>약정 기간</strong>...<br><br><strong>의무 사용 기간</strong>...`). 분리된 두 ⓘ는 (1) 정보 단편화 (2) 두 박스가 거의 같은 위치에 떠 사용자가 어느 것을 봤는지 혼동 (3) 화면 가림 중복 → 통합이 일관 UX. `addRentalTermsHelp()`는 '약정 기간' 라벨에만 details.help 주입, '의무 사용 기간' 라벨은 dataset만 마킹 후 skip.
+
+31. **주입 오버레이(모달·팝업) box-sizing 의무 (v0.7.x 신설)**: inject.js가 만드는 모든 모달·팝업(상담신청 `#bj-consult-modal`, 향후 신규 오버레이 포함)은 **자식 전체 + 컨테이너에 `box-sizing: border-box`** 를 스코프로 강제하고, 스크롤 컨테이너에는 **`overflow-x: hidden`** 을 둔다.
+    ```css
+    #bj-consult-modal *, #bj-consult-modal *::before, #bj-consult-modal *::after { box-sizing: border-box }
+    #bj-consult-modal .bj-card { overflow-y: auto; overflow-x: hidden; box-sizing: border-box }
+    ```
+    - **이유**: `width:100%`(버튼) 또는 `flex:1`(stat 칸) 자식에 `padding`·`border`가 box-sizing 없이 더해지면 카드 폭을 초과 → 카드의 `overflow-y:auto`가 CSS 규칙상 `overflow-x`도 `auto`로 계산해 **가로 스크롤**이 생기고, 넘침 때문에 `justify-content:center`인 CTA의 중앙정렬도 시각적으로 틀어진다. box-sizing 하나로 두 증상(가로 스크롤 + CTA 중앙정렬) 동시 해소 — 근본 원인 단일.
+    - 모달은 viewport 기준 `position:fixed; inset:0; padding:16px`로 띄우고, 카드는 `max-width:420px; width:100%; max-height:92vh`. CTA(`.bj-cta`)는 `display:flex; align-items:center; justify-content:center`로 아이콘+라벨을 한 단위로 중앙정렬.
 
 ## 카테고리 라우팅
 
@@ -572,4 +586,5 @@
 - v0.5.65~v0.5.68 (2026-05-28): **제휴카드 안내 페이지 해당 렌탈사 상단 강조**. (v0.5.65) chip href에 `?bj=<렌탈사명>` query param 추가 + `bjHighlightPartnership()` 신설 — `/html/dh/partnership_card` 페이지 진입 시 param 받아 `.tit__param01` 텍스트 매칭으로 해당 렌탈사 `<li>` 찾아 clone → main content 최상단에 노란 강조 박스로 prepend + smooth scrollIntoView. 헤더: '📌 지금 보신 제품의 렌탈사 **[렌탈사명]** 제휴카드입니다'. (v0.5.67) **runAll 의존 폐기** — IIFE 진입 즉시 + DOMContentLoaded + setTimeout 4단계로 독립 실행. runAll의 다른 함수 throw 영향 차단. (v0.5.68) production용 cleanup — debug marker 제거. Playwright 3개 렌탈사(교원웰스·청호나이스·코웨이) 검증 모두 통과.
 - v0.5.69 (2026-05-28): **🏁 frontend 완료 1차 마일스톤 — 상담신청 modal (4자리 코드 + 상담사 직통번호 안내)**. 상담신청 버튼 클릭 → backdrop modal + spinner '상담사 배정 중' (900ms) → 응답 화면: '✓ 상담사 배정 완료' + 담당 상담사명 + 4자리 코드(`#ffd000` border 디지트 박스) + '전화 연결 후 위 코드를 알려주세요' + `[📞 1577-9469 통화 연결]` 파란 grad CTA (tel: link) + '유효시간 30분' + mock 알림. 닫기 트리거 3종 (× / backdrop / ESC). admin2 연동 — `window.__bjConsultApiUrl` 설정 시 자동 fetch POST `/api/consult/assign`, 실패 시 mock fallback. **endpoint·도메인 정해지면 1줄 설정으로 즉시 실 동작.** GitHub `f23da19` commit에 git note `🏁 frontend 완료 1차` 첨부.
 - v0.6.9 (2026-06-01): **모바일 aside 메뉴 로고 축소 + 헤더/aside 로고 KO/EN cross-fade 정식화 + 카테고리바 간격 축소** (billyjo-inject `f9d1ffe`). (1) 모바일 사이드 슬라이드 메뉴 로고(`.aside__top .top__logo img`)가 너무 커서 `@media(max-width:768px)`에서 `width:92px`로 축소. (2) 로고 cross-fade를 헤더(모듈 B `alternateBillyjoLogo`)에 더해 **전 페이지 공통 aside 메뉴 로고에도 적용**(모듈 A 신규 IIFE `billyjoAsideLogo`) — admin2 호스팅 `billyjo-ko.png`·`billyjo-en.png`를 JS setInterval(2초) opacity 토글로 번갈아 노출, 스킨 지연 대비 400ms×15 재시도. 절대 규칙 #30 inject.js 적용 surface 섹션 신설. (3) 모바일 상단 카테고리바(모듈 A 헤더 리디자인의 `.category__wrap`, 규칙 #20의 `.mobile__gnb` 스와이프 바와는 별개) gap `16px→9px`, padding `12px→10px` 축소(스크롤 헤더 클론 `.bj-sh-cat`도 동일) — 사용자 피드백 "메뉴 간 간격 조금 줄일 것".
+- v0.7.x (2026-06-02): **헤더/모달 회귀·침범 일괄 fix + 절대 규칙 #21(e)·#30 positioning·#31 신설** (billyjo-inject `52e8e76`→`6d4c117`). (1) **상담 모달 가로 스크롤 + CTA 중앙정렬** (`52e8e76`): `.bj-card` 자식들에 box-sizing 없어 `width:100%`/`flex:1` + padding/border가 카드 폭 초과 → `overflow-y:auto`가 `overflow-x`도 auto로 계산해 가로 스크롤 + CTA 중앙정렬 틀어짐. 모달 전역 `box-sizing:border-box` + `.bj-card overflow-x:hidden`로 단일 원인 해소. 절대 규칙 #31 신설. (2) **PC 헤더 rightGroup이 카테고리 침범** (`f05f6e5`): PC 헤더 리디자인은 모듈 A(전 페이지) 실행인데 보호 CSS·`.bj-inj-*` 태깅이 모듈 B(prod_view 전용)에만 있어 비-상세 페이지에서 무방비. 모듈 A에서 클래스 직접 부여 + `≤1500/≤1024` 보호 CSS 전역화. (3) **모바일 헤더 로고 좌측정렬** (`96fa901`): 로고 absolute 중앙정렬이라 햄버거만 한 줄을 여백으로 낭비 → in-flow 좌측정렬 `[햄버거][로고]` + `.header__top` 로고 슬롯 비면 JS로 `a.logo` 이동. (4) **모바일 영문 로고가 햄버거 위에 뜨는 회귀** (`6d4c117`): (3)에서 준 `a.logo{position:static !important}`가 cross-fade의 인라인 `position:relative`를 override → EN 오버레이가 `.header__top` 기준으로 퍼짐. `position:relative`로 정정. 절대 규칙 #21(e)·#30 positioning context 섹션 신설. 사용자 확인 "잘 되었음".
 - v0.7.0 (2026-06-01): **이벤트/고객센터 인라인 빨강(`#ff1818`) → 브랜드 파랑(`#0838F8`) 전역 통일** (billyjo-inject `80588ea`). v0.3.7에서 `a[style*="ff1818"]` 규칙을 만들었으나 모듈 B(prod_view 전용) CSS에만 있어 다른 페이지에선 여전히 빨강이었음. 모듈 A 전역 CSS의 인라인 컬러 오버라이드 그룹(`[style*="ff7a4c"]`...)에 `[style*="ff1818"]`/`[style*="FF1818"]` 추가 → '이벤트 / 고객센터' 등 전 페이지 공통 빨강 강조 링크를 브랜드 파랑으로 통일. 사용자 피드백 "끌씨 색상이 #ff1818인데 빌리조 블루로 변경".
