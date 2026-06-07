@@ -503,6 +503,24 @@
 
     **사고 이력 (재발 방지 근거)**: v0.3.3 스펙 비교표 flex blowout → #24 신설 / v0.3.5·#26 help-pop viewport 탈출 / v0.3.6 모바일 헤더 로고 겹침 / v0.7.x #31 상담 모달 가로 스크롤 / **2026-06-07 신혼부부 패키지 2열 카드 화면 밖 넘침 (nowrap 가격 줄 × grid 1fr)** — 전부 같은 뿌리(수축 불가능한 콘텐츠 폭). 이 규칙은 그 일반화다.
 
+33. **하단 위젯 단일 소유권 + fail-open 의무 (2026-06-07 신설)**: 상세페이지 하단 위젯(렌탈신청·약정 pill·상담신청)은 **모듈 B의 `.prod_view_bot.card.mt40` wrapper가 단일 소유**한다. 어떤 페이지에서도 위젯이 비어 있거나 사라진 채로 끝나면 안 된다.
+
+    **(A) 단일 소유권 — 같은 UI를 두 모듈이 만들지 말 것**:
+    - 모듈 A의 구형 `#billyjo-bottom-bar`(initBottomBar)는 **영구 비활성** (`BJ_MODULE_A_BOTTOM_BAR=false`). 모듈 B `removeStrayBbInner`가 생성 즉시 DOM 삭제하던 dead code였고, 삭제 후 남은 `syncBottomBar` 리스너가 month_box 클릭마다 null-throw + 느린 기기에서 위젯 깜빡임/실행 경합을 일으켰다. **재활성화 금지.**
+    - 신규 위젯/오버레이를 추가할 때 같은 surface를 조작하는 코드가 다른 모듈에 이미 있는지 먼저 grep — "한쪽이 만들고 다른쪽이 지우는" 구조가 생기면 설계부터 거부.
+
+    **(B) fail-open 워치독 의무**: 위젯류(전환에 직결되는 UI)는 자신이 실패했을 때를 스스로 감지하고 복구해야 한다. 표준 패턴 = `ensureBottomWidgetAlive()` (load 후 3s·7s):
+    1. wrapper 부재 → 직접 생성 (사이트 DOM 변경 대비)
+    2. 핸들 미구축 → `enhanceBottomBar()` 재시도 (fallback 콘텐츠 박스 포함)
+    3. 그래도 실패 → `window.__bjWidgetFailOpen=true` + 우리가 숨긴 native `.prod_fix_wrap` 복원(inline `display:block !important`). 숨김 함수(`removeOriginalStickyWidget` 등)는 이 플래그를 반드시 체크해 재숨김 금지.
+    - 원칙: **우리 위젯 실패 시 native UI가 보여야 한다 (fail-open)** — 고객이 렌탈신청 수단을 잃는 것이 최악. 예외는 사용자가 명시적으로 dismiss한 상태(`bj-bar-slide-hidden`)뿐.
+
+    **(C) 배포 전 검증 의무**: inject.js를 변경하면 (위젯과 무관해 보여도) **상세페이지 최소 2곳에서 하단 위젯 표시 + 펼침**을 확인 후 배포한다 (#32의 가로 넘침 검사와 짝):
+    ```javascript
+    // 핸들 존재 + JS 에러 0 이어야 통과
+    !!document.querySelector('.prod_view_bot.card.mt40 .bj-bar-handle')
+    ```
+
 ## 카테고리 라우팅
 
 신규 제품은 14개 패밀리 중 하나로 분류한 뒤 `docs/rulebook.md`의 해당 섹션을 따른다.
@@ -610,4 +628,5 @@
 - v0.6.9 (2026-06-01): **모바일 aside 메뉴 로고 축소 + 헤더/aside 로고 KO/EN cross-fade 정식화 + 카테고리바 간격 축소** (billyjo-inject `f9d1ffe`). (1) 모바일 사이드 슬라이드 메뉴 로고(`.aside__top .top__logo img`)가 너무 커서 `@media(max-width:768px)`에서 `width:92px`로 축소. (2) 로고 cross-fade를 헤더(모듈 B `alternateBillyjoLogo`)에 더해 **전 페이지 공통 aside 메뉴 로고에도 적용**(모듈 A 신규 IIFE `billyjoAsideLogo`) — admin2 호스팅 `billyjo-ko.png`·`billyjo-en.png`를 JS setInterval(2초) opacity 토글로 번갈아 노출, 스킨 지연 대비 400ms×15 재시도. 절대 규칙 #30 inject.js 적용 surface 섹션 신설. (3) 모바일 상단 카테고리바(모듈 A 헤더 리디자인의 `.category__wrap`, 규칙 #20의 `.mobile__gnb` 스와이프 바와는 별개) gap `16px→9px`, padding `12px→10px` 축소(스크롤 헤더 클론 `.bj-sh-cat`도 동일) — 사용자 피드백 "메뉴 간 간격 조금 줄일 것".
 - v0.7.x (2026-06-02): **헤더/모달 회귀·침범 일괄 fix + 절대 규칙 #21(e)·#30 positioning·#31 신설** (billyjo-inject `52e8e76`→`6d4c117`). (1) **상담 모달 가로 스크롤 + CTA 중앙정렬** (`52e8e76`): `.bj-card` 자식들에 box-sizing 없어 `width:100%`/`flex:1` + padding/border가 카드 폭 초과 → `overflow-y:auto`가 `overflow-x`도 auto로 계산해 가로 스크롤 + CTA 중앙정렬 틀어짐. 모달 전역 `box-sizing:border-box` + `.bj-card overflow-x:hidden`로 단일 원인 해소. 절대 규칙 #31 신설. (2) **PC 헤더 rightGroup이 카테고리 침범** (`f05f6e5`): PC 헤더 리디자인은 모듈 A(전 페이지) 실행인데 보호 CSS·`.bj-inj-*` 태깅이 모듈 B(prod_view 전용)에만 있어 비-상세 페이지에서 무방비. 모듈 A에서 클래스 직접 부여 + `≤1500/≤1024` 보호 CSS 전역화. (3) **모바일 헤더 로고 좌측정렬** (`96fa901`): 로고 absolute 중앙정렬이라 햄버거만 한 줄을 여백으로 낭비 → in-flow 좌측정렬 `[햄버거][로고]` + `.header__top` 로고 슬롯 비면 JS로 `a.logo` 이동. (4) **모바일 영문 로고가 햄버거 위에 뜨는 회귀** (`6d4c117`): (3)에서 준 `a.logo{position:static !important}`가 cross-fade의 인라인 `position:relative`를 override → EN 오버레이가 `.header__top` 기준으로 퍼짐. `position:relative`로 정정. 절대 규칙 #21(e)·#30 positioning context 섹션 신설. 사용자 확인 "잘 되었음".
 - v0.7.0 (2026-06-01): **이벤트/고객센터 인라인 빨강(`#ff1818`) → 브랜드 파랑(`#0838F8`) 전역 통일** (billyjo-inject `80588ea`). v0.3.7에서 `a[style*="ff1818"]` 규칙을 만들었으나 모듈 B(prod_view 전용) CSS에만 있어 다른 페이지에선 여전히 빨강이었음. 모듈 A 전역 CSS의 인라인 컬러 오버라이드 그룹(`[style*="ff7a4c"]`...)에 `[style*="ff1818"]`/`[style*="FF1818"]` 추가 → '이벤트 / 고객센터' 등 전 페이지 공통 빨강 강조 링크를 브랜드 파랑으로 통일. 사용자 피드백 "끌씨 색상이 #ff1818인데 빌리조 블루로 변경".
+- v0.8.1 (2026-06-07): **절대 규칙 #33 신설 — 하단 위젯 단일 소유권 + fail-open 의무** (billyjo-inject). 사용자 신고 "상품 클릭하면 하단 위젯이 안나오는 오류" 조사 중 구조 결함 발견: 모듈 A 구형 #billyjo-bottom-bar가 생성 즉시 모듈 B에 DOM 삭제되는 dead code + 잔존 syncBottomBar가 month_box 클릭마다 null-throw + 느린 기기 경합. 모듈 A bar 영구 비활성(BJ_MODULE_A_BOTTOM_BAR=false), ensureBottomWidgetAlive 워치독(3s/7s — wrapper 생성→enhance 재시도→native .prod_fix_wrap 복원 fail-open) 신설. removeOriginalStickyWidget는 __bjWidgetFailOpen 플래그 체크.
 - v0.8.0 (2026-06-07): **절대 규칙 #32 신설 — 모바일 가로 넘침 0 의무 (전역)**. 신혼부부 패키지 모달 2열 카드가 화면 밖으로 넘친 사고(nowrap 가격 줄 × grid `1fr` blowout, newlywed.js v3.4에서 수정) 계기. CSS 작성 규칙(grid `minmax(0,1fr)`·아이템 `min-width:0`·≤600px nowrap 금지·고정 px 폭 금지·이미지 max-width:100%) + 배포 전 320/360/390/430px 가로 넘침 검사 의무화. 사용자 지시: "앞으로 어떤 작업을 해도 모바일 화면에서 화면 가로 넘침 현상이 일어나지 않게 룰을 저장".
