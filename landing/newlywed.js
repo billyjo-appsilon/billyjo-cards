@@ -3,6 +3,7 @@
  * window.bjOpenNewlywedModal() 호출 시 풀스크린 오버레이 모달 열기.
  * billyjo-inject inject.js의 카테고리바 항목 onclick에서 호출됨.
  *
+ * v3.2 (2026-06-07): 일반가 병기 — 취소선 폐기, 일반/제휴카드 2줄 동등 표기 (카드 미사용 고객 대응).
  * v3.1 (2026-06-07): 제품 실사 이미지 (prod_view og:image) 카드 상단 표시.
  * v3 (2026-06-07):
  * - 제휴카드 특별 할인 전면 노출: 정가 취소선 + 카드할인가 강조 + 할인율 pill.
@@ -245,11 +246,13 @@
       + (it.v ? '<span class="bj-nw-value">💰 가성비</span>' : '');
     var price;
     if (it.card) {
-      price = '<div class="bj-nw-strike">월 ' + won(it.fee) + '원</div>'
+      /* 제휴카드 미사용 고객도 많음 — 일반가를 취소선 없이 동등한 정보로 병기
+         (룰북 v0.5.56 동일 원칙: 일반 결제 사용자에게도 유효 가격) */
+      price = '<div class="bj-nw-feeline"><small>일반</small> 월 <b>' + won(it.fee) + '원</b>~</div>'
         + '<div class="bj-nw-pprice"><small>제휴카드 시 월</small>' + won(it.card) + '원~'
         + '<span class="bj-nw-disc">-' + d + '%</span></div>';
     } else {
-      price = '<div class="bj-nw-strike">&nbsp;</div>'
+      price = '<div class="bj-nw-feeline">&nbsp;</div>'
         + '<div class="bj-nw-pprice"><small>월</small>' + won(it.fee) + '원~</div>';
     }
     var img = NW_IMG[it.pid]
@@ -286,7 +289,7 @@
     var top = all.slice(0, 6);
     return '<section class="bj-nw-section bj-nw-best">'
       + '<h2 class="bj-nw-section-h">🔥 신혼 특별 할인 BEST <span class="bj-nw-tier bj-nw-tier-hot">제휴카드 청구할인</span></h2>'
-      + '<p class="bj-nw-desc">지금 가장 할인 폭이 큰 제품. 제휴카드 청구할인 적용가 기준 (실적 조건 상담 시 안내).</p>'
+      + '<p class="bj-nw-desc">지금 가장 할인 폭이 큰 제품. 일반가와 제휴카드 적용가를 함께 표기 — 카드 없이 일반가 구독도 가능 (실적 조건 상담 시 안내).</p>'
       + '<div class="bj-nw-pgrid">' + top.map(function(it){ return productCard(it, it.cat); }).join('') + '</div>'
       + '</section>';
   }
@@ -362,7 +365,9 @@
     '.bj-nw-value{font-size:10.5px;font-weight:700;color:#b45309;background:#fff4dd;border-radius:6px;padding:3px 7px}',
     '.bj-nw-pname{font-size:13.5px;font-weight:600;line-height:1.45;margin:0 0 3px;min-height:39px}',
     '.bj-nw-pmodel{font-size:11px;color:#999;margin:0 0 8px}',
-    '.bj-nw-strike{font-size:11.5px;color:#aaa;text-decoration:line-through;margin-top:auto;min-height:17px}',
+    '.bj-nw-feeline{font-size:12px;color:#555;margin-top:auto;min-height:18px}',
+    '.bj-nw-feeline small{font-size:10px;color:#888;font-weight:600;background:#f1f3f5;border-radius:4px;padding:1px 5px;margin-right:3px}',
+    '.bj-nw-feeline b{font-weight:700;color:#333}',
     '.bj-nw-pprice{font-size:16.5px;font-weight:800;color:#0838F8;margin:0 0 10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}',
     '.bj-nw-pprice small{font-size:10.5px;color:#6a6a6a;font-weight:600;margin-right:2px}',
     '.bj-nw-disc{font-size:11px;font-weight:800;color:#fff;background:#d6336c;border-radius:6px;padding:2px 6px}',
