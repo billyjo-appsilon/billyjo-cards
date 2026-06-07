@@ -3,6 +3,7 @@
  * window.bjOpenNewlywedModal() 호출 시 풀스크린 오버레이 모달 열기.
  * billyjo-inject inject.js의 카테고리바 항목 onclick에서 호출됨.
  *
+ * v3.6 (2026-06-07): 카드가 라벨 압축 — '제휴카드 시 월' → '제휴💳 월'.
  * v3.5 (2026-06-07): 히어로 간결화 — 3줄 장문·가운데 정렬 → 좌측 정렬 한 줄 + 혜택 칩 3개.
  * v3.4 (2026-06-07): 모바일 2열 그리드 blowout fix — minmax(0,1fr)+min-width:0, 가격 줄 wrap.
  * v3.3 (2026-06-07): 카드 정렬 정리(칩 1줄·이름 2줄 클램프·가격 줄바꿈 방지) + 스마트홈 장문 카피 제거.
@@ -243,7 +244,7 @@
       /* 제휴카드 미사용 고객도 많음 — 일반가를 취소선 없이 동등한 정보로 병기
          (룰북 v0.5.56 동일 원칙: 일반 결제 사용자에게도 유효 가격) */
       price = '<div class="bj-nw-feeline"><small>일반</small> 월 <b>' + won(it.fee) + '원</b>~</div>'
-        + '<div class="bj-nw-pprice"><small>제휴카드 시 월</small>' + won(it.card) + '원~'
+        + '<div class="bj-nw-pprice"><small>제휴💳 월</small>' + won(it.card) + '원~'
         + '<span class="bj-nw-disc">-' + d + '%</span></div>';
     } else {
       price = '<div class="bj-nw-feeline">&nbsp;</div>'
