@@ -3,6 +3,8 @@
  * window.bjOpenNewlywedModal() 호출 시 풀스크린 오버레이 모달 열기.
  * billyjo-inject inject.js의 카테고리바 항목 onclick에서 호출됨.
  *
+ * v3.9 (2026-06-08): 닫기 버튼 28px·콘텐츠 코너 sticky(스크롤 유지).
+ * v3.9 (2026-06-08): 큐레이션 재정렬 — 메이저 브랜드·판매력 우선, 가성비 후순위, 로보락 1순위, 루컴즈 제거. 담기 선택색 초록→블루 틴트.
  * v3.8 (2026-06-08): 여백 압축(-98% pill 한 줄 유지), pickbar body 직속(중앙 가림 fix)+2버튼(선택/추천 상담).
  * v3.7 (2026-06-07): 가격 라벨 칩 통일 — [일반]/[제휴💳] 동일 스타일·고정폭 좌측 정렬.
  * v3.6 (2026-06-07): 카드가 라벨 압축 — '제휴카드 시 월' → '제휴💳 월'.
@@ -77,13 +79,12 @@
       { pid: '25867', brand: 'LG', name: 'LG 디오스 오브제컬렉션 상냉장 빌트인타입', model: 'M626GBB352', fee: 85900, card: 45900 },
       { pid: '26409', brand: '삼성', name: '삼성 비스포크 4도어 냉장고', model: 'RM70F63R2Z', fee: 66500, card: 41500 },
       { pid: '20058', brand: '하이얼', name: '하이얼 4도어 냉장고 433L', model: 'HRS445MNWP', fee: 30900, card: 5900, v: 1 },
-      { pid: '16307', brand: '루컴즈', name: '루컴즈 일반 냉장고 (세컨드·원룸)', model: 'RTW180H1', fee: 9900, card: null, v: 1 },
     ]},
     { tier: 1, icon: '🌀', cat: '세탁기', desc: '세탁+건조 일체형이면 신혼 공간 절약 끝판왕.', items: [
       { pid: '18554', brand: '삼성', name: '삼성 비스포크 AI그랑데 세탁기 21kg', model: 'WF21CB6650BW', fee: 28600, card: 3600 },
-      { pid: '364',   brand: 'LG', name: 'LG 트롬 드럼세탁기 12kg', model: 'F12WVA', fee: 25700, card: 700, v: 1 },
       { pid: '6784',  brand: '삼성', name: '삼성 그랑데 드럼세탁기 21kg', model: 'WF21T6000KV', fee: 27500, card: 2500 },
       { pid: '19987', brand: 'LG', name: 'LG 트롬 워시콤보 세탁 25kg+건조 15kg 일체형', model: 'FH25VAX', fee: 132000, card: 107000 },
+      { pid: '364',   brand: 'LG', name: 'LG 트롬 드럼세탁기 12kg', model: 'F12WVA', fee: 25700, card: 700, v: 1 },
       { pid: '265',   brand: '삼성', name: '삼성 그랑데 통버블 세탁기 21kg', model: 'WA21A8376KV', fee: 22300, card: null, v: 1 },
     ]},
     { tier: 1, icon: '🌬️', cat: '건조기', desc: '장마철·미세먼지 계절 필수. 빨래 널 공간이 사라져요.', items: [
@@ -93,11 +94,11 @@
       { pid: '22677', brand: '미닉스', name: '미닉스 미니 건조기 (원룸·소형)', model: 'MNMD-120G', fee: 11500, card: null, v: 1 },
     ]},
     { tier: 1, icon: '❄️', cat: '에어컨', desc: '거실+침실 멀티형이 신혼 국룰. 평수 맞춤 추천.', items: [
-      { pid: '26797', brand: '삼성', name: '삼성 벽걸이 에어컨 7평 (침실)', model: 'AR60F07D12WS', fee: 25500, card: 500, v: 1 },
       { pid: '26012', brand: '삼성', name: '삼성 멀티 에어컨 19+6평 (거실+방)', model: 'AF70F19D11WRS', fee: 64100, card: 24100 },
       { pid: '26379', brand: '삼성', name: '삼성 스탠드 에어컨 15평', model: 'AR60F15D12WS', fee: 39800, card: 14800 },
-      { pid: '18520', brand: 'LG', name: 'LG 휘센 벽걸이 냉난방 11평', model: 'SW11EK1WAS', fee: 41600, card: 16600 },
       { pid: '32581', brand: 'LG', name: 'LG 휘센 뷰Ⅱ 스탠드 18평', model: 'FQ18FU1EA1', fee: 67000, card: 42000 },
+      { pid: '18520', brand: 'LG', name: 'LG 휘센 벽걸이 냉난방 11평', model: 'SW11EK1WAS', fee: 41600, card: 16600 },
+      { pid: '26797', brand: '삼성', name: '삼성 벽걸이 에어컨 7평 (침실)', model: 'AR60F07D12WS', fee: 25500, card: 500, v: 1 },
     ]},
     { tier: 1, icon: '💧', cat: '정수기', desc: '둘이 마시는 물, 위생관리까지. 컴팩트 직수형 인기.', items: [
       { pid: '16116', brand: '코웨이', name: '코웨이 엘리트 냉온정수기', model: 'CHP-6340L', fee: 30900, card: 900 },
@@ -106,10 +107,10 @@
       { pid: '10042', brand: '쿠쿠', name: '쿠쿠 인스퓨어 냉온정수기 데스크형', model: 'CP-W602HW', fee: 17900, card: null, v: 1 },
     ]},
     { tier: 1, icon: '🧹', cat: '청소기', desc: '로봇+스틱 조합이면 맞벌이 신혼 청소 자동화.', items: [
-      { pid: '32406', brand: '삼성', name: '삼성 AI 스팀 울트라 직배수 로봇청소기', model: 'VR90F01SAG', fee: 46900, card: 6900 },
-      { pid: '27014', brand: '삼성', name: '삼성 비스포크 AI제트 스틱청소기 400W', model: 'VS90F40CNG', fee: 39500, card: 14500 },
       { pid: '32957', brand: '로보락', name: '로보락 S10 MaxV Ultra 직배수 로봇청소기', model: 'S10 MaxV Ultra', fee: 49900, card: 24900 },
+      { pid: '32406', brand: '삼성', name: '삼성 AI 스팀 울트라 직배수 로봇청소기', model: 'VR90F01SAG', fee: 46900, card: 6900 },
       { pid: '30959', brand: 'LG', name: 'LG 로보킹 AI 올인원 (자동 급배수)', model: 'B95AWBH', fee: 53300, card: 28300 },
+      { pid: '27014', brand: '삼성', name: '삼성 비스포크 AI제트 스틱청소기 400W', model: 'VS90F40CNG', fee: 39500, card: 14500 },
       { pid: '29508', brand: '로보락', name: '로보락 H60 Hub Ultra 무선청소기', model: 'H60 Hub Ultra', fee: 12900, card: null, v: 1 },
     ]},
     { tier: 2, icon: '🍽️', cat: '식기세척기', desc: '설거지 당번 다툼 예방템 1순위.', items: [
@@ -118,15 +119,15 @@
       { pid: '24225', brand: '모데나', name: '모데나 컴팩트 식기세척기 (신혼·원룸)', model: 'WS1041WCG', fee: 9900, card: null, v: 1 },
     ]},
     { tier: 2, icon: '👔', cat: '의류관리기', desc: '출근룩 관리·새옷 냄새 제거. 맞벌이 만족도 최상.', items: [
-      { pid: '13579', brand: '삼성', name: '삼성 에어드레서 3벌', model: 'DF18CG3100HR', fee: 30500, card: 5500, v: 1 },
-      { pid: '13462', brand: '삼성', name: '삼성 에어드레서 5벌', model: 'DF18CB8700CR', fee: 38500, card: 13500 },
       { pid: '31522', brand: 'LG', name: 'LG 스타일러 오브제컬렉션 (기본형)', model: 'SC3GNE50', fee: 50400, card: 25400 },
       { pid: '31526', brand: 'LG', name: 'LG 스타일러 오브제컬렉션', model: 'SC5GMR80S', fee: 72800, card: 47800 },
+      { pid: '13462', brand: '삼성', name: '삼성 에어드레서 5벌', model: 'DF18CB8700CR', fee: 38500, card: 13500 },
+      { pid: '13579', brand: '삼성', name: '삼성 에어드레서 3벌', model: 'DF18CG3100HR', fee: 30500, card: 5500, v: 1 },
     ]},
     { tier: 2, icon: '📺', cat: 'TV', desc: '신혼 거실 완성. 55~65인치가 표준.', items: [
-      { pid: '24218', brand: '인켈', name: '인켈 UHD TV 65인치 (가성비)', model: 'SQG650SW', fee: 33900, card: 13900, v: 1 },
       { pid: '22078', brand: '삼성', name: '삼성 UHD TV 55인치', model: 'KQ55LSD01AFXKR', fee: 54600, card: 29600 },
       { pid: '22079', brand: '삼성', name: '삼성 UHD TV 65인치', model: 'KQ65LSD01AFXKR', fee: 76900, card: 51900 },
+      { pid: '24218', brand: '인켈', name: '인켈 UHD TV 65인치 (가성비)', model: 'SQG650SW', fee: 33900, card: 13900, v: 1 },
       { pid: '24220', brand: '인켈', name: '인켈 UHD TV 86인치 (대화면)', model: 'SQG860SW', fee: 47900, card: 27900 },
     ]},
     { tier: 3, icon: '📡', cat: '인터넷', desc: '신혼집 개통, 가전과 묶으면 사은품 추가.', items: [
@@ -149,8 +150,14 @@
     content.style.cssText = 'max-width:1200px;margin:24px auto 90px;background:#fafbfc;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.3);position:relative';
     content.innerHTML = buildHtml();
 
+    /* 닫기 버튼 — 콘텐츠 카드 우상단 코너에 sticky 고정 (스크롤해도 상단 유지).
+       구버전 position:fixed는 모달 backdrop-filter가 containing block이 되어
+       스크롤 시 떠내려가고, 와이드 화면에선 카드 밖 회색 영역에 떠 어색했음. */
+    var closeWrap = document.createElement('div');
+    closeWrap.style.cssText = 'position:sticky;top:34px;z-index:100001;max-width:1200px;margin:0 auto -40px;display:flex;justify-content:flex-end;padding:0 10px;pointer-events:none;height:0';
     var closeBtn = document.createElement('button');
-    closeBtn.style.cssText = 'position:fixed;top:24px;right:24px;width:44px;height:44px;border-radius:50%;background:#fff;border:0;font-size:22px;cursor:pointer;z-index:100000;box-shadow:0 4px 16px rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:center';
+    closeBtn.style.cssText = 'width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.92);border:0;font-size:13px;line-height:1;color:#444;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.22);display:flex;align-items:center;justify-content:center;pointer-events:auto;flex-shrink:0';
+    closeBtn.setAttribute('aria-label', '닫기');
     closeBtn.innerHTML = '✕';
     function closeModal(){
       modal.remove(); document.body.style.overflow = '';
@@ -159,8 +166,9 @@
     }
     closeBtn.onclick = closeModal;
 
+    closeWrap.appendChild(closeBtn);
+    modal.appendChild(closeWrap);
     modal.appendChild(content);
-    modal.appendChild(closeBtn);
     modal.onclick = function(e){ if (e.target === modal) closeModal(); };
 
     document.body.style.overflow = 'hidden';
@@ -397,7 +405,7 @@
     '.bj-nw-btn-view:hover{background:#052bcc}',
     '.bj-nw-pick{background:#fff;color:#0838F8;border:1.5px solid #0838F8}',
     '.bj-nw-pick:hover{background:#eef2ff}',
-    '.bj-nw-pick.on{background:#16a34a;border-color:#16a34a;color:#fff}',
+    '.bj-nw-pick.on{background:#e8edff;border-color:#0838F8;color:#0838F8;font-weight:800;box-shadow:inset 0 0 0 0.5px #0838F8}',
     '.bj-nw-bundle{background:linear-gradient(135deg,#f7f9ff 0%,#eef2ff 100%);border:1px solid #e8edff;border-radius:14px;padding:26px;text-align:center;margin:22px 0}',
     '.bj-nw-bundle h3{font-size:20px;font-weight:700;color:#0838F8;margin:0 0 10px}',
     '.bj-nw-bundle p{margin:0 0 16px;color:#6a6a6a;font-size:14px;line-height:1.7}',
