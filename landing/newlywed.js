@@ -3,6 +3,7 @@
  * window.bjOpenNewlywedModal() 호출 시 풀스크린 오버레이 모달 열기.
  * billyjo-inject inject.js의 카테고리바 항목 onclick에서 호출됨.
  *
+ * v3.1 (2026-06-07): 제품 실사 이미지 (prod_view og:image) 카드 상단 표시.
  * v3 (2026-06-07):
  * - 제휴카드 특별 할인 전면 노출: 정가 취소선 + 카드할인가 강조 + 할인율 pill.
  *   (cardFee = 라이브 prod_view month_box data-dcprice 실측, 최장 약정 기준)
@@ -16,6 +17,52 @@
 (function(){
   var ORIGIN = '신혼부부 패키지';
   var SMART = { '삼성': 'SmartThings', 'LG': 'ThinQ' };
+
+  /* 제품 대표 이미지 (prod_view og:image 실측, 2026-06-07) — 파일명만 보관 */
+  var IMG_BASE = 'https://rentalshop.site/_data/file/goodsImages/';
+  var NW_IMG = {
+    '265': '7253090e09a74bfb71d039c6cad76fc4.jpg',
+    '364': '306231e4c5818f42f73f475a8f6d51c4.jpg',
+    '1792': 'ddbbf270230acfb8866af7f2b67ae052.jpg',
+    '6784': '9bbeb4e5560aefa08277e869d4bd50a9.jpg',
+    '10042': '1ad9611d14b3e50521d5d9c53a5fe42a.png',
+    '12956': '221a9ac9aeeb506c2021f7752344917c_1.jpg',
+    '13462': '09a70b2b9d2f77ae6fc7334645250c63.jpg',
+    '13579': '770df5b51839775da7a1ada30fac914d.png',
+    '14471': 'a4388366d990dd61ba7e7573de98ed8c.jpg',
+    '16116': '8471f6f3fdfea882377c0f22535d65b5.png',
+    '16307': 'c6c434e82b9f7a72210d9a67974cf428.jpg',
+    '18520': 'c6cfcdb9ed57e59a5550c71a9efd7160_1_1.png',
+    '18550': '69976d2e645e4f43a5f7ce2887ab5fe4.png',
+    '18554': 'a508d421a7fbb25e8bff5e6d0414fbb0.png',
+    '19483': 'fcf439a8ac85d6b3b7d371daf38038ac.png',
+    '19987': 'e623be556f0bf7ab0342f5f89cff184a.png',
+    '20058': '6f6c208703e3d66025279e06df06ec61.png',
+    '22078': '42f717ee83112c763809b416fa2fc8bc_1_1.png',
+    '22079': '34b57d1cda1ed3edac42aa9e9b31ba7f.png',
+    '22677': '88fcf3c1d2f9ebbc7291a96835d5c07d.png',
+    '24218': '4d5c9ce0888fcf21e762d9c7e78dce7c.png',
+    '24220': '791edb9311dbacbd7e793ed5a1703972.png',
+    '24225': 'a7d4288408ee2450e6b1dd11a72a8837.png',
+    '24918': 'b161b55443da0a8115f6a833434ecfee.png',
+    '25867': 'ea6a93b09c703f1058c82091b969d332.png',
+    '26012': '962868ec226633829abc82012e84635a.png',
+    '26379': '75bde5b762ab3378785283a39d5c4317.jpg',
+    '26409': 'f3f1efc2df03a61c47fe448927ccd036.jpg',
+    '26797': '341cf2cd4235b23878cad97b594b38da.png',
+    '27014': '611cb7bb55c9acb927e5c2f324c7fcfb.png',
+    '27095': '354028023ab8510f8800b83968769412.png',
+    '29508': '2f212d87776e051a4b613b4719f30b70.png',
+    '30906': '1383e03d6b864b80633f740821b6e1ee.png',
+    '30959': 'cbcef8e71d6fc789fac105badcbede90_1.png',
+    '31522': '8e623f8309db6d0ae12fb9260c16fa99.png',
+    '31526': '11c0e80d1ad0c970bce1ed62150b1600.png',
+    '31613': '3faa0322cb172a9ce65b2cb6d4b0a653.jpg',
+    '31620': 'fef258d149b77a0810241db7b5b2e6f3.jpg',
+    '32406': '51e157aa0717c9e205ce9423a03f1b98.jpg',
+    '32581': '08b36536ce7854f164a3dffdaaf8cc18.jpg',
+    '32957': '551f109b0c19eaa3ea1046b76bc1fea8.jpg',
+  };
 
   /* 카테고리별 제품 — fee=정가(월), card=제휴카드 적용가(월, null=카드할인 없음),
      v=가성비 badge. 정렬: 할인·수익성·신혼 적합. */
@@ -205,7 +252,11 @@
       price = '<div class="bj-nw-strike">&nbsp;</div>'
         + '<div class="bj-nw-pprice"><small>월</small>' + won(it.fee) + '원~</div>';
     }
+    var img = NW_IMG[it.pid]
+      ? '<div class="bj-nw-pimg"><img src="' + IMG_BASE + NW_IMG[it.pid] + '" alt="' + it.name + '" loading="lazy"></div>'
+      : '<div class="bj-nw-pimg bj-nw-pimg-empty">' + (it.brand || '') + '</div>';
     return '<div class="bj-nw-pcard">'
+      + img
       + '<div class="bj-nw-pchips">' + chips + '</div>'
       + '<h4 class="bj-nw-pname">' + it.name + '</h4>'
       + '<div class="bj-nw-pmodel">' + it.model + '</div>'
@@ -301,6 +352,9 @@
     '.bj-nw-pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(225px,1fr));gap:12px}',
     '.bj-nw-pcard{background:#fff;border:0.5px solid #e6e8eb;border-radius:12px;padding:15px;display:flex;flex-direction:column;transition:transform 0.2s,box-shadow 0.2s}',
     '.bj-nw-pcard:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(8,56,248,0.10)}',
+    '.bj-nw-pimg{height:130px;margin:-3px -3px 10px;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden}',
+    '.bj-nw-pimg img{max-width:100%;max-height:100%;object-fit:contain}',
+    '.bj-nw-pimg-empty{color:#c2c8d0;font-size:18px;font-weight:800;background:#f4f6f9}',
     '.bj-nw-pchips{display:flex;gap:5px;margin-bottom:9px;flex-wrap:wrap}',
     '.bj-nw-brand{font-size:11px;font-weight:800;color:#0838F8;background:#e8edff;border-radius:6px;padding:3px 8px}',
     '.bj-nw-grade{font-size:11px;font-weight:700;color:#16a34a;background:#e9f9ef;border-radius:6px;padding:3px 8px}',
@@ -340,6 +394,7 @@
     '  .bj-nw-section-h{font-size:18px}',
     '  .bj-nw-pgrid{grid-template-columns:repeat(2,1fr);gap:9px}',
     '  .bj-nw-pcard{padding:11px}',
+    '  .bj-nw-pimg{height:96px;margin:-2px -2px 8px}',
     '  .bj-nw-pname{font-size:12.5px;min-height:36px}',
     '  .bj-nw-pprice{font-size:14.5px}',
     '  .bj-nw-btn,.bj-nw-pick{font-size:11.5px;padding:8px 4px}',
