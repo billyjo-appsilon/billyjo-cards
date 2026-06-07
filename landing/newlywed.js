@@ -3,6 +3,7 @@
  * window.bjOpenNewlywedModal() 호출 시 풀스크린 오버레이 모달 열기.
  * billyjo-inject inject.js의 카테고리바 항목 onclick에서 호출됨.
  *
+ * v3.3 (2026-06-07): 카드 정렬 정리(칩 1줄·이름 2줄 클램프·가격 줄바꿈 방지) + 스마트홈 장문 카피 제거.
  * v3.2 (2026-06-07): 일반가 병기 — 취소선 폐기, 일반/제휴카드 2줄 동등 표기 (카드 미사용 고객 대응).
  * v3.1 (2026-06-07): 제품 실사 이미지 (prod_view og:image) 카드 상단 표시.
  * v3 (2026-06-07):
@@ -10,14 +11,12 @@
  *   (cardFee = 라이브 prod_view month_box data-dcprice 실측, 최장 약정 기준)
  * - 🔥 특별 할인 BEST 섹션 (전 카테고리 할인율 상위) + 💰 가성비 badge.
  * - 묶음 구독 유도: 담은 개수별 pickbar 넛지 + 묶음 혜택 카피.
- * - 동일 브랜드 스마트홈: 삼성 SmartThings / LG ThinQ 칩 + 같은 브랜드 2개↑ 담으면
- *   "앱 하나로 모두 제어" 넛지 → 브랜드 통일 패키지 유도.
+ * - 동일 브랜드 앱 통합 어필은 화면 텍스트 대신 상담사 토킹포인트로만 전달 (v3.3).
  * v2: 브랜드별 다중 제품(등급 A+수익성+신혼 적합 — 수치 비노출, 룰북 #18/#25),
  *     담기 토글, data-bj-consult로 inject.js 즉시 배정 모달 연동.
  */
 (function(){
   var ORIGIN = '신혼부부 패키지';
-  var SMART = { '삼성': 'SmartThings', 'LG': 'ThinQ' };
 
   /* 제품 대표 이미지 (prod_view og:image 실측, 2026-06-07) — 파일명만 보관 */
   var IMG_BASE = 'https://rentalshop.site/_data/file/goodsImages/';
@@ -192,17 +191,12 @@
     };
   }
 
-  /* 담은 개수·브랜드 구성에 따른 묶음/스마트홈 넛지 */
+  /* 담은 개수별 짧은 넛지 (장황한 설명 금지 — 상세 설명은 상담사 몫) */
   function nudgeText(){
-    var items = pickedList(), n = items.length;
-    var counts = {};
-    items.forEach(function(it){ counts[it.brand] = (counts[it.brand] || 0) + 1; });
-    var smart = null;
-    Object.keys(SMART).forEach(function(b){ if (counts[b] >= 2) smart = b; });
-    if (smart) return '📱 ' + smart + ' ' + SMART[smart] + ' 조합 — 앱 하나로 모두 제어되는 구성! 묶음 사은품까지 상담으로 확인';
-    if (n >= 3) return '🎁 패키지 혜택 최대 구성! 지금 상담으로 묶음 사은품을 확정하세요';
-    if (n === 2) return '🎁 묶음 사은품 조건 충족 — 1개 더 담으면 혜택이 더 커져요';
-    if (n === 1) return '1개 더 담으면 묶음 사은품이 추가돼요';
+    var n = pickedList().length;
+    if (n >= 3) return '🎁 묶음 혜택 최대';
+    if (n === 2) return '🎁 묶음 사은품 충족';
+    if (n === 1) return '1개 더 담으면 사은품 ↑';
     return '';
   }
 
@@ -239,10 +233,8 @@
   function discPct(it){ return it.card ? Math.round((it.fee - it.card) / it.fee * 100) : 0; }
 
   function productCard(it, cat){
-    var smart = SMART[it.brand];
     var d = discPct(it);
-    var chips = '<span class="bj-nw-brand">' + it.brand + '</span><span class="bj-nw-grade">평가 A</span>'
-      + (smart ? '<span class="bj-nw-smart">📱 ' + smart + '</span>' : '')
+    var chips = '<span class="bj-nw-brand">' + it.brand + '</span>'
       + (it.v ? '<span class="bj-nw-value">💰 가성비</span>' : '');
     var price;
     if (it.card) {
@@ -309,7 +301,6 @@
     + '  <h1>💍 신혼 가전, 한 번에 시작하기</h1>'
     + '  <p>제휴카드 특별 할인 + 묶음 구독 사은품 — 신혼 추천 제품을 브랜드별로 비교하세요</p>'
     + '  <p>마음에 드는 제품을 <b>담기</b>로 모아 한 번에 상담받으면 <b>여러 개 묶음 혜택</b>까지</p>'
-    + '  <div class="bj-nw-smartbar">📱 삼성 SmartThings · LG ThinQ — 같은 브랜드로 모으면 <b>앱 하나로 집 안 가전 전부 제어</b></div>'
     + '  <div class="source">빌리조 제품분석 평가 A 이상 · 신혼 적합 기준 선정 · 카드할인가는 제휴카드 청구할인 기준</div>'
     + '</div>'
     + '<div class="bj-nw-container">'
@@ -317,8 +308,7 @@
     + t1
     + '<div class="bj-nw-bundle">'
     + '  <h3>🎁 묶음 구독 혜택 안내</h3>'
-    + '  <p>2개 이상 동시 가입 시 사은품 추가, 3개 이상이면 혜택 최대 + 첫 달 무료 등 상담 시 안내<br>'
-    + '  같은 브랜드(삼성/LG)로 모으면 스마트홈 앱 하나로 전부 제어 — 신혼집 셋업이 쉬워져요</p>'
+    + '  <p>2개 이상 동시 가입 시 사은품 추가, 3개 이상이면 혜택 최대 — 상담 시 안내</p>'
     + consultBtn('💬 바로 상담 신청')
     + '</div>'
     + t2 + t3
@@ -343,7 +333,6 @@
     '.bj-nw-hero{background:linear-gradient(135deg,#0838F8 0%,#1a87ac 100%);color:#fff;padding:40px 24px;text-align:center}',
     '.bj-nw-hero h1{font-size:32px;font-weight:800;margin:0 0 14px;letter-spacing:-0.5px}',
     '.bj-nw-hero p{font-size:15.5px;opacity:0.95;margin:0 0 6px}',
-    '.bj-nw-smartbar{display:inline-block;margin-top:12px;background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.3);border-radius:999px;padding:8px 18px;font-size:13px}',
     '.bj-nw-hero .source{font-size:12px;opacity:0.75;margin-top:14px}',
     '.bj-nw-container{padding:0 24px 32px}',
     '.bj-nw-section{padding:28px 0 6px}',
@@ -358,17 +347,15 @@
     '.bj-nw-pimg{height:130px;margin:-3px -3px 10px;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden}',
     '.bj-nw-pimg img{max-width:100%;max-height:100%;object-fit:contain}',
     '.bj-nw-pimg-empty{color:#c2c8d0;font-size:18px;font-weight:800;background:#f4f6f9}',
-    '.bj-nw-pchips{display:flex;gap:5px;margin-bottom:9px;flex-wrap:wrap}',
+    '.bj-nw-pchips{display:flex;gap:5px;margin-bottom:8px;flex-wrap:nowrap;overflow:hidden}',
     '.bj-nw-brand{font-size:11px;font-weight:800;color:#0838F8;background:#e8edff;border-radius:6px;padding:3px 8px}',
-    '.bj-nw-grade{font-size:11px;font-weight:700;color:#16a34a;background:#e9f9ef;border-radius:6px;padding:3px 8px}',
-    '.bj-nw-smart{font-size:10.5px;font-weight:700;color:#7048e8;background:#f1ebff;border-radius:6px;padding:3px 7px}',
     '.bj-nw-value{font-size:10.5px;font-weight:700;color:#b45309;background:#fff4dd;border-radius:6px;padding:3px 7px}',
-    '.bj-nw-pname{font-size:13.5px;font-weight:600;line-height:1.45;margin:0 0 3px;min-height:39px}',
-    '.bj-nw-pmodel{font-size:11px;color:#999;margin:0 0 8px}',
+    '.bj-nw-pname{font-size:13.5px;font-weight:600;line-height:1.45;margin:0 0 3px;height:39px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}',
+    '.bj-nw-pmodel{font-size:11px;color:#999;margin:0 0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
     '.bj-nw-feeline{font-size:12px;color:#555;margin-top:auto;min-height:18px}',
     '.bj-nw-feeline small{font-size:10px;color:#888;font-weight:600;background:#f1f3f5;border-radius:4px;padding:1px 5px;margin-right:3px}',
     '.bj-nw-feeline b{font-weight:700;color:#333}',
-    '.bj-nw-pprice{font-size:16.5px;font-weight:800;color:#0838F8;margin:0 0 10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}',
+    '.bj-nw-pprice{font-size:16px;font-weight:800;color:#0838F8;margin:0 0 10px;display:flex;align-items:center;gap:5px;white-space:nowrap;overflow:hidden}',
     '.bj-nw-pprice small{font-size:10.5px;color:#6a6a6a;font-weight:600;margin-right:2px}',
     '.bj-nw-disc{font-size:11px;font-weight:800;color:#fff;background:#d6336c;border-radius:6px;padding:2px 6px}',
     '.bj-nw-pbtns{display:flex;gap:6px}',
@@ -393,7 +380,6 @@
     '  .bj-nw-hero{padding:30px 18px}',
     '  .bj-nw-hero h1{font-size:23px}',
     '  .bj-nw-hero p{font-size:13px}',
-    '  .bj-nw-smartbar{font-size:11.5px;padding:7px 12px}',
     '  .bj-nw-container{padding:0 14px 24px}',
     '  .bj-nw-section{padding:22px 0 4px}',
     '  .bj-nw-section-h{font-size:18px}',
@@ -401,7 +387,7 @@
     '  .bj-nw-pcard{padding:11px}',
     '  .bj-nw-pimg{height:96px;margin:-2px -2px 8px}',
     '  .bj-nw-pname{font-size:12.5px;min-height:36px}',
-    '  .bj-nw-pprice{font-size:14.5px}',
+    '  .bj-nw-pprice{font-size:13.5px}',
     '  .bj-nw-btn,.bj-nw-pick{font-size:11.5px;padding:8px 4px}',
     '  .bj-nw-bundle{padding:20px}',
     '  .bj-nw-bundle h3{font-size:17px}',
