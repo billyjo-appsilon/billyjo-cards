@@ -481,6 +481,28 @@
     - **이유**: `width:100%`(버튼) 또는 `flex:1`(stat 칸) 자식에 `padding`·`border`가 box-sizing 없이 더해지면 카드 폭을 초과 → 카드의 `overflow-y:auto`가 CSS 규칙상 `overflow-x`도 `auto`로 계산해 **가로 스크롤**이 생기고, 넘침 때문에 `justify-content:center`인 CTA의 중앙정렬도 시각적으로 틀어진다. box-sizing 하나로 두 증상(가로 스크롤 + CTA 중앙정렬) 동시 해소 — 근본 원인 단일.
     - 모달은 viewport 기준 `position:fixed; inset:0; padding:16px`로 띄우고, 카드는 `max-width:420px; width:100%; max-height:92vh`. CTA(`.bj-cta`)는 `display:flex; align-items:center; justify-content:center`로 아이콘+라벨을 한 단위로 중앙정렬.
 
+32. **모바일 가로 넘침 0 의무 (2026-06-07 신설, 전역)**: 어떤 UI 작업이든 (카드·모달·위젯·섹션·테이블 — 신규/수정 불문) **모바일에서 화면 가로 넘침이 절대 발생하면 안 된다**. 모든 viewport(최소 320px)에서 `요소.right ≤ viewport폭` + `scrollWidth == viewport폭`을 보장한다.
+
+    **(A) CSS 작성 규칙 (원인 차단)**:
+    - **Grid**: 고정 N열은 `repeat(N, 1fr)` 금지 → **`repeat(N, minmax(0, 1fr))`** 필수. `1fr`의 암묵 최소폭은 `auto`(=콘텐츠 min-content)라 nowrap 텍스트·긴 단어가 칼럼을 화면 밖으로 키운다 (grid blowout — 신혼부부 패키지 v3.4 사고).
+    - **Grid/Flex 아이템**: 수축이 필요한 모든 아이템에 **`min-width: 0`** (+ 필요 시 `max-width: 100%`) 명시. flex의 기본 `min-width:auto`도 같은 blowout을 일으킨다 (절대 규칙 #24 v0.3.3 비교표 사고와 동일 원인).
+    - **`white-space: nowrap` 사용 조건**: 같은 요소에 `overflow:hidden`(또는 `text-overflow:ellipsis`)을 짝으로 + 조상 체인이 수축 가능(min-width:0)할 때만. **≤600px에서는 nowrap 대신 wrap을 기본**으로 하고 폰트 축소로 대응.
+    - **고정 px 폭 금지**: viewport보다 클 수 있는 `width: NNNpx`는 `max-width:100%`와 병기. 테이블 등 최소폭이 필요한 경우만 wrapper에 `overflow-x:auto` 가로 스크롤로 격리 (#24 패턴).
+    - **이미지/미디어**: `max-width:100%` (또는 컨테이너 `overflow:hidden` + `object-fit`).
+    - **음수 마진·absolute 요소**: viewport 밖으로 나갈 수 있는 좌표·transform 금지, 컨테이너에 `overflow:hidden` 안전망.
+    - 컨테이너 공통: `box-sizing:border-box` (#31), 오버레이 스크롤 컨테이너 `overflow-x:hidden`.
+
+    **(B) 검증 의무 (배포 전 필수)**: 모바일에 노출되는 UI를 만들거나 수정하면 **320 / 360 / 390 / 430px** 4개 폭에서 가로 넘침 검사를 통과해야 배포한다. 판정 스크립트 (Playwright evaluate):
+    ```javascript
+    // 0이어야 통과. scrollWidth도 viewport 폭과 같아야 함.
+    (vw => Array.from(document.querySelectorAll('*'))
+      .filter(el => el.getBoundingClientRect().right > vw + 1).length)(window.innerWidth)
+    ```
+    - 검사 대상은 변경한 컴포넌트가 포함된 실제 페이지/모달 (정적 미리보기 아님).
+    - 통과 기록(폭별 0)을 커밋 메시지나 WORKLOG에 남긴다.
+
+    **사고 이력 (재발 방지 근거)**: v0.3.3 스펙 비교표 flex blowout → #24 신설 / v0.3.5·#26 help-pop viewport 탈출 / v0.3.6 모바일 헤더 로고 겹침 / v0.7.x #31 상담 모달 가로 스크롤 / **2026-06-07 신혼부부 패키지 2열 카드 화면 밖 넘침 (nowrap 가격 줄 × grid 1fr)** — 전부 같은 뿌리(수축 불가능한 콘텐츠 폭). 이 규칙은 그 일반화다.
+
 ## 카테고리 라우팅
 
 신규 제품은 14개 패밀리 중 하나로 분류한 뒤 `docs/rulebook.md`의 해당 섹션을 따른다.
@@ -588,3 +610,4 @@
 - v0.6.9 (2026-06-01): **모바일 aside 메뉴 로고 축소 + 헤더/aside 로고 KO/EN cross-fade 정식화 + 카테고리바 간격 축소** (billyjo-inject `f9d1ffe`). (1) 모바일 사이드 슬라이드 메뉴 로고(`.aside__top .top__logo img`)가 너무 커서 `@media(max-width:768px)`에서 `width:92px`로 축소. (2) 로고 cross-fade를 헤더(모듈 B `alternateBillyjoLogo`)에 더해 **전 페이지 공통 aside 메뉴 로고에도 적용**(모듈 A 신규 IIFE `billyjoAsideLogo`) — admin2 호스팅 `billyjo-ko.png`·`billyjo-en.png`를 JS setInterval(2초) opacity 토글로 번갈아 노출, 스킨 지연 대비 400ms×15 재시도. 절대 규칙 #30 inject.js 적용 surface 섹션 신설. (3) 모바일 상단 카테고리바(모듈 A 헤더 리디자인의 `.category__wrap`, 규칙 #20의 `.mobile__gnb` 스와이프 바와는 별개) gap `16px→9px`, padding `12px→10px` 축소(스크롤 헤더 클론 `.bj-sh-cat`도 동일) — 사용자 피드백 "메뉴 간 간격 조금 줄일 것".
 - v0.7.x (2026-06-02): **헤더/모달 회귀·침범 일괄 fix + 절대 규칙 #21(e)·#30 positioning·#31 신설** (billyjo-inject `52e8e76`→`6d4c117`). (1) **상담 모달 가로 스크롤 + CTA 중앙정렬** (`52e8e76`): `.bj-card` 자식들에 box-sizing 없어 `width:100%`/`flex:1` + padding/border가 카드 폭 초과 → `overflow-y:auto`가 `overflow-x`도 auto로 계산해 가로 스크롤 + CTA 중앙정렬 틀어짐. 모달 전역 `box-sizing:border-box` + `.bj-card overflow-x:hidden`로 단일 원인 해소. 절대 규칙 #31 신설. (2) **PC 헤더 rightGroup이 카테고리 침범** (`f05f6e5`): PC 헤더 리디자인은 모듈 A(전 페이지) 실행인데 보호 CSS·`.bj-inj-*` 태깅이 모듈 B(prod_view 전용)에만 있어 비-상세 페이지에서 무방비. 모듈 A에서 클래스 직접 부여 + `≤1500/≤1024` 보호 CSS 전역화. (3) **모바일 헤더 로고 좌측정렬** (`96fa901`): 로고 absolute 중앙정렬이라 햄버거만 한 줄을 여백으로 낭비 → in-flow 좌측정렬 `[햄버거][로고]` + `.header__top` 로고 슬롯 비면 JS로 `a.logo` 이동. (4) **모바일 영문 로고가 햄버거 위에 뜨는 회귀** (`6d4c117`): (3)에서 준 `a.logo{position:static !important}`가 cross-fade의 인라인 `position:relative`를 override → EN 오버레이가 `.header__top` 기준으로 퍼짐. `position:relative`로 정정. 절대 규칙 #21(e)·#30 positioning context 섹션 신설. 사용자 확인 "잘 되었음".
 - v0.7.0 (2026-06-01): **이벤트/고객센터 인라인 빨강(`#ff1818`) → 브랜드 파랑(`#0838F8`) 전역 통일** (billyjo-inject `80588ea`). v0.3.7에서 `a[style*="ff1818"]` 규칙을 만들었으나 모듈 B(prod_view 전용) CSS에만 있어 다른 페이지에선 여전히 빨강이었음. 모듈 A 전역 CSS의 인라인 컬러 오버라이드 그룹(`[style*="ff7a4c"]`...)에 `[style*="ff1818"]`/`[style*="FF1818"]` 추가 → '이벤트 / 고객센터' 등 전 페이지 공통 빨강 강조 링크를 브랜드 파랑으로 통일. 사용자 피드백 "끌씨 색상이 #ff1818인데 빌리조 블루로 변경".
+- v0.8.0 (2026-06-07): **절대 규칙 #32 신설 — 모바일 가로 넘침 0 의무 (전역)**. 신혼부부 패키지 모달 2열 카드가 화면 밖으로 넘친 사고(nowrap 가격 줄 × grid `1fr` blowout, newlywed.js v3.4에서 수정) 계기. CSS 작성 규칙(grid `minmax(0,1fr)`·아이템 `min-width:0`·≤600px nowrap 금지·고정 px 폭 금지·이미지 max-width:100%) + 배포 전 320/360/390/430px 가로 넘침 검사 의무화. 사용자 지시: "앞으로 어떤 작업을 해도 모바일 화면에서 화면 가로 넘침 현상이 일어나지 않게 룰을 저장".
