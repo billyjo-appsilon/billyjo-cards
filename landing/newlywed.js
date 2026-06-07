@@ -3,6 +3,7 @@
  * window.bjOpenNewlywedModal() 호출 시 풀스크린 오버레이 모달 열기.
  * billyjo-inject inject.js의 카테고리바 항목 onclick에서 호출됨.
  *
+ * v3.4 (2026-06-07): 모바일 2열 그리드 blowout fix — minmax(0,1fr)+min-width:0, 가격 줄 wrap.
  * v3.3 (2026-06-07): 카드 정렬 정리(칩 1줄·이름 2줄 클램프·가격 줄바꿈 방지) + 스마트홈 장문 카피 제거.
  * v3.2 (2026-06-07): 일반가 병기 — 취소선 폐기, 일반/제휴카드 2줄 동등 표기 (카드 미사용 고객 대응).
  * v3.1 (2026-06-07): 제품 실사 이미지 (prod_view og:image) 카드 상단 표시.
@@ -342,7 +343,7 @@
     '.bj-nw-tier-hot{color:#d6336c;background:#ffe3ec}',
     '.bj-nw-desc{font-size:13.5px;color:#6a6a6a;margin:2px 0 14px}',
     '.bj-nw-pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(225px,1fr));gap:12px}',
-    '.bj-nw-pcard{background:#fff;border:0.5px solid #e6e8eb;border-radius:12px;padding:15px;display:flex;flex-direction:column;transition:transform 0.2s,box-shadow 0.2s}',
+    '.bj-nw-pcard{background:#fff;border:0.5px solid #e6e8eb;border-radius:12px;padding:15px;display:flex;flex-direction:column;transition:transform 0.2s,box-shadow 0.2s;min-width:0;max-width:100%}',
     '.bj-nw-pcard:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(8,56,248,0.10)}',
     '.bj-nw-pimg{height:130px;margin:-3px -3px 10px;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden}',
     '.bj-nw-pimg img{max-width:100%;max-height:100%;object-fit:contain}',
@@ -352,7 +353,7 @@
     '.bj-nw-value{font-size:10.5px;font-weight:700;color:#b45309;background:#fff4dd;border-radius:6px;padding:3px 7px}',
     '.bj-nw-pname{font-size:13.5px;font-weight:600;line-height:1.45;margin:0 0 3px;height:39px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}',
     '.bj-nw-pmodel{font-size:11px;color:#999;margin:0 0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
-    '.bj-nw-feeline{font-size:12px;color:#555;margin-top:auto;min-height:18px}',
+    '.bj-nw-feeline{font-size:12px;color:#555;margin-top:auto;min-height:18px;white-space:nowrap;overflow:hidden}',
     '.bj-nw-feeline small{font-size:10px;color:#888;font-weight:600;background:#f1f3f5;border-radius:4px;padding:1px 5px;margin-right:3px}',
     '.bj-nw-feeline b{font-weight:700;color:#333}',
     '.bj-nw-pprice{font-size:16px;font-weight:800;color:#0838F8;margin:0 0 10px;display:flex;align-items:center;gap:5px;white-space:nowrap;overflow:hidden}',
@@ -383,11 +384,17 @@
     '  .bj-nw-container{padding:0 14px 24px}',
     '  .bj-nw-section{padding:22px 0 4px}',
     '  .bj-nw-section-h{font-size:18px}',
-    '  .bj-nw-pgrid{grid-template-columns:repeat(2,1fr);gap:9px}',
+    '  .bj-nw-pgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}',
     '  .bj-nw-pcard{padding:11px}',
     '  .bj-nw-pimg{height:96px;margin:-2px -2px 8px}',
     '  .bj-nw-pname{font-size:12.5px;min-height:36px}',
-    '  .bj-nw-pprice{font-size:13.5px}',
+    '  .bj-nw-pprice{font-size:13px;white-space:normal;flex-wrap:wrap;gap:3px;row-gap:1px;min-height:34px;align-content:center}',
+    '  .bj-nw-pprice small{font-size:9.5px}',
+    '  .bj-nw-feeline{font-size:11px}',
+    '  .bj-nw-feeline small{font-size:9px;padding:1px 4px}',
+    '  .bj-nw-disc{font-size:10px;padding:1px 5px}',
+    '  .bj-nw-pmodel{font-size:10px}',
+    '  .bj-nw-brand,.bj-nw-value{font-size:10px;padding:2px 6px}',
     '  .bj-nw-btn,.bj-nw-pick{font-size:11.5px;padding:8px 4px}',
     '  .bj-nw-bundle{padding:20px}',
     '  .bj-nw-bundle h3{font-size:17px}',
