@@ -3,6 +3,7 @@
  * window.bjOpenNewlywedModal() 호출 시 풀스크린 오버레이 모달 열기.
  * billyjo-inject inject.js의 카테고리바 항목 onclick에서 호출됨.
  *
+ * v3.8 (2026-06-08): 여백 압축(-98% pill 한 줄 유지), pickbar body 직속(중앙 가림 fix)+2버튼(선택/추천 상담).
  * v3.7 (2026-06-07): 가격 라벨 칩 통일 — [일반]/[제휴💳] 동일 스타일·고정폭 좌측 정렬.
  * v3.6 (2026-06-07): 카드가 라벨 압축 — '제휴카드 시 월' → '제휴💳 월'.
  * v3.5 (2026-06-07): 히어로 간결화 — 3줄 장문·가운데 정렬 → 좌측 정렬 한 줄 + 혜택 칩 3개.
@@ -153,6 +154,7 @@
     closeBtn.innerHTML = '✕';
     function closeModal(){
       modal.remove(); document.body.style.overflow = '';
+      var pb = document.querySelector('.bj-nw-pickbar'); if (pb) pb.remove();
       window.__bjConsultContext = null; // 패키지 컨텍스트는 모달 열려있는 동안만
     }
     closeBtn.onclick = closeModal;
@@ -163,6 +165,30 @@
 
     document.body.style.overflow = 'hidden';
     document.body.appendChild(modal);
+
+    /* pickbar — 모달 밖 body 직속. 모달 배경의 backdrop-filter가 fixed의
+       containing block이 되어 스크롤 시 바가 콘텐츠 중간에 떠 상품을 가리던 버그.
+       body 직속이면 position:fixed가 항상 뷰포트 하단에 고정된다. */
+    var pickbar = document.createElement('div');
+    pickbar.className = 'bj-nw-pickbar';
+    pickbar.innerHTML =
+      '<div class="bj-nw-pickbar-left">' +
+      '  <div class="bj-nw-pickbar-txt">🛒 담은 제품 <b class="cnt">0</b>개</div>' +
+      '  <div class="bj-nw-nudge"></div>' +
+      '</div>' +
+      '<div class="bj-nw-pickbar-btns">' +
+      '  <a href="https://www.billyjo.co.kr/html/dh/counsel" data-bj-consult="1" class="bj-nw-cta-sub" id="bj-nw-cta-rec">🤝 제품 추천 상담</a>' +
+      '  <a href="https://www.billyjo.co.kr/html/dh/counsel" data-bj-consult="1" class="bj-nw-cta-main" id="bj-nw-cta-sel">💬 선택 제품 상담</a>' +
+      '</div>';
+    document.body.appendChild(pickbar);
+    /* 상담 모드 선택 — 상담 가로채기(click capture)보다 먼저 컨텍스트를 갱신해야
+       하므로 pointerdown(click 이전 발화) 사용 */
+    var recBtn = pickbar.querySelector('#bj-nw-cta-rec');
+    var selBtn = pickbar.querySelector('#bj-nw-cta-sel');
+    ['pointerdown', 'touchstart'].forEach(function(ev){
+      recBtn.addEventListener(ev, function(){ setConsultContext('recommend'); }, { passive: true });
+      selBtn.addEventListener(ev, function(){ setConsultContext('selected'); }, { passive: true });
+    });
 
     if (!document.querySelector('#bj-nw-modal-style')) {
       var st = document.createElement('style');
@@ -177,16 +203,22 @@
 
   function pickedList(){ return Object.keys(picked).map(function(p){ return picked[p]; }); }
 
-  function setConsultContext(){
+  function setConsultContext(mode){
     var items = pickedList();
-    var label = items.length
-      ? ORIGIN + ' 상담 (' + items.length + '개 제품 담음)'
-      : ORIGIN + ' 상담';
+    var label;
+    if (mode === 'recommend') {
+      label = ORIGIN + ' 추천 상담' + (items.length ? ' (담은 ' + items.length + '개 참고)' : '');
+    } else {
+      label = items.length
+        ? ORIGIN + ' 상담 (' + items.length + '개 제품 담음)'
+        : ORIGIN + ' 상담';
+    }
     window.__bjConsultContext = {
       productId: items.length === 1 ? items[0].pid : null,
       productName: label,
       selection: {
         origin: ORIGIN,
+        consultType: mode === 'recommend' ? '제품 추천 상담' : '선택 제품 상담',
         requestedProducts: items.map(function(it){
           return { pid: it.pid, name: it.name, brand: it.brand, model: it.model,
                    monthlyFee: it.fee, cardFee: it.card || undefined, category: it.cat };
@@ -224,7 +256,7 @@
       });
       setConsultContext();
       var n = Object.keys(picked).length;
-      var bar = root.querySelector('.bj-nw-pickbar');
+      var bar = document.querySelector('.bj-nw-pickbar');
       if (bar) {
         bar.classList.toggle('show', n > 0);
         var cnt = bar.querySelector('.cnt'); if (cnt) cnt.textContent = n;
@@ -323,13 +355,7 @@
     + consultBtn('💬 무료 상담 신청')
     + '</div>'
     + '</div>'
-    + '<div class="bj-nw-pickbar">'
-    + '  <div class="bj-nw-pickbar-left">'
-    + '    <div class="bj-nw-pickbar-txt">🛒 담은 제품 <b class="cnt">0</b>개 — 상담사가 신혼 패키지로 한 번에 안내</div>'
-    + '    <div class="bj-nw-nudge"></div>'
-    + '  </div>'
-    +    consultBtn('💬 선택 제품 상담 신청')
-    + '</div>';
+    ;
   }
 
   var MODAL_CSS = [
@@ -340,7 +366,7 @@
     '.bj-nw-hero p{font-size:14px;opacity:0.9;margin:0 0 14px}',
     '.bj-nw-hero-chips{display:flex;gap:6px;flex-wrap:wrap}',
     '.bj-nw-hero-chips span{font-size:12px;font-weight:700;background:rgba(255,255,255,0.16);border:1px solid rgba(255,255,255,0.28);border-radius:999px;padding:5px 12px;white-space:nowrap}',
-    '.bj-nw-container{padding:0 24px 32px}',
+    '.bj-nw-container{padding:0 16px 32px}',
     '.bj-nw-section{padding:28px 0 6px}',
     '.bj-nw-best{padding-top:24px}',
     '.bj-nw-section-h{font-size:21px;font-weight:700;margin:0 0 6px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}',
@@ -348,7 +374,7 @@
     '.bj-nw-tier-hot{color:#d6336c;background:#ffe3ec}',
     '.bj-nw-desc{font-size:13.5px;color:#6a6a6a;margin:2px 0 14px}',
     '.bj-nw-pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(225px,1fr));gap:12px}',
-    '.bj-nw-pcard{background:#fff;border:0.5px solid #e6e8eb;border-radius:12px;padding:15px;display:flex;flex-direction:column;transition:transform 0.2s,box-shadow 0.2s;min-width:0;max-width:100%}',
+    '.bj-nw-pcard{background:#fff;border:0.5px solid #e6e8eb;border-radius:12px;padding:12px;display:flex;flex-direction:column;transition:transform 0.2s,box-shadow 0.2s;min-width:0;max-width:100%}',
     '.bj-nw-pcard:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(8,56,248,0.10)}',
     '.bj-nw-pimg{height:130px;margin:-3px -3px 10px;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden}',
     '.bj-nw-pimg img{max-width:100%;max-height:100%;object-fit:contain}',
@@ -376,38 +402,43 @@
     '.bj-nw-bundle h3{font-size:20px;font-weight:700;color:#0838F8;margin:0 0 10px}',
     '.bj-nw-bundle p{margin:0 0 16px;color:#6a6a6a;font-size:14px;line-height:1.7}',
     '.bj-nw-bundle a{display:inline-flex;align-items:center;gap:8px;background:#0838F8;color:#fff;text-decoration:none;font-weight:700;padding:12px 22px;border-radius:10px;font-size:14.5px;cursor:pointer}',
-    '.bj-nw-pickbar{position:fixed;left:0;right:0;bottom:0;z-index:100001;background:#fff;border-top:1px solid #e0e6ff;box-shadow:0 -6px 24px rgba(8,56,248,0.12);padding:11px 18px;display:none;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap}',
+    '.bj-nw-pickbar{position:fixed;left:0;right:0;bottom:0;z-index:100002;background:#fff;border-top:1px solid #e0e6ff;box-shadow:0 -6px 24px rgba(8,56,248,0.12);padding:10px 14px;display:none;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}',
     '.bj-nw-pickbar.show{display:flex}',
     '.bj-nw-pickbar-left{display:flex;flex-direction:column;gap:2px}',
     '.bj-nw-pickbar-txt{font-size:14px;font-weight:600;color:#2a2a2a}',
     '.bj-nw-pickbar-txt b{color:#0838F8;font-size:16px}',
     '.bj-nw-nudge{font-size:12px;font-weight:700;color:#d6336c}',
-    '.bj-nw-pickbar a{display:inline-flex;align-items:center;gap:6px;background:#0838F8;color:#fff;text-decoration:none;font-weight:800;padding:12px 24px;border-radius:10px;font-size:15px;cursor:pointer}',
+    '.bj-nw-pickbar-btns{display:flex;gap:8px}',
+    '.bj-nw-pickbar a{display:inline-flex;align-items:center;justify-content:center;gap:5px;text-decoration:none;font-weight:800;padding:11px 16px;border-radius:10px;font-size:14px;cursor:pointer;white-space:nowrap}',
+    '.bj-nw-cta-main{background:#0838F8;color:#fff}',
+    '.bj-nw-cta-sub{background:#fff;color:#0838F8;border:1.5px solid #0838F8}',
     '@media (max-width:600px){',
     '  .bj-nw-hero{padding:20px 16px}',
     '  .bj-nw-hero h1{font-size:20px}',
     '  .bj-nw-hero p{font-size:12.5px;margin-bottom:10px}',
     '  .bj-nw-hero-chips span{font-size:11px;padding:4px 10px}',
-    '  .bj-nw-container{padding:0 14px 24px}',
+    '  .bj-nw-container{padding:0 7px 24px}',
     '  .bj-nw-section{padding:22px 0 4px}',
     '  .bj-nw-section-h{font-size:18px}',
-    '  .bj-nw-pgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}',
-    '  .bj-nw-pcard{padding:11px}',
-    '  .bj-nw-pimg{height:96px;margin:-2px -2px 8px}',
+    '  .bj-nw-pgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}',
+    '  .bj-nw-pcard{padding:8px}',
+    '  .bj-nw-pimg{height:92px;margin:0 0 7px}',
     '  .bj-nw-pname{font-size:12.5px;min-height:36px}',
-    '  .bj-nw-pprice{font-size:13px;white-space:normal;flex-wrap:wrap;gap:3px;row-gap:1px;min-height:34px;align-content:center}',
+    '  .bj-nw-pprice{font-size:12.5px;white-space:normal;flex-wrap:wrap;gap:2px;row-gap:1px;min-height:18px;align-content:center;letter-spacing:-0.3px}',
     '  .bj-nw-feeline{font-size:11px}',
-    '  .bj-nw-feeline small,.bj-nw-pprice small{font-size:9px;min-width:38px;padding:1px 4px;margin-right:4px}',
-    '  .bj-nw-disc{font-size:10px;padding:1px 5px}',
+    '  .bj-nw-feeline small,.bj-nw-pprice small{font-size:8.5px;min-width:32px;padding:1px 3px;margin-right:3px}',
+    '  .bj-nw-disc{font-size:9px;padding:1px 4px;margin-left:1px}',
     '  .bj-nw-pmodel{font-size:10px}',
     '  .bj-nw-brand,.bj-nw-value{font-size:10px;padding:2px 6px}',
     '  .bj-nw-btn,.bj-nw-pick{font-size:11.5px;padding:8px 4px}',
     '  .bj-nw-bundle{padding:20px}',
     '  .bj-nw-bundle h3{font-size:17px}',
-    '  .bj-nw-pickbar{padding:9px 12px;gap:10px}',
+    '  .bj-nw-pickbar{padding:8px 10px;gap:6px}',
+    '  .bj-nw-pickbar-left{width:100%;flex-direction:row;justify-content:space-between;align-items:center}',
+    '  .bj-nw-pickbar-btns{width:100%}',
+    '  .bj-nw-pickbar a{flex:1;font-size:13px;padding:10px 8px}',
     '  .bj-nw-pickbar-txt{font-size:12.5px}',
     '  .bj-nw-nudge{font-size:11px}',
-    '  .bj-nw-pickbar a{font-size:13.5px;padding:10px 16px}',
     '}'
   ].join('\n');
 })();
