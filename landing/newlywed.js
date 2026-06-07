@@ -3,6 +3,7 @@
  * window.bjOpenNewlywedModal() 호출 시 풀스크린 오버레이 모달 열기.
  * billyjo-inject inject.js의 카테고리바 항목 onclick에서 호출됨.
  *
+ * v3.5 (2026-06-07): 히어로 간결화 — 3줄 장문·가운데 정렬 → 좌측 정렬 한 줄 + 혜택 칩 3개.
  * v3.4 (2026-06-07): 모바일 2열 그리드 blowout fix — minmax(0,1fr)+min-width:0, 가격 줄 wrap.
  * v3.3 (2026-06-07): 카드 정렬 정리(칩 1줄·이름 2줄 클램프·가격 줄바꿈 방지) + 스마트홈 장문 카피 제거.
  * v3.2 (2026-06-07): 일반가 병기 — 취소선 폐기, 일반/제휴카드 2줄 동등 표기 (카드 미사용 고객 대응).
@@ -282,7 +283,7 @@
     var top = all.slice(0, 6);
     return '<section class="bj-nw-section bj-nw-best">'
       + '<h2 class="bj-nw-section-h">🔥 신혼 특별 할인 BEST <span class="bj-nw-tier bj-nw-tier-hot">제휴카드 청구할인</span></h2>'
-      + '<p class="bj-nw-desc">지금 가장 할인 폭이 큰 제품. 일반가와 제휴카드 적용가를 함께 표기 — 카드 없이 일반가 구독도 가능 (실적 조건 상담 시 안내).</p>'
+      + '<p class="bj-nw-desc">일반가·제휴카드가 함께 표기 — 카드 없이도 구독 가능</p>'
       + '<div class="bj-nw-pgrid">' + top.map(function(it){ return productCard(it, it.cat); }).join('') + '</div>'
       + '</section>';
   }
@@ -300,9 +301,10 @@
     return ''
     + '<div class="bj-nw-hero">'
     + '  <h1>💍 신혼 가전, 한 번에 시작하기</h1>'
-    + '  <p>제휴카드 특별 할인 + 묶음 구독 사은품 — 신혼 추천 제품을 브랜드별로 비교하세요</p>'
-    + '  <p>마음에 드는 제품을 <b>담기</b>로 모아 한 번에 상담받으면 <b>여러 개 묶음 혜택</b>까지</p>'
-    + '  <div class="source">빌리조 제품분석 평가 A 이상 · 신혼 적합 기준 선정 · 카드할인가는 제휴카드 청구할인 기준</div>'
+    + '  <p>담아서 한 번에 상담받으세요</p>'
+    + '  <div class="bj-nw-hero-chips">'
+    + '    <span>💳 제휴카드 특별 할인</span><span>🎁 묶음 사은품</span><span>⭐ 평가 A 이상</span>'
+    + '  </div>'
     + '</div>'
     + '<div class="bj-nw-container">'
     + bestSection()
@@ -331,10 +333,11 @@
   var MODAL_CSS = [
     '.bj-nw-modal-content *{box-sizing:border-box}',
     ".bj-nw-modal-content{font-family:'Pretendard','Apple SD Gothic Neo','맑은 고딕',sans-serif;color:#2a2a2a;line-height:1.5;-webkit-font-smoothing:antialiased}",
-    '.bj-nw-hero{background:linear-gradient(135deg,#0838F8 0%,#1a87ac 100%);color:#fff;padding:40px 24px;text-align:center}',
-    '.bj-nw-hero h1{font-size:32px;font-weight:800;margin:0 0 14px;letter-spacing:-0.5px}',
-    '.bj-nw-hero p{font-size:15.5px;opacity:0.95;margin:0 0 6px}',
-    '.bj-nw-hero .source{font-size:12px;opacity:0.75;margin-top:14px}',
+    '.bj-nw-hero{background:linear-gradient(135deg,#0838F8 0%,#1a87ac 100%);color:#fff;padding:28px 24px;text-align:left}',
+    '.bj-nw-hero h1{font-size:26px;font-weight:800;margin:0 0 6px;letter-spacing:-0.5px}',
+    '.bj-nw-hero p{font-size:14px;opacity:0.9;margin:0 0 14px}',
+    '.bj-nw-hero-chips{display:flex;gap:6px;flex-wrap:wrap}',
+    '.bj-nw-hero-chips span{font-size:12px;font-weight:700;background:rgba(255,255,255,0.16);border:1px solid rgba(255,255,255,0.28);border-radius:999px;padding:5px 12px;white-space:nowrap}',
     '.bj-nw-container{padding:0 24px 32px}',
     '.bj-nw-section{padding:28px 0 6px}',
     '.bj-nw-best{padding-top:24px}',
@@ -378,9 +381,10 @@
     '.bj-nw-nudge{font-size:12px;font-weight:700;color:#d6336c}',
     '.bj-nw-pickbar a{display:inline-flex;align-items:center;gap:6px;background:#0838F8;color:#fff;text-decoration:none;font-weight:800;padding:12px 24px;border-radius:10px;font-size:15px;cursor:pointer}',
     '@media (max-width:600px){',
-    '  .bj-nw-hero{padding:30px 18px}',
-    '  .bj-nw-hero h1{font-size:23px}',
-    '  .bj-nw-hero p{font-size:13px}',
+    '  .bj-nw-hero{padding:20px 16px}',
+    '  .bj-nw-hero h1{font-size:20px}',
+    '  .bj-nw-hero p{font-size:12.5px;margin-bottom:10px}',
+    '  .bj-nw-hero-chips span{font-size:11px;padding:4px 10px}',
     '  .bj-nw-container{padding:0 14px 24px}',
     '  .bj-nw-section{padding:22px 0 4px}',
     '  .bj-nw-section-h{font-size:18px}',
