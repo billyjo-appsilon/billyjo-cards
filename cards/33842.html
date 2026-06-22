@@ -197,6 +197,23 @@
         #ai-card-root .step-details[open] summary::after{transform:rotate(180deg)}
         #ai-card-root .field{margin:8px 0 10px}
         #ai-card-root .field-l{font-size:11.5px;color:var(--color-text-secondary);margin-bottom:6px}
+        /* SLOT 6 상세 스펙 — 섹션 전체 접기 (기본 collapsed, 공간 절약) */
+        #ai-card-root details.spec-collapse{padding-top:14px;margin-top:14px;border-top:0.5px solid var(--color-border-tertiary)}
+        #ai-card-root details.spec-collapse > summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px}
+        #ai-card-root details.spec-collapse > summary::-webkit-details-marker{display:none}
+        #ai-card-root details.spec-collapse > summary .sec-t{margin-bottom:0}
+        #ai-card-root .spec-collapse-hint{margin-left:auto;font-size:11px;font-weight:700;color:var(--color-text-info);background:var(--color-background-info);padding:3px 10px;border-radius:999px;display:inline-flex;align-items:center;gap:4px;flex-shrink:0}
+        #ai-card-root .spec-collapse-hint::after{content:"▾";font-size:10px;transition:transform 0.15s}
+        #ai-card-root details.spec-collapse[open] > summary .spec-collapse-hint::after{transform:rotate(180deg)}
+        #ai-card-root .spec-collapse-hint .hint-close{display:none}
+        #ai-card-root details.spec-collapse[open] > summary .hint-open{display:none}
+        #ai-card-root details.spec-collapse[open] > summary .hint-close{display:inline}
+        #ai-card-root .spec-collapse-body{margin-top:8px}
+        #ai-card-root .spec-line{display:flex;justify-content:space-between;gap:10px;font-size:11.5px;padding:5px 0;border-bottom:0.5px dashed var(--color-border-tertiary);min-width:0}
+        #ai-card-root .spec-line:last-child{border-bottom:0}
+        #ai-card-root .spec-line .sll{color:var(--color-text-secondary);flex-shrink:0}
+        #ai-card-root .spec-line .slv{color:var(--color-text-primary);font-weight:700;text-align:right;word-break:keep-all;min-width:0;line-height:1.45}
+        #ai-card-root .spec-line .slv strong{color:var(--color-text-info);font-weight:700}
 
         #ai-card-root .gift{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px 16px}
         /* PC: 라벨 좌 / 값 우 (space-between). 모바일: column stack (라벨 위, 값 아래 좌측 정렬) */
@@ -581,12 +598,13 @@
           </div>
 
           <!-- SLOT 6: Step 1-3 (자세히 보기 접기) -->
-          <div class="sec">
-            <div class="sec-t">상세 스펙</div>
+          <details class="sec spec-collapse">
+            <summary><span class="sec-t">상세 스펙</span><span class="spec-collapse-hint"><span class="hint-open">펼쳐보기</span><span class="hint-close">접기</span></span></summary>
+            <div class="spec-collapse-body">
 
             <!-- step-1-start -->
             <div class="step-h"><span class="step-n">1</span><span class="step-title">정수성능</span><span class="grade-badge g-A" style="margin-left:auto">추천<small>A</small></span></div>
-            <div class="step-sum">표준 정수성능 — 카테고리 기본 기능 만족 (상세는 본문 참조)</div>
+            <div class="step-sum">정수성능 표준 사양.</div>
             <details class="step-details">
               <summary>자세히 보기</summary>
               <div class="field"><div class="field-l">출수 종류</div><div class="pills"><span class="pill">냉수</span><span class="pill">온수</span><span class="pill">정수</span><span class="pill">얼음</span><span class="pill">살균수</span></div></div><div class="field"><div class="field-l">필터 종류</div><div class="pills"><span class="pill">RO 역삼투압</span><span class="pill">UF 중공사막</span><span class="pill">나노필터</span></div></div><div class="field"><div class="field-l">필터 단계</div><div class="pills"><span class="pill">1단</span><span class="pill">2단</span><span class="pill">3단</span><span class="pill">4단+</span></div></div>
@@ -595,7 +613,7 @@
 
             <!-- step-2-start -->
             <div class="step-h"><span class="step-n">2</span><span class="step-title">위생관리</span><span class="grade-badge g-Bplus" style="margin-left:auto">우수<small>B+</small></span></div>
-            <div class="step-sum">표준 위생관리 — 카테고리 기본 기능 만족 (상세는 본문 참조)</div>
+            <div class="step-sum">위생관리 표준 사양.</div>
             <details class="step-details">
               <summary>자세히 보기</summary>
               <div class="field"><div class="field-l">살균 방식</div><div class="pills"><span class="pill">UV 살균</span><span class="pill">자동살균</span><span class="pill">고온살균</span><span class="pill">전해수</span><span class="pill">평가없음</span></div></div><div class="field"><div class="field-l">위생 기능</div><div class="pills"><span class="pill">분리세척 코크</span><span class="pill">무빙코크</span><span class="pill">자동잔수비움</span></div></div><div class="field"><div class="field-l">저수조 재질</div><div class="pills"><span class="pill">스테인리스</span><span class="pill">트라이탄</span><span class="pill">PP 항균</span><span class="pill">직수형</span></div></div>
@@ -604,13 +622,14 @@
 
             <!-- step-3-start -->
             <div class="step-h"><span class="step-n">3</span><span class="step-title">편의기능</span><span class="grade-badge g-Bplus" style="margin-left:auto">우수<small>B+</small></span></div>
-            <div class="step-sum">표준 편의기능 — 카테고리 기본 기능 만족 (상세는 본문 참조)</div>
+            <div class="step-sum">편의기능 표준 사양.</div>
             <details class="step-details">
               <summary>자세히 보기</summary>
               <div class="field"><div class="field-l">편의 기능</div><div class="pills"><span class="pill">정량출수</span><span class="pill">필터교환알림</span><span class="pill">IoT 앱</span><span class="pill">맞춤출수</span><span class="pill">자가진단</span></div></div><div class="field"><div class="field-l">디스플레이</div><div class="pills"><span class="pill">LED 디스플레이</span><span class="pill">OLED 디스플레이</span><span class="pill">터치패널</span></div></div>
             </details>
             <!-- step-3-end -->
           </div>
+          </details>
 
           <!-- SLOT 7: 예상 지원금ㆍ빌리조 혜택 -->
           <div class="sec">
