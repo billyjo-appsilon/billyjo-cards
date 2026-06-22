@@ -21,8 +21,19 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..', '..');
+const CARDS_DIR = path.join(ROOT, 'cards');
 const DATA_DIR = path.join(__dirname, 'data');
 const INDEX_PATH = path.join(ROOT, 'cards-index.json');
+
+// 카드의 실제 3개 지표(step-title)를 진실의 원천으로 사용 — productName 기반 detectFamily 오판 방지
+function titlesFromCard(prodNo) {
+  try {
+    const h = fs.readFileSync(path.join(CARDS_DIR, prodNo + '.html'), 'utf8');
+    const m = [...h.matchAll(/<span class="step-title">([^<]+)<\/span>/g)].map(x => x[1].trim());
+    if (m.length >= 3) return m.slice(0, 3);
+  } catch (e) {}
+  return null;
+}
 
 // daily-sync.js 와 동일한 패밀리별 지표 (3개 step 제목)
 const FAMILIES = {
@@ -88,16 +99,8 @@ function schemaFor(titles) {
   };
   return {
     type: 'object', additionalProperties: false,
-    properties: {
-      indicatorRename: {
-        type: 'object', additionalProperties: false,
-        description: '제품 특성상 지표명이 부정확하면 교체 (예: 공기청정기 전용은 "냉방·정화 성능"→"공기청정 성능"). 아니면 빈 문자열.',
-        properties: { stepN: { type: 'integer', enum: [0, 1, 2, 3] }, to: { type: 'string' } },
-        required: ['stepN', 'to'],
-      },
-      steps: { type: 'array', items: step },
-    },
-    required: ['steps', 'indicatorRename'],
+    properties: { steps: { type: 'array', items: step } },
+    required: ['steps'],
   };
 }
 
@@ -121,7 +124,7 @@ function authHeaders() {
 
 async function extract(prodNo, meta) {
   const family = meta.family || 'F01';
-  const titles = FAMILIES[family];
+  const titles = titlesFromCard(prodNo) || FAMILIES[family];  // 카드 우선 (오판 방지)
   const prompt =
     `다음 렌탈 가전의 제조사 공식/보도자료에서 실제 사양을 web_search 로 조사해, 상세페이지 카드 SLOT 6(상세 스펙 3단계)용 JSON 을 작성해줘.\n\n` +
     `제품: ${meta.productName}\n브랜드: ${meta.brand}\n모델: ${meta.model}\n패밀리: ${family}\n` +
@@ -130,26 +133,41 @@ async function extract(prodNo, meta) {
     `- 각 step.summary 는 제품 고유 사실 1줄, 핵심 키워드는 <strong>…</strong>.\n` +
     `- lines 는 실제 스펙 3~4행 (label/value), 수치는 <strong> 강조.\n` +
     `- 1-of-N 옵션(필터 종류·살균 방식 등)이 있으면 해당 step.pills 에 on/off 로.\n` +
-    `- 지표명이 제품과 안 맞으면(예: 공기청정 전용인데 "냉방·정화 성능") indicatorRename 으로 교체, 아니면 to="".\n` +
+    `- step.n 은 위 지표 순서(1/2/3)에 정확히 매핑. 각 지표 주제에 맞는 내용만.\n` +
     `- 확인 안 되는 사실은 지어내지 말 것.`;
 
   const body = {
     model: 'claude-opus-4-8',
     max_tokens: 8000,
     thinking: { type: 'adaptive' },
-    tools: [{ type: 'web_search_20260209', name: 'web_search', max_uses: 6 }],
+    tools: [{ type: 'web_search_20260209', name: 'web_search', max_uses: 4 }],
     output_config: { format: { type: 'json_schema', schema: schemaFor(titles) } },
     messages: [{ role: 'user', content: prompt }],
   };
 
+  // 429(rate limit) 자동 재시도 — retry-after 존중 (org TPM 낮을 때 대비)
+  async function callApi(msgs) {
+    for (let attempt = 0; attempt < 6; attempt++) {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST', headers: authHeaders(), body: JSON.stringify({ ...body, messages: msgs }),
+      });
+      if (res.status === 429) {
+        const ra = parseInt(res.headers.get('retry-after') || '', 10);
+        const wait = Math.min(Number.isFinite(ra) ? ra : 30, 75) + 3;
+        console.log('  ⏳ 429 rate limit — ' + wait + 's 대기 후 재시도 (' + (attempt + 1) + '/6)');
+        await new Promise(r => setTimeout(r, wait * 1000));
+        continue;
+      }
+      if (!res.ok) throw new Error('API ' + res.status + ': ' + (await res.text()).slice(0, 300));
+      return res.json();
+    }
+    throw new Error('429 재시도 한도 초과');
+  }
+
   // 서버 툴(web_search) 루프: pause_turn 이면 재전송하여 이어가기
   let messages = body.messages;
   for (let i = 0; i < 8; i++) {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST', headers: authHeaders(), body: JSON.stringify({ ...body, messages }),
-    });
-    if (!res.ok) throw new Error('API ' + res.status + ': ' + (await res.text()).slice(0, 300));
-    const data = await res.json();
+    const data = await callApi(messages);
     if (data.stop_reason === 'refusal') throw new Error('refusal: ' + JSON.stringify(data.stop_details));
     if (data.stop_reason === 'pause_turn') {
       messages = messages.concat([{ role: 'assistant', content: data.content }]);
@@ -172,10 +190,6 @@ function toDataFile(prodNo, meta, parsed) {
       ...(s.pills && s.pills.items && s.pills.items.length ? { pills: s.pills } : {}),
     })),
   };
-  const r = parsed.indicatorRename;
-  if (r && r.to && r.stepN >= 1) {
-    out.indicatorOverride = { [r.stepN]: { from: FAMILIES[meta.family][r.stepN - 1], to: r.to } };
-  }
   return out;
 }
 
