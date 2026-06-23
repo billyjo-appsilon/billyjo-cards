@@ -1,0 +1,24 @@
+{
+  "prodNo": "364",
+  "family": "F01",
+  "brand": "LG",
+  "model": "F12WVA",
+  "productName": "LG  F12WVA",
+  "steps": [
+    {
+      "n": 1,
+      "summary": "<strong>프론트로드 드럼</strong> 방식으로 옷감을 부드럽고 균일하게 세탁하는 LG 세탁기.",
+      "lines": []
+    },
+    {
+      "n": 2,
+      "summary": "드럼 <strong>통세척</strong> 등 위생관리 기능으로 세탁조를 청결하게 유지.",
+      "lines": []
+    },
+    {
+      "n": 3,
+      "summary": "직관적 코스 선택과 예약 등 <strong>편의 기능</strong>을 갖춘 LG 프론트로드 세탁기.",
+      "lines": []
+    }
+  ]
+}

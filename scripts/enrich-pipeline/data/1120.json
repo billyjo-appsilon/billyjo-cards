@@ -1,0 +1,71 @@
+{
+  "prodNo": "1120",
+  "family": "F01",
+  "brand": "LG",
+  "model": "TW0320U2S",
+  "productName": "LG  TW0320U2S",
+  "steps": [
+    {
+      "n": 1,
+      "summary": "8평형 1Way 천장형 인버터로 <strong>냉방 3.2kW</strong>·<strong>난방 3.6kW</strong>를 내는 냉난방기",
+      "lines": [
+        [
+          "냉방능력",
+          "<strong>3.2kW</strong>"
+        ],
+        [
+          "난방능력",
+          "<strong>3.6kW</strong>"
+        ],
+        [
+          "냉방 소비전력",
+          "<strong>0.90kW</strong>"
+        ],
+        [
+          "적용면적",
+          "<strong>26㎡</strong> (8평형)"
+        ]
+      ]
+    },
+    {
+      "n": 2,
+      "summary": "청소가 쉬운 <strong>고성능 항균필터</strong>와 <strong>천장 오염방지 설계</strong>로 위생 관리",
+      "lines": [
+        [
+          "필터",
+          "<strong>고성능 항균필터</strong> (청소 용이)"
+        ],
+        [
+          "본체 설계",
+          "<strong>천장 오염방지 설계</strong>"
+        ],
+        [
+          "습기 관리",
+          "<strong>제습 운전</strong> 지원"
+        ]
+      ]
+    },
+    {
+      "n": 3,
+      "summary": "<strong>BLDC 인버터 모터</strong>와 <strong>실내온도 자동조절</strong>로 편리하고 조용하게 운전",
+      "lines": [
+        [
+          "모터",
+          "<strong>BLDC 인버터</strong> (고효율·저소음)"
+        ],
+        [
+          "자동 제어",
+          "<strong>실내온도 자동조절</strong>·정전보상"
+        ],
+        [
+          "기류",
+          "<strong>바람 토출각도 제어</strong>"
+        ],
+        [
+          "배수",
+          "<strong>고양정 자동 드레인펌프</strong> 내장"
+        ]
+      ]
+    }
+  ]
+}
