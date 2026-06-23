@@ -1,0 +1,80 @@
+{
+  "prodNo": "1832",
+  "family": "F03",
+  "brand": "쿠쿠",
+  "model": "AC-35U10FWS(S)(10프로할인)",
+  "productName": "쿠쿠 공기청정 AC-35U10FWS(S)(10프로할인)",
+  "steps": [
+    {
+      "n": 1,
+      "summary": "쿠쿠 울트라12000 공기청정기로 <strong>34.9평(115.5㎡)</strong> 대공간을 <strong>360도</strong> 입체 청정",
+      "lines": [
+        [
+          "사용면적",
+          "<strong>115.5㎡</strong> (34.9평)"
+        ],
+        [
+          "청정방식",
+          "<strong>360도</strong> 입체 청정"
+        ],
+        [
+          "집진필터",
+          "<strong>H13</strong> 등급 헤파(집진)필터"
+        ],
+        [
+          "강력청정",
+          "파워UP <strong>터보플러스</strong> 모드"
+        ]
+      ]
+    },
+    {
+      "n": 2,
+      "summary": "<strong>4개월 주기</strong> 필터 교체와 <strong>물세척 프리필터</strong>로 손쉬운 위생 관리",
+      "lines": [
+        [
+          "필터교체",
+          "<strong>4개월</strong> 주기 (셀프/방문관리)"
+        ],
+        [
+          "프리필터",
+          "<strong>물세척</strong> 가능"
+        ],
+        [
+          "필터구성",
+          "프리필터 → 기능성필터(별매) → 토탈케어(집진+탈취)"
+        ]
+      ],
+      "pills": {
+        "label": "기능성 필터(별매, 택1)",
+        "items": [
+          {
+            "v": "황사스모그안심필터",
+            "on": false
+          },
+          {
+            "v": "알레르겐필터",
+            "on": false
+          }
+        ]
+      }
+    },
+    {
+      "n": 3,
+      "summary": "<strong>듀얼 오염감지센서</strong>와 <strong>자동공간감지 청정</strong>으로 알아서 똑똑하게 관리",
+      "lines": [
+        [
+          "오염감지",
+          "<strong>듀얼</strong> 오염감지센서"
+        ],
+        [
+          "자동운전",
+          "<strong>자동공간감지</strong> 청정"
+        ],
+        [
+          "제품색상",
+          "화이트"
+        ]
+      ]
+    }
+  ]
+}
