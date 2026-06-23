@@ -49,12 +49,13 @@ function linesHtml(lines) {
 // step 1개의 step-sum + <details> 내부를 새 내용으로 교체 (step-h/등급 배지는 보존)
 function renderStepBody(step) {
   const sum = '<div class="step-sum">' + safe(step.summary) + '</div>';
-  const details =
+  const inner = linesHtml(step.lines) + pillsHtml(step.pills);
+  if (!inner) return sum;  // 상세 데이터 없으면 빈 "자세히 보기" 토글 생략 (요약만 노출)
+  return sum +
     '\n            <details class="step-details">\n' +
     '              <summary>자세히 보기</summary>' +
-    linesHtml(step.lines) + pillsHtml(step.pills) +
+    inner +
     '\n            </details>';
-  return sum + details;
 }
 
 function render(html, data) {
@@ -67,10 +68,10 @@ function render(html, data) {
     const m = out.match(startRe);
     if (!m) { console.warn('  ⚠ step-' + n + ' 앵커 없음 — skip'); return; }
     let block = m[0];
-    // step-sum 부터 첫 </details> 까지 교체 (이 step에는 중첩 details 없음 — 규칙 #27)
-    const bodyRe = /<div class="step-sum">[\s\S]*?<\/details>/;
+    // step-sum 부터 end 앵커 직전까지 교체 — <details> 유무 모두 대응 (요약만 케이스 포함, 재렌더 idempotent)
+    const bodyRe = new RegExp('<div class="step-sum">[\\s\\S]*?(?=\\s*<!-- step-' + n + '-end -->)');
     if (!bodyRe.test(block)) { console.warn('  ⚠ step-' + n + ' body 패턴 불일치 — skip'); return; }
-    block = block.replace(bodyRe, renderStepBody(step));
+    block = block.replace(bodyRe, renderStepBody(step) + '\n            ');
     out = out.replace(startRe, block);
     report.steps++;
   });
