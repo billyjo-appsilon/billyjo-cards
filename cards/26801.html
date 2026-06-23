@@ -197,6 +197,23 @@
         #ai-card-root .step-details[open] summary::after{transform:rotate(180deg)}
         #ai-card-root .field{margin:8px 0 10px}
         #ai-card-root .field-l{font-size:11.5px;color:var(--color-text-secondary);margin-bottom:6px}
+        /* SLOT 6 상세 스펙 — 섹션 전체 접기 (기본 collapsed, 공간 절약) */
+        #ai-card-root details.spec-collapse{padding-top:14px;margin-top:14px;border-top:0.5px solid var(--color-border-tertiary)}
+        #ai-card-root details.spec-collapse > summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px}
+        #ai-card-root details.spec-collapse > summary::-webkit-details-marker{display:none}
+        #ai-card-root details.spec-collapse > summary .sec-t{margin-bottom:0}
+        #ai-card-root .spec-collapse-hint{margin-left:auto;font-size:11px;font-weight:700;color:var(--color-text-info);background:var(--color-background-info);padding:3px 10px;border-radius:999px;display:inline-flex;align-items:center;gap:4px;flex-shrink:0}
+        #ai-card-root .spec-collapse-hint::after{content:"▾";font-size:10px;transition:transform 0.15s}
+        #ai-card-root details.spec-collapse[open] > summary .spec-collapse-hint::after{transform:rotate(180deg)}
+        #ai-card-root .spec-collapse-hint .hint-close{display:none}
+        #ai-card-root details.spec-collapse[open] > summary .hint-open{display:none}
+        #ai-card-root details.spec-collapse[open] > summary .hint-close{display:inline}
+        #ai-card-root .spec-collapse-body{margin-top:8px}
+        #ai-card-root .spec-line{display:flex;justify-content:space-between;gap:10px;font-size:11.5px;padding:5px 0;border-bottom:0.5px dashed var(--color-border-tertiary);min-width:0}
+        #ai-card-root .spec-line:last-child{border-bottom:0}
+        #ai-card-root .spec-line .sll{color:var(--color-text-secondary);flex-shrink:0}
+        #ai-card-root .spec-line .slv{color:var(--color-text-primary);font-weight:700;text-align:right;word-break:keep-all;min-width:0;line-height:1.45}
+        #ai-card-root .spec-line .slv strong{color:var(--color-text-info);font-weight:700}
 
         #ai-card-root .gift{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px 16px}
         /* PC: 라벨 좌 / 값 우 (space-between). 모바일: column stack (라벨 위, 값 아래 좌측 정렬) */
@@ -530,7 +547,7 @@
               <text x="50" y="40" text-anchor="middle" font-size="9" fill="var(--color-text-secondary)" style="font-family:'Pretendard',sans-serif">종합 평가</text>
               <text x="50" y="62" text-anchor="middle" font-size="26" fill="var(--g-2-5)" style="font-family:'Pretendard',sans-serif;font-weight:700">B+</text>
             </svg>
-            <div class="mgrid"><div class="m"><span class="ml">렌탈료</span><span class="grade-badge g-S">최고<small>S</small></span></div><div class="m"><span class="ml">냉방·정화 성능</span><span class="grade-badge g-A">추천<small>A</small></span></div><div class="m"><span class="ml">위생관리</span><span class="grade-badge g-Bplus">우수<small>B+</small></span></div><div class="m"><span class="ml">AI·편의</span><span class="grade-badge g-Bplus">우수<small>B+</small></span></div></div>
+            <div class="mgrid"><div class="m"><span class="ml">렌탈료</span><span class="grade-badge g-S">최고<small>S</small></span></div><div class="m"><span class="ml">공기청정 성능</span><span class="grade-badge g-A">추천<small>A</small></span></div><div class="m"><span class="ml">위생관리</span><span class="grade-badge g-Bplus">우수<small>B+</small></span></div><div class="m"><span class="ml">AI·편의</span><span class="grade-badge g-Bplus">우수<small>B+</small></span></div></div>
           </div>
 
           <!-- SLOT 3: 스펙요약 8칸 (v0.2.6 — .rec 흡수: 방문관리·소유권 운영정보 편입) -->
@@ -585,36 +602,53 @@
           </div>
 
                     <!-- SLOT 6: Step 1-3 (자세히 보기 접기) -->
-          <div class="sec">
-            <div class="sec-t">상세 스펙</div>
+          <details class="sec spec-collapse">
+            <summary><span class="sec-t">상세 스펙</span><span class="spec-collapse-hint"><span class="hint-open">펼쳐보기</span><span class="hint-close">접기</span></span></summary>
+            <div class="spec-collapse-body">
 
             <!-- step-1-start -->
-            <div class="step-h"><span class="step-n">1</span><span class="step-title">냉방·정화 성능</span><span class="grade-badge g-A" style="margin-left:auto">추천<small>A</small></span></div>
-            <div class="step-sum">표준 냉방·정화 성능 — 카테고리 기본 기능 만족 (상세는 본문 참조)</div>
+            <div class="step-h"><span class="step-n">1</span><span class="step-title">공기청정 성능</span><span class="grade-badge g-A" style="margin-left:auto">추천<small>A</small></span></div>
+            <div class="step-sum"><strong>0.01㎛ 초미세먼지 99.999% 제거</strong> + 숯 탈취필터로 유해가스·새집증후군 물질 탈취. <strong>먼지·가스 2중 센서</strong> 자동 운전, 사용면적 <strong>33.1㎡(약 10평)</strong>.</div>
             <details class="step-details">
               <summary>자세히 보기</summary>
-              <div class="field"><div class="field-l">주요 특징</div><div class="pills"><span class="pill on">냉방·정화 성능</span></div></div>
+              <div class="field">
+                <div class="spec-line"><span class="sll">사용 면적</span><span class="slv"><strong>33.1㎡</strong> (약 10평)</span></div>
+                <div class="spec-line"><span class="sll">집진 성능</span><span class="slv">0.01㎛ 미세먼지 <strong>99.999%</strong> 제거</span></div>
+                <div class="spec-line"><span class="sll">탈취</span><span class="slv">숯 탈취필터 (악취·유해가스·새집증후군)</span></div>
+                <div class="spec-line"><span class="sll">센서</span><span class="slv">먼지 센서 + 가스 센서 (실시간 감지)</span></div>
+              </div>
+              <div class="field"><div class="field-l">필터 구성</div><div class="pills"><span class="pill on">집진+탈취 일체형</span><span class="pill">필터 분리형</span></div></div>
             </details>
             <!-- step-1-end -->
 
             <!-- step-2-start -->
             <div class="step-h"><span class="step-n">2</span><span class="step-title">위생관리</span><span class="grade-badge g-Bplus" style="margin-left:auto">우수<small>B+</small></span></div>
-            <div class="step-sum">표준 위생관리 — 카테고리 기본 기능 만족 (상세는 본문 참조)</div>
+            <div class="step-sum">집진·탈취 <strong>일체형 필터</strong> 하나만 교체하는 간편 관리 + <strong>필터 교체 알람</strong>으로 청정 위생 유지.</div>
             <details class="step-details">
               <summary>자세히 보기</summary>
-              <div class="field"><div class="field-l">주요 특징</div><div class="pills"><span class="pill on">위생관리</span></div></div>
+              <div class="field">
+                <div class="spec-line"><span class="sll">필터 교체</span><span class="slv"><strong>일체형 1개</strong> (집진+탈취 통합)</span></div>
+                <div class="spec-line"><span class="sll">필터 알람</span><span class="slv">교체 시기 자동 알림</span></div>
+                <div class="spec-line"><span class="sll">탈취 위생</span><span class="slv">유해가스·생활악취 상시 제거</span></div>
+              </div>
             </details>
             <!-- step-2-end -->
 
             <!-- step-3-start -->
             <div class="step-h"><span class="step-n">3</span><span class="step-title">AI·편의</span><span class="grade-badge g-Bplus" style="margin-left:auto">우수<small>B+</small></span></div>
-            <div class="step-sum">표준 AI·편의 — 카테고리 기본 기능 만족 (상세는 본문 참조)</div>
+            <div class="step-sum"><strong>스마트싱스 앱</strong> 원격 제어 + 먼지·가스 센서 기반 <strong>자동 운전</strong>. 최대 소비전력 <strong>26W</strong> 저전력.</div>
             <details class="step-details">
               <summary>자세히 보기</summary>
-              <div class="field"><div class="field-l">주요 특징</div><div class="pills"><span class="pill on">AI·편의</span></div></div>
+              <div class="field">
+                <div class="spec-line"><span class="sll">스마트 제어</span><span class="slv"><strong>스마트싱스</strong> 앱 (원격 확인·전원)</span></div>
+                <div class="spec-line"><span class="sll">자동 운전</span><span class="slv">센서 연동 자동 청정 모드</span></div>
+                <div class="spec-line"><span class="sll">소비전력</span><span class="slv">최대 <strong>26W</strong> 저전력</span></div>
+                <div class="spec-line"><span class="sll">크기</span><span class="slv">349 × 499 × 236 mm</span></div>
+              </div>
             </details>
             <!-- step-3-end -->
           </div>
+          </details>
 
           <!-- SLOT 7: 예상 지원금ㆍ빌리조 혜택 -->
           <div class="sec">

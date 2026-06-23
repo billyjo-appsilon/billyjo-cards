@@ -235,7 +235,11 @@ function renderCard(pid, d, template) {
       '<div class="feat-btns"><span class="feat-btn">브랜드</span><span class="feat-btn">A/S</span><span class="feat-btn">내구성</span></div>' +
     '</div>';
 
-  // F01 정수기 — 패밀리별 Step 필드 정의
+  // 활성(on) pill 값만 추출 — 제품 고유 요약문 구성용
+  function onVals(items) { return items.filter(i => i.on).map(i => i.v); }
+  function joinStrong(arr) { return arr.map(v => '<strong>' + escapeHtml(v) + '</strong>').join(' · '); }
+
+  // F01 정수기 — 패밀리별 Step (제품 고유 요약 sum + 상세 필드 html)
   function f01StepFields(stepIdx, specs) {
     // 빌리조 본사 page 스펙에서 키워드 매칭으로 활성 pill 선택
     function pickOn(values, pool) {
@@ -252,53 +256,71 @@ function renderCard(pid, d, template) {
       const outputs = pickOn(['냉수', '온수', '정수', '얼음', '살균수'], ['냉수', '온수', '정수', '얼음', '살균']);
       const filterTypes = pickOn(['RO 역삼투압', 'UF 중공사막', '나노필터'], ['RO', '역삼투압', '중공사막', 'UF', '나노']);
       const filterStages = pickOn(['1단', '2단', '3단', '4단+'], specs['필터단계'] ? [specs['필터단계']] : ['4단']);
-      return '<div class="field"><div class="field-l">출수 종류</div><div class="pills">' + pillsHtml(outputs) + '</div></div>' +
-             '<div class="field"><div class="field-l">필터 종류</div><div class="pills">' + pillsHtml(filterTypes) + '</div></div>' +
-             '<div class="field"><div class="field-l">필터 단계</div><div class="pills">' + pillsHtml(filterStages) + '</div></div>';
+      const onFil = onVals(filterTypes), onOut = onVals(outputs);
+      let sum = onFil.length ? joinStrong(onFil) + ' 필터' : '정수 전용 필터';
+      sum += onOut.length ? '로 ' + onOut.join('·') + ' 출수 지원.' : ' 적용.';
+      return { sum, fields:
+        '<div class="field"><div class="field-l">출수 종류</div><div class="pills">' + pillsHtml(outputs) + '</div></div>' +
+        '<div class="field"><div class="field-l">필터 종류</div><div class="pills">' + pillsHtml(filterTypes) + '</div></div>' +
+        '<div class="field"><div class="field-l">필터 단계</div><div class="pills">' + pillsHtml(filterStages) + '</div></div>' };
     }
     if (stepIdx === 1) {
       // 위생관리: 살균 방식 + 위생 기능 + 저수조 재질
-      const sterilize = pickOn(['UV 살균', '자동살균', '고온살균', '전해수', '평가없음'], ['UV', '자동살균', '고온', '전해']);
+      const sterilize = pickOn(['UV 살균', '자동살균', '고온살균', '전해수'], ['UV', '자동살균', '고온', '전해']);
       const hygiene = pickOn(['분리세척 코크', '무빙코크', '자동잔수비움'], ['분리세척', '무빙', '잔수']);
       const tank = pickOn(['스테인리스', '트라이탄', 'PP 항균', '직수형'], ['스테인리스', '트라이탄', 'PP', '항균', '직수']);
-      return '<div class="field"><div class="field-l">살균 방식</div><div class="pills">' + pillsHtml(sterilize) + '</div></div>' +
-             '<div class="field"><div class="field-l">위생 기능</div><div class="pills">' + pillsHtml(hygiene) + '</div></div>' +
-             '<div class="field"><div class="field-l">저수조 재질</div><div class="pills">' + pillsHtml(tank) + '</div></div>';
+      const onSter = onVals(sterilize), onHyg = onVals(hygiene), onTank = onVals(tank);
+      let sum = onSter.length ? joinStrong(onSter) + ' 적용' : '정기 방문 위생 케어';
+      if (onHyg.length) sum += ' + ' + onHyg.join('·');
+      else if (onTank.length) sum += ' · ' + onTank.join('·');
+      sum += '.';
+      return { sum, fields:
+        '<div class="field"><div class="field-l">살균 방식</div><div class="pills">' + pillsHtml(sterilize) + '</div></div>' +
+        '<div class="field"><div class="field-l">위생 기능</div><div class="pills">' + pillsHtml(hygiene) + '</div></div>' +
+        '<div class="field"><div class="field-l">저수조 재질</div><div class="pills">' + pillsHtml(tank) + '</div></div>' };
     }
     // step 2 (편의기능): 정량출수 + IoT + 알림
     const convenience = pickOn(['정량출수', '필터교환알림', 'IoT 앱', '맞춤출수', '자가진단'], ['정량', '교환알림', 'IoT', '앱', '맞춤', '자가진단']);
     const display = pickOn(['LED 디스플레이', 'OLED 디스플레이', '터치패널'], ['LED', 'OLED', '터치']);
-    return '<div class="field"><div class="field-l">편의 기능</div><div class="pills">' + pillsHtml(convenience) + '</div></div>' +
-           '<div class="field"><div class="field-l">디스플레이</div><div class="pills">' + pillsHtml(display) + '</div></div>';
+    const onConv = onVals(convenience), onDisp = onVals(display);
+    let sum = onConv.length ? joinStrong(onConv.slice(0, 3)) + ' 등 편의 기능' : '표준 편의 기능';
+    if (onDisp.length) sum += ' · ' + onDisp[0];
+    sum += '.';
+    return { sum, fields:
+      '<div class="field"><div class="field-l">편의 기능</div><div class="pills">' + pillsHtml(convenience) + '</div></div>' +
+      '<div class="field"><div class="field-l">디스플레이</div><div class="pills">' + pillsHtml(display) + '</div></div>' };
   }
 
-  // 패밀리 fallback — 일반 카테고리는 spec 키-값 그대로 pill로 노출
+  // 패밀리 fallback — 일반 카테고리는 실제 스크랩 스펙 키-값을 spec-line으로 노출 + 요약
   function genericStepFields(stepIdx, specs) {
     const keys = Object.keys(specs).filter(k => specs[k] && specs[k].length < 40);
-    // step별로 3개씩 spec 분배 — 단, 첫 3개는 hero/spec grid에서 이미 노출되므로 다음 것부터
+    // step별로 3개씩 spec 분배 — 첫 3개는 hero/spec grid에서 이미 노출되므로 다음 것부터
     const start = 3 + stepIdx * 3;
     const slice = keys.slice(start, start + 3);
     if (slice.length === 0) {
-      return '<div class="field"><div class="field-l">주요 특징</div><div class="pills"><span class="pill on">기본 기능</span></div></div>';
+      return { sum: '카탈로그 기준 표준 사양 — 상세는 펼쳐서 확인하세요.',
+        fields: '<div class="field"><div class="field-l">주요 특징</div><div class="pills"><span class="pill on">기본 기능</span></div></div>' };
     }
-    return slice.map(k =>
-      '<div class="field"><div class="field-l">' + escapeHtml(k) + '</div><div class="pills"><span class="pill on">' + escapeHtml(specs[k]) + '</span></div></div>'
+    const sum = slice.slice(0, 2).map(k => '<strong>' + escapeHtml(specs[k]) + '</strong> ' + escapeHtml(k)).join(' · ') + '.';
+    const fields = slice.map(k =>
+      '<div class="spec-line"><span class="sll">' + escapeHtml(k) + '</span><span class="slv">' + escapeHtml(specs[k]) + '</span></div>'
     ).join('');
+    return { sum, fields: '<div class="field">' + fields + '</div>' };
   }
 
   function stepBlock(n, title, letter, specs, family) {
     const stepIdx = n - 1;
-    const fields = family === 'F01' ? f01StepFields(stepIdx, specs) : genericStepFields(stepIdx, specs);
+    const step = family === 'F01' ? f01StepFields(stepIdx, specs) : genericStepFields(stepIdx, specs);
     const gradeClass = classOf(letter);
     const gradeHtml = letter
       ? '<span class="grade-badge ' + gradeClass + '" style="margin-left:auto">' + labelOf(letter) + '<small>' + letter + '</small></span>'
       : '<span class="g-d" style="margin-left:auto">평가 없음</span>';
     return '<!-- step-' + n + '-start -->\n' +
            '            <div class="step-h"><span class="step-n">' + n + '</span><span class="step-title">' + escapeHtml(title) + '</span>' + gradeHtml + '</div>\n' +
-           '            <div class="step-sum">표준 ' + escapeHtml(title) + ' — 카테고리 기본 기능 만족 (상세는 본문 참조)</div>\n' +
+           '            <div class="step-sum">' + step.sum + '</div>\n' +
            '            <details class="step-details">\n' +
            '              <summary>자세히 보기</summary>\n' +
-           '              ' + fields + '\n' +
+           '              ' + step.fields + '\n' +
            '            </details>\n' +
            '            <!-- step-' + n + '-end -->';
   }

@@ -1,0 +1,50 @@
+{
+  "prodNo": "26801",
+  "family": "F03",
+  "brand": "삼성",
+  "model": "AP70F03102RTD",
+  "productName": "삼성전자 블루스카이3100 공기청정기 10평 어스브라운",
+  "sources": [
+    "https://www.samsung.com/sec/air-cleaner/air-purifier-ap70f03102rd-d2c/AP70F03102RTD/",
+    "https://company.coway.com/newsroom/press/317"
+  ],
+  "indicatorOverride": { "1": { "from": "냉방·정화 성능", "to": "공기청정 성능" } },
+  "steps": [
+    {
+      "n": 1,
+      "summary": "<strong>0.01㎛ 초미세먼지 99.999% 제거</strong> + 숯 탈취필터로 유해가스·새집증후군 물질 탈취. <strong>먼지·가스 2중 센서</strong> 자동 운전, 사용면적 <strong>33.1㎡(약 10평)</strong>.",
+      "lines": [
+        ["사용 면적", "<strong>33.1㎡</strong> (약 10평)"],
+        ["집진 성능", "0.01㎛ 미세먼지 <strong>99.999%</strong> 제거"],
+        ["탈취", "숯 탈취필터 (악취·유해가스·새집증후군)"],
+        ["센서", "먼지 센서 + 가스 센서 (실시간 감지)"]
+      ],
+      "pills": {
+        "label": "필터 구성",
+        "items": [
+          { "v": "집진+탈취 일체형", "on": true },
+          { "v": "필터 분리형", "on": false }
+        ]
+      }
+    },
+    {
+      "n": 2,
+      "summary": "집진·탈취 <strong>일체형 필터</strong> 하나만 교체하는 간편 관리 + <strong>필터 교체 알람</strong>으로 청정 위생 유지.",
+      "lines": [
+        ["필터 교체", "<strong>일체형 1개</strong> (집진+탈취 통합)"],
+        ["필터 알람", "교체 시기 자동 알림"],
+        ["탈취 위생", "유해가스·생활악취 상시 제거"]
+      ]
+    },
+    {
+      "n": 3,
+      "summary": "<strong>스마트싱스 앱</strong> 원격 제어 + 먼지·가스 센서 기반 <strong>자동 운전</strong>. 최대 소비전력 <strong>26W</strong> 저전력.",
+      "lines": [
+        ["스마트 제어", "<strong>스마트싱스</strong> 앱 (원격 확인·전원)"],
+        ["자동 운전", "센서 연동 자동 청정 모드"],
+        ["소비전력", "최대 <strong>26W</strong> 저전력"],
+        ["크기", "349 × 499 × 236 mm"]
+      ]
+    }
+  ]
+}
