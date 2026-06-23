@@ -68,8 +68,9 @@ function render(html, data) {
     const m = out.match(startRe);
     if (!m) { console.warn('  ⚠ step-' + n + ' 앵커 없음 — skip'); return; }
     let block = m[0];
-    // step-sum 부터 end 앵커 직전까지 교체 — <details> 유무 모두 대응 (요약만 케이스 포함, 재렌더 idempotent)
-    const bodyRe = new RegExp('<div class="step-sum">[\\s\\S]*?(?=\\s*<!-- step-' + n + '-end -->)');
+    // step-sum 부터 end 앵커 "직전 공백 포함" 전부 교체 — <details> 유무 모두 대응 + 재렌더 idempotent
+    // (lookahead 에 \s* 를 넣지 않아야 기존 공백을 소비하고 항상 고정 공백으로 재작성됨)
+    const bodyRe = new RegExp('<div class="step-sum">[\\s\\S]*?(?=<!-- step-' + n + '-end -->)');
     if (!bodyRe.test(block)) { console.warn('  ⚠ step-' + n + ' body 패턴 불일치 — skip'); return; }
     block = block.replace(bodyRe, renderStepBody(step) + '\n            ');
     out = out.replace(startRe, block);

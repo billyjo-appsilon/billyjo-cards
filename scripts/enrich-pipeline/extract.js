@@ -35,6 +35,21 @@ function titlesFromCard(prodNo) {
   return null;
 }
 
+// 옵션 — CLI 플래그 또는 env (pipeline.js 가 env 로 전달). 비용 레버: model/searches/min-lines.
+function flagVal(name, envName, def) {
+  const i = process.argv.indexOf('--' + name);
+  if (i >= 0 && process.argv[i + 1] && !process.argv[i + 1].startsWith('--')) return process.argv[i + 1];
+  if (envName && process.env[envName]) return process.env[envName];
+  return def;
+}
+const OPTS = {
+  // 추출은 구조화 작업이라 기본 Sonnet 4.6(저렴). 어려운 제품만 --model claude-opus-4-8.
+  model: flagVal('model', 'EXTRACT_MODEL', 'claude-sonnet-4-6'),
+  searches: parseInt(flagVal('searches', 'EXTRACT_SEARCHES', '4'), 10) || 4,
+  // min-lines>0 이면, 추출된 실제 스펙 행이 그 미만인 "얇은" 결과는 렌더 skip(카드 fallback 유지).
+  minLines: parseInt(flagVal('min-lines', 'EXTRACT_MIN_LINES', '0'), 10) || 0,
+};
+
 // daily-sync.js 와 동일한 패밀리별 지표 (3개 step 제목)
 const FAMILIES = {
   F01: ['정수성능', '위생관리', '편의기능'], F02: ['세정성능', '위생관리', '편의기능'],
@@ -139,31 +154,40 @@ async function extract(prodNo, meta) {
     `대신 그 지표 주제의 일반적이고 간결한 사실 1줄로 작성하고, lines 는 확인된 것만(없으면 빈 배열).`;
 
   const body = {
-    model: 'claude-opus-4-8',
+    model: OPTS.model,
     max_tokens: 8000,
     thinking: { type: 'adaptive' },
-    tools: [{ type: 'web_search_20260209', name: 'web_search', max_uses: 4 }],
+    tools: [{ type: 'web_search_20260209', name: 'web_search', max_uses: OPTS.searches }],
     output_config: { format: { type: 'json_schema', schema: schemaFor(titles) } },
     messages: [{ role: 'user', content: prompt }],
   };
 
-  // 429(rate limit) 자동 재시도 — retry-after 존중 (org TPM 낮을 때 대비)
+  // 429(rate limit) + 네트워크 일시 오류 자동 재시도
   async function callApi(msgs) {
-    for (let attempt = 0; attempt < 6; attempt++) {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST', headers: authHeaders(), body: JSON.stringify({ ...body, messages: msgs }),
-      });
+    for (let attempt = 0; attempt < 8; attempt++) {
+      let res;
+      try {
+        res = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST', headers: authHeaders(), body: JSON.stringify({ ...body, messages: msgs }),
+        });
+      } catch (e) {
+        // fetch failed / ECONNRESET 등 transient — 짧게 대기 후 재시도
+        const wait = Math.min(5 * (attempt + 1), 30);
+        console.log('  ⏳ 네트워크 오류(' + (e.message || e) + ') — ' + wait + 's 후 재시도 (' + (attempt + 1) + '/8)');
+        await new Promise(r => setTimeout(r, wait * 1000));
+        continue;
+      }
       if (res.status === 429) {
         const ra = parseInt(res.headers.get('retry-after') || '', 10);
         const wait = Math.min(Number.isFinite(ra) ? ra : 30, 75) + 3;
-        console.log('  ⏳ 429 rate limit — ' + wait + 's 대기 후 재시도 (' + (attempt + 1) + '/6)');
+        console.log('  ⏳ 429 rate limit — ' + wait + 's 대기 후 재시도 (' + (attempt + 1) + '/8)');
         await new Promise(r => setTimeout(r, wait * 1000));
         continue;
       }
       if (!res.ok) throw new Error('API ' + res.status + ': ' + (await res.text()).slice(0, 300));
       return res.json();
     }
-    throw new Error('429 재시도 한도 초과');
+    throw new Error('재시도 한도 초과(429/네트워크)');
   }
 
   // 서버 툴(web_search) 루프: pause_turn 이면 재전송하여 이어가기
@@ -202,12 +226,17 @@ function toDataFile(prodNo, meta, parsed) {
   const meta = loadMeta(prodNo);
   if (!meta.productName) { console.error('cards-index.json 에 ' + prodNo + ' 메타 없음'); process.exit(1); }
   meta.family = meta.family || detectFamily(meta.productName);
-  console.log('추출: ' + prodNo + ' / ' + meta.productName + ' (' + meta.family + ')');
+  console.log('추출: ' + prodNo + ' / ' + meta.productName + ' (' + meta.family + ') [' + OPTS.model + ', search≤' + OPTS.searches + ']');
   const parsed = await extract(prodNo, meta);
   const dataObj = toDataFile(prodNo, meta, parsed);
+  const totalLines = dataObj.steps.reduce((n, s) => n + (s.lines ? s.lines.length : 0), 0);
   fs.mkdirSync(DATA_DIR, { recursive: true });
-  fs.writeFileSync(path.join(DATA_DIR, prodNo + '.json'), JSON.stringify(dataObj, null, 2));
-  console.log('✓ data/' + prodNo + '.json (' + dataObj.steps.length + ' steps)');
+  fs.writeFileSync(path.join(DATA_DIR, prodNo + '.json'), JSON.stringify(dataObj, null, 2));  // 감사용 항상 저장
+  console.log('✓ data/' + prodNo + '.json (' + dataObj.steps.length + ' steps, ' + totalLines + ' lines)');
+  if (OPTS.minLines > 0 && totalLines < OPTS.minLines) {
+    console.log('  ⚠ 얇음(' + totalLines + ' < ' + OPTS.minLines + ' lines) — 렌더 skip, 카드 fallback 유지');
+    return;
+  }
   if (args.includes('--render')) {
     execFileSync('node', [path.join(__dirname, 'render-slot6.js'), prodNo], { stdio: 'inherit' });
   }
