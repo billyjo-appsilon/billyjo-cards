@@ -93,29 +93,71 @@ function render(html, data) {
   return { out, report };
 }
 
-function processOne(prodNo, dry) {
-  const dataPath = path.join(DATA_DIR, prodNo + '.json');
+const FB_RE = /step-sum">[^<]*표준 사양\./;  // fallback 카드 식별 (변종 가드)
+
+// data 를 cards/<prodNo>.html 에 렌더 (data 파일 불필요 — 변종 전파에 사용)
+function renderToCard(prodNo, data, dry, opts) {
+  opts = opts || {};
   const cardPath = path.join(CARDS_DIR, prodNo + '.html');
-  if (!fs.existsSync(dataPath)) { console.error('데이터 없음: ' + dataPath); return false; }
-  if (!fs.existsSync(cardPath)) { console.error('카드 없음: ' + cardPath); return false; }
-  const data = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
+  if (!fs.existsSync(cardPath)) { console.error('  ✗ ' + prodNo + ': 카드 없음'); return false; }
   const html = fs.readFileSync(cardPath, 'utf8');
+  // 변종 가드: fallback 카드 또는 이미 같은 base 로 렌더된 카드만 덮어씀 (hand-done/타 그룹 보호)
+  if (opts.guardFallback && !FB_RE.test(html) && html.indexOf('data-enrich-base="' + (data.prodNo || '') + '"') < 0) {
+    console.warn('  ⏭  ' + prodNo + ': fallback 아님 — skip (--force 로 강제)');
+    return false;
+  }
   if (!/<details class="sec spec-collapse">/.test(html))
     console.warn('  ⚠ ' + prodNo + ': spec-collapse 래퍼 없음 (collapse-detailspec.js 먼저 실행 권장)');
   const { out, report } = render(html, data);
   if (dry) { process.stdout.write(out); return true; }
   fs.writeFileSync(cardPath, out);
-  console.log('✓ ' + prodNo + '  steps=' + report.steps + ' renamed=' + report.renamed);
+  console.log('  ✓ ' + prodNo + '  steps=' + report.steps + ' renamed=' + report.renamed +
+    (opts.variant ? '  (변종←' + data.prodNo + ')' : ''));
   return report.steps === (data.steps || []).length;
+}
+
+function processOne(prodNo, dry) {
+  const dataPath = path.join(DATA_DIR, prodNo + '.json');
+  if (!fs.existsSync(dataPath)) { console.error('데이터 없음: ' + dataPath); return false; }
+  const data = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
+  let ok = renderToCard(prodNo, data, dry, {});
+  // data.variants 의 각 prodNo 에 동일 사양 전파 (색상·사이즈·관리주기 변종)
+  (data.variants || []).forEach(vid => {
+    if (renderToCard(String(vid), data, dry, { variant: true, guardFallback: true })) ok = ok && true;
+  });
+  return ok;
 }
 
 const args = process.argv.slice(2);
 const dry = args.includes('--dry');
 const all = args.includes('--all');
+const force = args.includes('--force');
+
+// --apply <dataId> <targetId...> : 한 data 를 여러 변종 카드에 전파 + base JSON 의 variants 배열에 영구 기록
+if (args.includes('--apply')) {
+  const rest = args.filter(a => !a.startsWith('--'));
+  const baseId = rest[0], targets = rest.slice(1);
+  if (!baseId || !targets.length) { console.error('사용: --apply <dataId> <targetId...>'); process.exit(1); }
+  const dataPath = path.join(DATA_DIR, baseId + '.json');
+  if (!fs.existsSync(dataPath)) { console.error('데이터 없음: ' + dataPath); process.exit(1); }
+  const data = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
+  console.log('전파: ' + baseId + ' → ' + targets.length + '개 변종');
+  let ok = 0;
+  targets.forEach(t => { if (renderToCard(t, data, dry, { variant: true, guardFallback: !force })) ok++; });
+  if (!dry) {  // base JSON 에 variants 영구 기록 (--all 재전파용)
+    const set = new Set([...(data.variants || []).map(String), ...targets.map(String)]);
+    set.delete(String(baseId));
+    data.variants = [...set];
+    fs.writeFileSync(dataPath, JSON.stringify(data, null, 2) + '\n');
+    console.log('전파 완료: ' + ok + '/' + targets.length + ' · variants 기록 ' + data.variants.length + '개');
+  }
+  process.exit(0);
+}
+
 const ids = all
   ? fs.readdirSync(DATA_DIR).filter(f => f.endsWith('.json')).map(f => f.replace('.json', ''))
   : args.filter(a => !a.startsWith('--'));
-if (!ids.length) { console.error('사용: render-slot6.js <prodNo> [--dry] | --all'); process.exit(1); }
+if (!ids.length) { console.error('사용: render-slot6.js <prodNo> [--dry] | --all | --apply <dataId> <targetId...>'); process.exit(1); }
 let ok = 0;
 ids.forEach(id => { if (processOne(id, dry)) ok++; });
 if (!dry) console.log('완료: ' + ok + '/' + ids.length);

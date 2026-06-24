@@ -64,6 +64,13 @@ node scripts/enrich-pipeline/pipeline.js --run 12572 24918 15630 ...
 # 렌더만 (이미 data/*.json 있을 때, API 불필요)
 node scripts/enrich-pipeline/render-slot6.js 26801
 node scripts/enrich-pipeline/render-slot6.js --all
+
+# 변종 전파 (1 research → N 카드): base data 를 색상·사이즈·관리주기 변종 카드에 적용
+#   - 같은 base 모델의 모든 fallback 변종에 동일 사양 주입 (대량 보강의 핵심 레버)
+#   - fallback 카드만 덮어씀(가드). base JSON 의 "variants" 배열에 영구 기록 → --all 재전파
+#   - 전파 대상 카드의 관리주기가 제각각이면 base data 의 step-2 관리 line 을 generic 으로 작성할 것
+node scripts/enrich-pipeline/render-slot6.js --apply 26555 25902 25905 25906 26556
+# 또는 data/<base>.json 에 "variants":["...","..."] 를 넣고 base 만 렌더하면 자동 전파
 ```
 
 ## PoC 검증 (완료)

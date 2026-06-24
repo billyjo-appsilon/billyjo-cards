@@ -1,0 +1,12 @@
+{
+  "prodNo":"32020","family":"F03","brand":"LG","model":"AS356NGMAM",
+  "productName":"LG 퓨리케어 AI 오브제컬렉션 360˚ 공기청정기 M7 + 무빙휠 세트",
+  "sources":["https://www.lge.co.kr/air-purifier/as356nsma","https://www.billyjo.co.kr/html/dh_prod/prod_view/32020"],
+  "indicatorOverride":{"1":{"from":"냉방·정화 성능","to":"공기청정 성능"}},
+  "variants":["32021","32022","32023","32024","32025","32026","32027","32028","32029","32721","32722"],
+  "steps":[
+    {"n":1,"summary":"사용 면적 <strong>114㎡(약 34평)</strong>의 대형 공간을 360˚로 청정하며, 상단 <strong>클린부스터</strong>가 정화된 바람을 최대 7.5m까지 전달합니다.","lines":[["사용 면적","<strong>114㎡</strong> (약 34평)"],["필터 구성","<strong>360˚ G 펫필터 ×2개</strong> (양방향 흡입)"],["청정 바람","<strong>클린부스터 최대 7.5m</strong> 송풍"],["센서","<strong>PM1.0 센서</strong> + 냄새 센서 + 조도 센서"]],"pills":{"label":"필터 구성","items":[{"v":"360˚ G 펫필터 ×2","on":true},{"v":"단일 필터","on":false}]}},
+    {"n":2,"summary":"<strong>UV 공기살균(PA 인증)</strong>으로 공기 중 유해 요소를 관리하며, 필터수명 센서로 교체 시점을 안내합니다.","lines":[["살균","<strong>UV 공기살균</strong> (PA 인증)"],["필터 관리","<strong>필터수명 센서</strong> + 필터교체알림 표시"],["위생 모드","<strong>펫모드</strong> · 듀얼/싱글 청정 운전"]]},
+    {"n":3,"summary":"<strong>LG ThinQ</strong> Wi-Fi 연동으로 원격 제어·스마트 진단이 가능하며, 펌웨어 업데이트로 기능이 확장되는 <strong>UP가전</strong>입니다.","lines":[["스마트 제어","<strong>LG ThinQ</strong> Wi-Fi 연동 · 스마트 진단"],["자동 운전","<strong>인공지능 센서</strong> 기반 자동 청정 · 청정표시등"],["소비전력","<strong>80W</strong> · 에너지효율 2등급"],["크기","<strong>377 × 1100 × 377mm</strong>"]]}
+  ]
+}

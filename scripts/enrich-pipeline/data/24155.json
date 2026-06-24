@@ -1,0 +1,12 @@
+{
+  "prodNo":"24155","family":"F03","brand":"웰스","model":"AR626C",
+  "productName":"웰스 에어가든 공기청정기 27평 AR626C",
+  "sources":["https://www.kyowon-wells.co.kr/user/product_detail?product_no=202401-1151","https://www.billyjo.co.kr/html/dh_prod/prod_view/24155"],
+  "indicatorOverride":{"1":{"from":"냉방·정화 성능","to":"공기청정 성능"}},
+  "variants":["24156","24159","24160"],
+  "steps":[
+    {"n":1,"summary":"사용 면적 <strong>89.6㎡(27평)</strong> 대용량 스탠드형. 프리·생활맞춤형·올케어 플러스 <strong>H11 등급</strong> 3중 필터로 PM1.0까지 측정·정화.","lines":[["사용 면적","<strong>89.6㎡</strong> (27평)"],["필터 구성","프리 - 생활맞춤형 - 올케어 플러스 <strong>(H11)</strong>"],["미세먼지 측정","<strong>PM 1.0 / 2.5 / 10</strong> 3종 표시"],["공기질 표시","4단계·4색 LED 인디케이터"]],"pills":{"label":"필터 구성","items":[{"v":"올케어 플러스 H11","on":true},{"v":"생활맞춤형 필터","on":true},{"v":"프리 필터","on":true}]}},
+    {"n":2,"summary":"생활 패턴에 맞춰 알레르기·탈취·펫 등 <strong>생활맞춤형 필터</strong>를 선택 가능하며, 정기 방문관리로 필터·기기 상태를 점검합니다.","lines":[["필터 교체","주기적 필터 자가 배송 교체"],["맞춤형 필터","알레르기·실내탈취·펫·항균 등 선택형"],["방문관리","전문가 케어 정기 방문 점검"]]},
+    {"n":3,"summary":"레이저 먼지·가스·조도 센서 기반 <strong>자동 운전</strong>과 펫케어·터보·취침 모드를 지원하며 <strong>에너지소비효율 1등급</strong>.","lines":[["자동 운전","레이저 먼지·가스·조도 센서 자동 감지"],["운전 모드","펫케어·터보·자동·취침 + 풍량 4단"],["소비전력","<strong>42W</strong> · 에너지효율 1등급"],["크기·소음","<strong>390×390×683mm</strong> · 최대 50dB"]]}
+  ]
+}

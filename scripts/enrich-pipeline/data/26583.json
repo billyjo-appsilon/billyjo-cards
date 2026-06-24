@@ -1,0 +1,12 @@
+{
+  "prodNo":"26583","family":"F03","brand":"LG","model":"AS285DWWAM",
+  "productName":"LG 퓨리케어 AI 360˚ 공기청정기 플러스 + 무빙휠 세트",
+  "sources":["https://www.lge.co.kr/air-purifier/as285dwwam","https://www.billyjo.co.kr/html/dh_prod/prod_view/26583"],
+  "indicatorOverride":{"1":{"from":"냉방·정화 성능","to":"공기청정 성능"}},
+  "variants":["26586","26587","26588","26589"],
+  "steps":[
+    {"n":1,"summary":"360˚ 전방향 흡입으로 <strong>97㎡(약 29평)</strong>까지 커버하고, 13분 이상 가동 시 0.01㎛ 미세먼지를 <strong>99.999% 제거</strong>합니다.","lines":[["사용 면적","<strong>97㎡</strong> (약 29평)"],["집진 성능","<strong>0.01㎛ 미세먼지 99.999% 제거</strong> (13분 이상 가동 시)"],["유해가스 정화","톨루엔·폼알데하이드·암모니아 <strong>평균 90% 이상</strong>"],["센서","<strong>PM1.0</strong> 극초미세먼지 센서 + 가스(냄새) 센서"]],"pills":{"label":"공기 흡입 방식","items":[{"v":"360˚ 전방향 흡입·토출","on":true},{"v":"전면 단방향 흡입","on":false}]}},
+    {"n":2,"summary":"정품필터 인식 센서가 필터 종류와 잔여 수명을 체크하고, <strong>필터 점검·교체 알림</strong>으로 위생 관리를 돕습니다.","lines":[["필터 관리","정품필터 인식 센서 + <strong>필터 점검·교체 알림</strong>"],["관리 방식","약정에 따라 방문관리 또는 자가관리 선택 (변형별 상이)"],["탈취 성능","유해가스·생활냄새 탈취 필터 적용"]]},
+    {"n":3,"summary":"<strong>LG ThinQ</strong> UP가전으로 원격 제어와 기능 업그레이드를 지원하며, 무빙휠 세트로 이동이 편리합니다.","lines":[["스마트 제어","<strong>LG ThinQ</strong> UP가전 (원격 제어·자체기기점검)"],["자동 운전","아기·자동·터보 모드 + 클린부스터 토출"],["소비전력","<strong>70W</strong> (에너지효율 2등급)"],["크기","376 × 1073 × 376 mm · 19kg"]]}
+  ]
+}

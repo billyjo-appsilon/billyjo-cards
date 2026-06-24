@@ -1,0 +1,12 @@
+{
+  "prodNo":"32010","family":"F03","brand":"LG","model":"AS206NGHAM",
+  "productName":"LG 퓨리케어 AI 오브제컬렉션 360˚ 공기청정기 M5",
+  "sources":["https://www.lge.co.kr/air-purifier/as206ngham","https://www.billyjo.co.kr/html/dh_prod/prod_view/32010"],
+  "indicatorOverride":{"1":{"from":"냉방·정화 성능","to":"공기청정 성능"}},
+  "variants":["32011","32012","32013","32014","32015","32016","32017","32018","32019","32723","33105"],
+  "steps":[
+    {"n":1,"summary":"<strong>66.0㎡(20평형)</strong> 표준 사용 면적에 상·하단 <strong>2개 클린부스터</strong>로 360˚ 전방향 청정하는 M5 모델입니다.","lines":[["사용 면적","<strong>66.0㎡</strong> (약 20평)"],["청정 방식","360˚ 전방향 + 상·하단 <strong>클린부스터 2개</strong>"],["필터 구성","극세필터 + <strong>강력탈취청정 M5 필터</strong> (유해가스 제거)"],["센서","PM1.0 초미세먼지 · 가스(냄새) · 조도 센서"]],"pills":{"label":"필터 구성","items":[{"v":"강력탈취청정 M5 필터","on":true},{"v":"극세필터","on":true},{"v":"기본 헤파","on":false}]}},
+    {"n":2,"summary":"<strong>UV 살균</strong>과 필터 인식 센서 기반 단일·복합 정화로 위생을 관리합니다.","lines":[["살균/위생","<strong>UV 살균</strong> + 유해가스·포름알데히드 제거"],["필터 관리","필터 교체 시기 알림 + 필터 인식 센서로 단일·복합 정화 자동 전환"],["청정 표시","청정도 인디케이터로 실시간 공기질 표시"]]},
+    {"n":3,"summary":"<strong>LG ThinQ</strong> 연동 UP가전과 KSA 인증 AI 공기질 센서로 맞춤 자동 운전을 제공합니다.","lines":[["스마트 제어","<strong>LG ThinQ</strong> 연동 (UP가전 · 음성 안내 · 스스로 진단)"],["자동 운전","KSA 인증 <strong>AI 공기질 센서</strong> 기반 자동·터보·절전 맞춤 운전"],["소비전력","정격 <strong>57W</strong> · 에너지효율 2등급"],["크기","347 × 612 × 347 mm · 무게 12.6kg"]]}
+  ]
+}

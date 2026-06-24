@@ -1,0 +1,12 @@
+{
+  "prodNo":"33380","family":"F03","brand":"LG","model":"AS336NSLCM",
+  "productName":"LG 퓨리케어 AI 오브제컬렉션 360˚ 공기청정기 M5 + 무빙휠 세트",
+  "sources":["https://www.lge.co.kr/air-purifier/as336nslcm","https://www.billyjo.co.kr/html/dh_prod/prod_view/33380"],
+  "indicatorOverride":{"1":{"from":"냉방·정화 성능","to":"공기청정 성능"}},
+  "variants":["33381","33382","33383","33384"],
+  "steps":[
+    {"n":1,"summary":"사용 면적 <strong>109㎡(약 33평)</strong>의 대형 공간을 360˚ 전방향 흡입·청정으로 커버합니다.","lines":[["사용 면적","<strong>109㎡</strong> (약 33평)"],["청정 방식","<strong>360˚ 전방향</strong> 흡입·토출"],["필터 구성","극세필터 + <strong>토탈케어 필터(M)</strong> 헤파 집진·탈취"],["센서","PM1.0 초미세먼지·가스·조도 센서"]],"pills":{"label":"필터 구성","items":[{"v":"360˚ 토탈케어 필터(M)","on":true},{"v":"극세필터","on":true},{"v":"단일 헤파","on":false}]}},
+    {"n":2,"summary":"<strong>UV 살균</strong>으로 필터·내부를 관리하고, 필터 상태는 LG ThinQ로 점검할 수 있습니다.","lines":[["살균/위생","<strong>UV 살균</strong> 기능 탑재"],["필터 관리","사용량 기반 필터 교체 안내 (LG ThinQ)"],["유해가스","<strong>유해가스·탈취</strong> 제거 지원"]]},
+    {"n":3,"summary":"<strong>LG ThinQ</strong> 연동으로 원격 제어와 실내 공기질 모니터링을 지원합니다.","lines":[["스마트 제어","<strong>LG ThinQ</strong> 원격 제어·공기질 모니터링"],["에너지","에너지효율 <strong>2등급</strong>"],["소비전력","<strong>80W</strong>"],["크기","<strong>377 × 1100 × 377mm</strong> (무게 20.6kg)"]]}
+  ]
+}

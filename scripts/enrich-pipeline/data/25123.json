@@ -1,0 +1,12 @@
+{
+  "prodNo":"25123","family":"F03","brand":"웰스","model":"AS526CWA",
+  "productName":"웰스 에어가든 Lite 공기청정기 26평형",
+  "sources":["https://m.kyowonwells.com/Product/Detail?grpIdx=1570&productIdx=1445","https://www.billyjo.co.kr/html/dh_prod/prod_view/25123"],
+  "indicatorOverride":{"1":{"from":"냉방·정화 성능","to":"공기청정 성능"}},
+  "variants":["25126","25128","25129"],
+  "steps":[
+    {"n":1,"summary":"청정 면적 <strong>86㎡(26평형)</strong>, 항균더블케어필터 탑재 + 토네이도 흡입 시스템으로 바닥 먼지·반려동물 털을 빠르게 포집. 종합청정도점수(1~100점)로 실시간 공기질 표시.","lines":[["사용 면적","<strong>86㎡</strong> (약 26평)"],["필터 구성","프리 - 항균더블케어(이중케어) - 올케어 <strong>3중 필터</strong>"],["센서","<strong>먼지 · 가스 · 조도</strong> 3종 센서"],["청정도 표시","종합청정도점수 1~100점 + <strong>4단계 4컬러</strong> 표시등"]],"pills":{"label":"항균더블케어 필터(택1)","items":[{"v":"항균+초미세먼지","on":true},{"v":"항균+알레르기","on":false},{"v":"항균+펫","on":false},{"v":"항균+실내탈취","on":false}]}},
+    {"n":2,"summary":"항균더블케어필터가 <strong>세균 유입·증식을 방지</strong>하고, 생활맞춤 4종 항균 필터 중 환경에 맞춰 선택해 케어합니다.","lines":[["살균/위생","<strong>항균더블케어필터</strong> — 세균 유입·증식 방지"],["필터 교체","프리 12개월 · 항균더블케어 4종(택1) 6개월 · 올케어 12개월"],["관리","권장 주기에 맞춘 정기 방문 필터 교체 관리"]]},
+    {"n":3,"summary":"<strong>자동·터보·펫케어·정음·취침</strong> 5종 운전 모드와 에너지소비효율 <strong>1등급</strong>으로 경제적 운용. 최고 풍량 소음 46dB.","lines":[["자동 운전","<strong>자동 · 터보 · 펫케어 · 정음 · 취침</strong> 5종 모드"],["소비전력 / 효율","<strong>38W</strong> · 에너지소비효율 <strong>1등급</strong>"],["소음","최고 풍량 시 <strong>46dB</strong>"],["크기","390 × 390 × 683 mm (11.2kg, 스탠드형)"]]}
+  ]
+}
