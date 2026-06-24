@@ -1,0 +1,49 @@
+{
+  "prodNo": "5239",
+  "family": "F03",
+  "brand": "쿠쿠",
+  "model": "AC-35U10FWS",
+  "productName": "쿠쿠 인스퓨어 ULTRA 12000 공기청정기 (34.9평형 / 셀프관리)",
+  "sources": ["https://www.cuckoo.co.kr/rental/productView?idx=296", "https://www.billyjo.co.kr/html/dh_prod/prod_view/5239"],
+  "indicatorOverride": { "1": { "from": "냉방·정화 성능", "to": "공기청정 성능" } },
+  "steps": [
+    {
+      "n": 1,
+      "summary": "<strong>34.9평형(115.5㎡)</strong>의 넓은 공간을 커버하는 대형 청정기로, <strong>360° 전방위 흡입</strong>과 <strong>4단계 토탈케어 필터</strong>로 초미세먼지와 유해가스까지 잡아 한국공기청정기협회 <strong>CA인증</strong>을 받았습니다.",
+      "lines": [
+        ["사용 면적", "<strong>115.5㎡</strong> (약 34.9평)"],
+        ["청정 방식", "<strong>360° 전방위</strong> 흡입·토출"],
+        ["필터 구성", "<strong>4단계 토탈케어</strong> (프리필터 + 토탈케어 안심필터 ACF-UMT10)"],
+        ["센서", "이중 오염 감지 센서 (먼지·가스)"]
+      ],
+      "pills": {
+        "label": "필터 구성",
+        "items": [
+          { "v": "프리필터", "on": true },
+          { "v": "토탈케어 안심필터", "on": true },
+          { "v": "탈취(유해가스) 제거", "on": true },
+          { "v": "펫모드 전용필터", "on": false }
+        ]
+      }
+    },
+    {
+      "n": 2,
+      "summary": "<strong>4개월 주기</strong>로 필터 소모품을 택배로 받아 직접 교체하는 셀프관리형이며, 연 <strong>1회 방문 케어</strong>가 포함됩니다.",
+      "lines": [
+        ["필터 교체", "<strong>4개월</strong> 주기 소모품 택배 배송 (셀프관리)"],
+        ["호환 필터", "ACF-UMT10 토탈케어 안심필터"],
+        ["방문 케어", "연 <strong>1회</strong> 전문가 방문 점검 포함"]
+      ]
+    },
+    {
+      "n": 3,
+      "summary": "공간을 감지해 풍량을 조절하는 <strong>자동운전</strong>을 지원하며, 소비전력 <strong>85W</strong>·에너지소비효율 <strong>1등급</strong>의 효율을 갖췄습니다.",
+      "lines": [
+        ["자동 운전", "공간 감지 기반 풍량 자동 조절"],
+        ["에너지 효율", "에너지소비효율 <strong>1등급</strong>"],
+        ["소비전력", "<strong>85W</strong>"],
+        ["크기", "410 × 520 × 895 mm (가로×세로×높이), 14kg"]
+      ]
+    }
+  ]
+}
