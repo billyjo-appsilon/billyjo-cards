@@ -4,44 +4,97 @@
   "brand": "LG",
   "model": "AS195DWWAM",
   "productName": "LG 퓨리케어 AI 360˚ 공기청정기 플러스 + 무빙휠 세트",
-  "sources": ["https://www.lge.co.kr/air-purifier/as195dwwa", "https://www.billyjo.co.kr/html/dh_prod/prod_view/26555"],
-  "indicatorOverride": { "1": { "from": "냉방·정화 성능", "to": "공기청정 성능" } },
+  "sources": [
+    "https://www.lge.co.kr/air-purifier/as195dwwa",
+    "https://www.billyjo.co.kr/html/dh_prod/prod_view/26555"
+  ],
+  "indicatorOverride": {
+    "1": {
+      "from": "냉방·정화 성능",
+      "to": "공기청정 성능"
+    }
+  },
   "steps": [
     {
       "n": 1,
       "summary": "360˚ 멀티팬 방식으로 <strong>사용면적 61.2㎡(18.5평)</strong>을 커버하며, <strong>0.01㎛ 초미세먼지를 99.999% 제거</strong>하는 V필터를 탑재했습니다.",
       "lines": [
-        ["사용 면적", "<strong>61.2㎡</strong> (약 18.5평, 권장 40.8㎡·12.3평)"],
-        ["집진 성능", "<strong>0.01㎛</strong> 미세먼지 <strong>99.999%</strong> 제거"],
-        ["탈취 성능", "톨루엔·폼알데하이드·암모니아 유해가스 평균 <strong>90% 이상</strong> 정화"],
-        ["센서", "<strong>PM 1.0</strong> 미세먼지 센서 탑재"]
+        [
+          "사용 면적",
+          "<strong>61.2㎡</strong> (약 18.5평, 권장 40.8㎡·12.3평)"
+        ],
+        [
+          "집진 성능",
+          "<strong>0.01㎛</strong> 미세먼지 <strong>99.999%</strong> 제거"
+        ],
+        [
+          "탈취 성능",
+          "톨루엔·폼알데하이드·암모니아 유해가스 평균 <strong>90% 이상</strong> 정화"
+        ],
+        [
+          "센서",
+          "<strong>PM 1.0</strong> 미세먼지 센서 탑재"
+        ]
       ],
       "pills": {
         "label": "필터 구성",
         "items": [
-          { "v": "V필터(집진·탈취 일체형)", "on": true },
-          { "v": "단일 헤파 필터", "on": false }
+          {
+            "v": "V필터(집진·탈취 일체형)",
+            "on": true
+          },
+          {
+            "v": "단일 헤파 필터",
+            "on": false
+          }
         ]
       }
     },
     {
       "n": 2,
-      "summary": "흡입 공기 속 세균·바이러스와 생활냄새까지 관리하는 V필터로 위생 성능을 확보하며, <strong>전문가케어 6개월 방문관리</strong>가 포함됩니다.",
+      "summary": "흡입 공기 속 세균·바이러스와 생활냄새까지 관리하는 V필터로 위생 성능을 확보하며, <strong>전문가케어 정기 방문관리</strong>가 포함됩니다.",
       "lines": [
-        ["필터 위생", "V필터로 세균·바이러스 및 생활냄새 탈취 관리"],
-        ["방문 관리", "전문가케어 <strong>6개월</strong> 주기 방문 점검·관리"],
-        ["A/S", "렌탈 약정 기간 내내 무상 A/S 제공"]
+        [
+          "필터 위생",
+          "V필터로 세균·바이러스 및 생활냄새 탈취 관리"
+        ],
+        [
+          "방문 관리",
+          "전문가케어 정기 방문 점검·관리 (약정 조건별 주기)"
+        ],
+        [
+          "A/S",
+          "렌탈 약정 기간 내내 무상 A/S 제공"
+        ]
       ]
     },
     {
       "n": 3,
       "summary": "<strong>LG ThinQ</strong> 앱 연동과 인공지능+ 자동운전을 지원하며, AI 모드로 <strong>에너지 사용량 최대 31.8% 절감</strong>합니다.",
       "lines": [
-        ["스마트 제어", "<strong>LG ThinQ</strong> 앱 원격 제어·모니터링 지원"],
-        ["자동 운전", "인공지능+ 모드 — 팬 ON/OFF 자동 제어로 <strong>최대 31.8%</strong> 에너지 절감"],
-        ["소비전력", "정격 소비전력 <strong>48W</strong> · 에너지효율 2등급"],
-        ["크기", "<strong>343 × 587 × 343mm</strong> (무빙휠 세트)"]
+        [
+          "스마트 제어",
+          "<strong>LG ThinQ</strong> 앱 원격 제어·모니터링 지원"
+        ],
+        [
+          "자동 운전",
+          "인공지능+ 모드 — 팬 ON/OFF 자동 제어로 <strong>최대 31.8%</strong> 에너지 절감"
+        ],
+        [
+          "소비전력",
+          "정격 소비전력 <strong>48W</strong> · 에너지효율 2등급"
+        ],
+        [
+          "크기",
+          "<strong>343 × 587 × 343mm</strong> (무빙휠 세트)"
+        ]
       ]
     }
+  ],
+  "variants": [
+    "25902",
+    "25905",
+    "25906",
+    "26556"
   ]
 }

@@ -1,0 +1,12 @@
+{
+  "prodNo":"32002","family":"F03","brand":"LG","model":"HY505RWLL",
+  "productName":"LG 퓨리케어 오브제컬렉션 하이드로에센셜 (HY505RWLL)",
+  "sources":["https://www.lge.co.kr/care-solutions/humidifiers/hy505rwll","https://www.billyjo.co.kr/html/dh_prod/prod_view/32002"],
+  "indicatorOverride":{"1":{"from":"냉방·정화 성능","to":"가습·청정 성능"}},
+  "variants":["32003","32004","32005","32006","32007","32008"],
+  "steps":[
+    {"n":1,"summary":"복합식 가습기로 <strong>정수 필터로 석회질을 제거한 물을 100℃로 끓여 살균</strong>한 뒤 초음파로 분사하며, 가습량 <strong>약 500cc/hr</strong>로 11~20평 공간을 커버합니다.","lines":[["사용 면적","<strong>11~20평</strong> (약 36~66㎡)"],["가습 방식","정수 필터 → <strong>100℃ 가열 살균</strong> → 초음파 분사 (복합식)"],["가습량·물통","<strong>약 500cc/hr</strong> · 물통 3.8L (연속 약 20시간)"],["살균","100℃ 가열로 <strong>유해균 99.999% 제거</strong>"]],"pills":{"label":"가습 방식","items":[{"v":"정수+가열 복합식","on":true},{"v":"가열식 단독","on":false},{"v":"초음파식 단독","on":false}]}},
+    {"n":2,"summary":"<strong>정수 필터로 석회질을 거른 물만 가열·분사</strong>해 백탕(흰 가루)·물때 발생을 줄이고, 가열 살균으로 물통 위생을 유지하는 구조입니다.","lines":[["관리","정기 방문관리 / 자가관리 선택 (약정 조건별)"],["물 위생","정수 필터 + <strong>100℃ 가열 살균</strong>으로 깨끗한 물 분사"],["물통","<strong>스테인리스 물통</strong> 옵션 (위생·내구 강화)"]]},
+    {"n":3,"summary":"취침모드 평균 <strong>약 20.3dB</strong>의 저소음 운전과 무드등을 갖춘 타워형 디자인으로, 사용 환경에 맞춘 운전 모드를 제공합니다.","lines":[["저소음","취침모드 평균 <strong>약 20.3dB</strong>"],["편의","<strong>무드등(조명)</strong> · 무빙휠로 이동 편의"],["소비전력","약 <strong>350W</strong>"],["크기","270 × 750 × 270 mm (타워형)"]]}
+  ]
+}

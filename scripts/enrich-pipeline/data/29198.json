@@ -4,24 +4,53 @@
   "brand": "LG",
   "model": "AS235DWSAM",
   "productName": "LG 퓨리케어 AI 360˚ 공기청정기 플러스 (구독)",
-  "sources": ["https://www.lge.co.kr/air-purifier/as235dwsa", "https://www.billyjo.co.kr/html/dh_prod/prod_view/29198"],
-  "indicatorOverride": { "1": { "from": "냉방·정화 성능", "to": "공기청정 성능" } },
+  "sources": [
+    "https://www.lge.co.kr/air-purifier/as235dwsa",
+    "https://www.billyjo.co.kr/html/dh_prod/prod_view/29198"
+  ],
+  "indicatorOverride": {
+    "1": {
+      "from": "냉방·정화 성능",
+      "to": "공기청정 성능"
+    }
+  },
   "steps": [
     {
       "n": 1,
       "summary": "<strong>360˚ 멀티 토네이도</strong> 방식으로 전방향 흡입·청정하며 청정면적 <strong>74.7㎡</strong>(약 22.6평)로 거실·넓은 공간까지 커버합니다.",
       "lines": [
-        ["청정 면적", "<strong>74.7㎡</strong> (약 22.6평)"],
-        ["송풍 방식", "<strong>360˚ 멀티 토네이도</strong> 전방향 흡입·토출"],
-        ["필터 구성", "<strong>토네이도 헤파필터</strong> + 탈취 필터 (초미세먼지·유해가스·새집증후군물질 제거)"],
-        ["감지 센서", "<strong>PM1.0</strong> 극초미세먼지 센서 기반 자동 운전"]
+        [
+          "청정 면적",
+          "<strong>74.7㎡</strong> (약 22.6평)"
+        ],
+        [
+          "송풍 방식",
+          "<strong>360˚ 멀티 토네이도</strong> 전방향 흡입·토출"
+        ],
+        [
+          "필터 구성",
+          "<strong>토네이도 헤파필터</strong> + 탈취 필터 (초미세먼지·유해가스·새집증후군물질 제거)"
+        ],
+        [
+          "감지 센서",
+          "<strong>PM1.0</strong> 극초미세먼지 센서 기반 자동 운전"
+        ]
       ],
       "pills": {
         "label": "필터 구성",
         "items": [
-          { "v": "토네이도 헤파필터", "on": true },
-          { "v": "탈취 필터", "on": true },
-          { "v": "극세필터", "on": false }
+          {
+            "v": "토네이도 헤파필터",
+            "on": true
+          },
+          {
+            "v": "탈취 필터",
+            "on": true
+          },
+          {
+            "v": "극세필터",
+            "on": false
+          }
         ]
       }
     },
@@ -29,20 +58,47 @@
       "n": 2,
       "summary": "<strong>PM1.0 센서</strong>로 극초미세먼지까지 감지해 오염도에 따라 자동 청정하고, 필터점검·교체 알림으로 위생 상태를 관리합니다.",
       "lines": [
-        ["필터 관리", "필터점검·<strong>교체 알림</strong> 제공"],
-        ["오염 감지", "<strong>PM1.0</strong> 센서로 극초미세먼지 실시간 감지"],
-        ["제거 대상", "초미세먼지·유해가스·<strong>새집증후군물질</strong> 제거"]
+        [
+          "필터 관리",
+          "필터점검·<strong>교체 알림</strong> 제공"
+        ],
+        [
+          "오염 감지",
+          "<strong>PM1.0</strong> 센서로 극초미세먼지 실시간 감지"
+        ],
+        [
+          "제거 대상",
+          "초미세먼지·유해가스·<strong>새집증후군물질</strong> 제거"
+        ]
       ]
     },
     {
       "n": 3,
       "summary": "<strong>LG ThinQ</strong> 연동으로 원격 제어·공기질 모니터링이 가능하며 에너지효율 <strong>1등급</strong>으로 효율적으로 운전합니다.",
       "lines": [
-        ["스마트 제어", "<strong>LG ThinQ</strong> 앱 원격 제어·공기질 모니터링"],
-        ["자동 운전", "PM1.0 센서 연동 <strong>AI 자동 운전</strong>"],
-        ["에너지·소비전력", "에너지효율 <strong>1등급</strong> · 소비전력 <strong>51W</strong>"],
-        ["크기·무게", "<strong>376 x 1073 x 376mm</strong> · 18.3kg"]
+        [
+          "스마트 제어",
+          "<strong>LG ThinQ</strong> 앱 원격 제어·공기질 모니터링"
+        ],
+        [
+          "자동 운전",
+          "PM1.0 센서 연동 <strong>AI 자동 운전</strong>"
+        ],
+        [
+          "에너지·소비전력",
+          "에너지효율 <strong>1등급</strong> · 소비전력 <strong>51W</strong>"
+        ],
+        [
+          "크기·무게",
+          "<strong>376 x 1073 x 376mm</strong> · 18.3kg"
+        ]
       ]
     }
+  ],
+  "variants": [
+    "29195",
+    "29196",
+    "29197",
+    "29199"
   ]
 }
