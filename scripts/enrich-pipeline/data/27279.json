@@ -1,0 +1,46 @@
+{
+  "prodNo": "27279",
+  "family": "F01",
+  "brand": "LG",
+  "model": "WD523V",
+  "productName": "LG 퓨리케어 오브제컬렉션 정수기 (맞춤출수, 냉온정)",
+  "sources": ["https://www.lge.co.kr/water-purifiers/wd523vc", "https://www.billyjo.co.kr/html/dh_prod/prod_view/27279"],
+  "steps": [
+    {
+      "n": 1,
+      "summary": "프리카본필터 + UF복합필터 <strong>2단계</strong> 구성에 <strong>UF중공사막</strong> 방식으로 중금속과 바이러스를 거른 물을 직수로 출수합니다.",
+      "lines": [
+        ["필터 구성", "1차 프리카본필터 + 2차 UF복합필터 <strong>2단계</strong>"],
+        ["정수 방식", "<strong>UF중공사막</strong> 직수형 — 중금속·노로바이러스 제거"],
+        ["출수 온도", "냉수·정수·온수 제공, <strong>10도</strong> 단위 온도 조절"],
+        ["저수 방식", "<strong>직수형</strong> — 버튼 누른 순간 즉시 출수"]
+      ],
+      "pills": {
+        "label": "필터 방식",
+        "items": [
+          { "v": "UF중공사막", "on": true },
+          { "v": "역삼투압(RO)", "on": false },
+          { "v": "나노필터", "on": false }
+        ]
+      }
+    },
+    {
+      "n": 2,
+      "summary": "필터부터 출수구까지 <strong>초고온수(약 90℃)</strong>로 살균하는 자가관리형 위생 설계입니다.",
+      "lines": [
+        ["살균/위생", "필터~출수구 <strong>초고온수 살균</strong> (약 90℃ 출수)"],
+        ["관리 방식", "<strong>자가관리</strong> — 사용자가 직접 필터 교체"],
+        ["필터 교체주기", "프리카본 <strong>6개월</strong> / UF복합 <strong>12개월</strong>"]
+      ]
+    },
+    {
+      "n": 3,
+      "summary": "<strong>맞춤출수</strong>와 10도 단위 온도 조절을 갖춘 폭 <strong>168mm</strong> 슬림 오브제컬렉션 바디입니다.",
+      "lines": [
+        ["출수 기능", "<strong>맞춤출수</strong> (냉수·정수·온수), 초고온수 90℃ 출수"],
+        ["조작", "온도 <strong>10도</strong> 단위 조절, 물받침 기본 제공"],
+        ["크기", "168 x 398 x 400 mm (가로·깊이·높이), 무게 11.6kg"]
+      ]
+    }
+  ]
+}

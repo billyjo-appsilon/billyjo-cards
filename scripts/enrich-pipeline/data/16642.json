@@ -1,0 +1,46 @@
+{
+  "prodNo": "16642",
+  "family": "F01",
+  "brand": "청호나이스",
+  "model": "WI-70S90010M",
+  "productName": "청호나이스 얼음냉온정수기 NEW 700",
+  "sources": ["https://www.chungho-shop.com/user/product_detail?product_no=202309-1159", "https://www.billyjo.co.kr/html/dh_prod/prod_view/16642"],
+  "steps": [
+    {
+      "n": 1,
+      "summary": "<strong>특허 제빙 기술</strong>로 얼음·냉수·온수·정수 4가지를 한 대로 제공하며, <strong>역삼투압(RO)</strong> 4중 필터로 정수합니다. 얼음 <strong>2kg</strong>·정수 <strong>7ℓ</strong>·냉수 <strong>2.8ℓ</strong>·온수 <strong>2.5ℓ</strong> 저장.",
+      "lines": [
+        ["필터 구성", "AT W-PRE(8개월)·AT RO멤브레인(36개월)·AT 포스트카본블록(20개월) 4중 필터"],
+        ["정수 방식", "역삼투압(RO) 필터 방식"],
+        ["출수 온도", "얼음·냉수·온수·정수"],
+        ["저수 방식", "저수조형 (정수 7ℓ·냉수 2.8ℓ·온수 2.5ℓ)"]
+      ],
+      "pills": {
+        "label": "필터 방식",
+        "items": [
+          { "v": "역삼투압(RO)", "on": true },
+          { "v": "중공사막(UF)", "on": false },
+          { "v": "나노필터", "on": false }
+        ]
+      }
+    },
+    {
+      "n": 2,
+      "summary": "<strong>ACS(오토클린시스템)</strong>이 냉수·정수 저장통을 <strong>4일에 1회</strong> 전체 배수(30분)하고 <strong>매일 7분</strong> 추가 배수해 물길을 청결하게 관리합니다.",
+      "lines": [
+        ["살균/위생", "ACS 오토클린시스템 — 4일 1회 냉수·정수 저장통 전체 배수(30분) + 1일 1회 7분 배수"],
+        ["관리 방식", "<strong>4개월 방문관리</strong> — 렌탈기간 내 정기 점검·필터 교체"],
+        ["얼음 위생", "분리형 코크로 출수구 분리 세척 가능"]
+      ]
+    },
+    {
+      "n": 3,
+      "summary": "특허 제빙 기술로 얼음 <strong>2kg</strong>(저장 1.3kg)을 만들고, 분리형 코크·키즈락 등 편의 기능을 갖춘 <strong>스탠드형</strong> 모델입니다.",
+      "lines": [
+        ["얼음 기능", "특허 제빙 기술 — 얼음 생산 2kg / 저장 1.3kg"],
+        ["출수 기능", "얼음·냉수·온수·정수 + 키즈락(잠금) 기능"],
+        ["크기", "360 x 496 x 1,420 mm (스탠드형)"]
+      ]
+    }
+  ]
+}

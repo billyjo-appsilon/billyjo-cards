@@ -1,0 +1,46 @@
+{
+  "prodNo": "26309",
+  "family": "F01",
+  "brand": "웰스",
+  "model": "WS672M",
+  "productName": "웰스 슬림원 냉온정수기 WS672MGA/WS672MWA",
+  "sources": ["https://www.kyowon-wells.co.kr/user/product_detail?product_no=202504-1119", "https://wells.tncrental.co.kr/shop/goods_view.php?goods=G043710", "https://www.billyjo.co.kr/html/dh_prod/prod_view/26309"],
+  "steps": [
+    {
+      "n": 1,
+      "summary": "<strong>3단계</strong> 카본·나노 미네랄 필터에 <strong>직수</strong> 방식을 결합해 미네랄을 살린 깨끗한 물을 제공합니다.",
+      "lines": [
+        ["필터 구성", "카본 미네랄 C2 · 나노 미네랄 N2 · 플러스 미네랄 P1 (3단계)"],
+        ["정수 방식", "직수 방식 (저수조 없음)"],
+        ["출수 온도", "2단계 냉수(일반·더 차가운 냉수) · 40~85℃ 5단계 온수"],
+        ["저수 방식", "직수관 PP 소재 · 무저수조 직수 구조"]
+      ],
+      "pills": {
+        "label": "필터 방식",
+        "items": [
+          { "v": "나노+카본 미네랄", "on": true },
+          { "v": "역삼투압(RO)", "on": false },
+          { "v": "중공사막(UF)", "on": false }
+        ]
+      }
+    },
+    {
+      "n": 2,
+      "summary": "<strong>2시간마다</strong> 코크를 자동 살균하는 UV 위생 기능과 <strong>3개월 방문관리</strong>로 청결을 유지합니다.",
+      "lines": [
+        ["살균/위생", "코크 UV 살균 — <strong>2시간마다</strong> 자동 살균"],
+        ["관리 방식", "<strong>3개월 방문관리</strong> — 전문 매니저 정기 방문 점검"],
+        ["UV 램프", "코크 UV 살균 램프 연 1회 교체"]
+      ]
+    },
+    {
+      "n": 3,
+      "summary": "<strong>업계 최초 16cm</strong> 초슬림 바디에 터치 조작과 LED 온도 표시를 갖춘 컴팩트 직수형입니다.",
+      "lines": [
+        ["출수 기능", "냉수 · 온수 · 정수 출수 (튐·끊김 없는 바른고온수)"],
+        ["조작", "전자식 터치 조작 · LED 온도 표시 · 음성 안내"],
+        ["크기", "160 × 422 × 360 mm (가로 16cm 초슬림)"]
+      ]
+    }
+  ]
+}
