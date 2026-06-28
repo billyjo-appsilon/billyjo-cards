@@ -425,6 +425,13 @@ Body gets `padding-bottom` so it never covers the last content.
   go `flex:1` full-width, month pills shrink (`min-width 80px`), price 18px. The legacy
   `.prod_fix_wrap` sticky bars are hidden. Floating quick-call / go-top buttons auto-lift
   above the bar via `:has()` (CLAUDE.md #29).
+- **Collapse/expand handle (v0.8.4)** — the collapsed bar is a single tappable handle:
+  **월 렌탈료 price (left)** · centered grip chevron (`.bj-bar-handle::before`) · **옵션 선택
+  chip (right-aligned, `margin-left:auto`)**. Tapping anywhere on the handle toggles —
+  the separate **▲ toggle-box button (`.bj-bar-handle-toggle`) is removed** (redundant
+  with the whole-handle tap). The grip chevron points **up (^) when collapsed** and rotates
+  180° to point **down (⌄) when expanded**. Live behaviour is inject.js module B
+  (`billyjo-inject`); this is the UX contract, not card content.
 
 ## Do's and Don'ts
 
