@@ -23,6 +23,11 @@ const CARDS_DIR = path.join(REPO_ROOT, 'cards');
 // v0.5.0: 템플릿을 생성물(cards/10914.html)에서 분리 — 한 번 망가져도 누적 전파 안 됨
 const TEMPLATE_PATH = path.join(REPO_ROOT, 'scripts', 'template-base.html');
 
+// 회차당 신규 카드 생성 상한. 수집을 ajax 로 고치자 밀려 있던 신규가 3,500건 넘게
+// 한 번에 잡혔는데(2026-07-29), 그대로 두면 45분 워크플로 타임아웃을 넘긴다.
+// 번호 큰(최근 등록) 순으로 이만큼씩 처리해 며칠에 걸쳐 따라잡는다.
+const MAX_NEW_PER_RUN = Number(process.env.MAX_NEW_PER_RUN || 300);
+
 // 카테고리 prod_list URLs (메인 1depth, 2depth는 site map에서 동적 발견)
 const CATEGORY_SEED = [
   'https://www.billyjo.co.kr/',
@@ -43,46 +48,46 @@ function log(msg) {
 }
 
 async function collectAllIds(browser) {
-  // homepage + main category URL에서 prod_view 링크 + 카테고리 링크 수집 후 2-depth crawl
+  // 카테고리 목록은 ajax(`/html/dh_prod/ajax_prod_list`)로 **카테고리 하나를 통째로** 받는다.
+  //
+  // 왜 바꿨나(2026-07-29): 예전에는 prod_list 페이지를 열어 렌더된 <a href=prod_view/…> 를
+  // 긁었는데, 목록이 ajax 로 채워지는 데다 대기가 500~800ms 라 상당수를 놓쳤고 정렬도
+  // 최신순이 아니라 신제품이 첫 화면에 없었다. 그래서 사이트에 6,914개가 노출 중인데
+  // 수집은 3,908개에서 멈췄고, 로그는 "new: 0" 으로 정상처럼 보였다.
+  // ajax 방식은 126요청·약 2분·실패 0 으로 전량을 가져온다.
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
   const page = await ctx.newPage();
   const allIds = new Set();
-  const categoryUrls = new Set(CATEGORY_SEED);
 
-  // 1차: seed → 추가 카테고리 URL 발견
-  for (const url of CATEGORY_SEED) {
+  // 1) 홈에서 전 카테고리(cate_no) 수집 — 숨김 카테고리도 DOM 에는 있다
+  await page.goto('https://www.billyjo.co.kr/', { waitUntil: 'domcontentloaded', timeout: 30000 });
+  const cates = await page.evaluate(() => Array.from(new Set(
+    Array.from(document.querySelectorAll('a'))
+      .map(a => ((a.getAttribute('href') || '').match(/prod_list\/(\d+-\d+)/) || [])[1])
+      .filter(Boolean)
+  )));
+  log('categories: ' + cates.length);
+
+  // 2) 카테고리별 ajax 호출 — 브라우저 컨텍스트에서 돌려 세션/헤더를 그대로 쓴다
+  for (const cate of cates) {
     try {
-      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
-      await page.waitForTimeout(800);
-      const result = await page.evaluate(() => {
-        const out = { ids: [], cats: [] };
-        document.querySelectorAll('a').forEach(a => {
-          const h = a.getAttribute('href') || '';
-          const m = h.match(/prod_view\/(\d+)/);
-          if (m) out.ids.push(m[1]);
-          if (/prod_list\/\d+-\d+/.test(h)) out.cats.push(h.startsWith('http') ? h : 'https://www.billyjo.co.kr' + h);
+      const ids = await page.evaluate(async (c) => {
+        const body = new URLSearchParams({ ajax: '1', param: `cate_no=${c}&orderb=new` });
+        const r = await fetch('/html/dh_prod/ajax_prod_list', {
+          method: 'POST', credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+          body,
         });
-        return out;
-      });
-      result.ids.forEach(id => allIds.add(id));
-      result.cats.forEach(c => categoryUrls.add(c));
-    } catch (e) { log('seed err: ' + url); }
+        if (!r.ok) return [];
+        const j = await r.json();
+        const html = (j && j.chg_prod_list) || '';
+        return Array.from(new Set(Array.from(html.matchAll(/prod_view\/(\d+)/g)).map(m => m[1])));
+      }, cate);
+      ids.forEach(id => allIds.add(id));
+    } catch (e) { log('cate err ' + cate + ': ' + e.message.slice(0, 60)); }
+    await page.waitForTimeout(300);
   }
 
-  // 2차: 발견된 모든 카테고리 visit
-  for (const url of categoryUrls) {
-    try {
-      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
-      await page.waitForTimeout(500);
-      const ids = await page.evaluate(() => Array.from(new Set(
-        Array.from(document.querySelectorAll('a')).map(a => {
-          const m = (a.getAttribute('href') || '').match(/prod_view\/(\d+)/);
-          return m ? m[1] : null;
-        }).filter(Boolean)
-      )));
-      ids.forEach(id => allIds.add(id));
-    } catch (e) {}
-  }
   await ctx.close();
   log('catalog: ' + allIds.size + ' unique IDs found');
   return Array.from(allIds);
@@ -385,8 +390,15 @@ function renderCard(pid, d, template) {
   try {
     const allIds = await collectAllIds(browser);
     const existing = new Set(fs.readdirSync(CARDS_DIR).filter(f => f.endsWith('.html')).map(f => f.replace('.html', '')));
-    const missing = allIds.filter(id => !existing.has(id));
-    log('existing: ' + existing.size + ' / new: ' + missing.length);
+    const missingAll = allIds.filter(id => !existing.has(id));
+    // 최근 등록(번호 큰) 순으로 상한만큼만 — 밀린 물량이 많아도 타임아웃 없이 며칠에 걸쳐 따라잡는다.
+    const missing = missingAll
+      .slice()
+      .sort((a, b) => Number(b) - Number(a))
+      .slice(0, MAX_NEW_PER_RUN);
+    log('existing: ' + existing.size + ' / new: ' + missingAll.length +
+        ' / this run: ' + missing.length + (missingAll.length > missing.length
+          ? ' (남은 ' + (missingAll.length - missing.length) + '건은 다음 회차)' : ''));
 
     if (missing.length === 0) {
       log('No new products — nothing to do.');
