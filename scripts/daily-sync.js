@@ -25,8 +25,12 @@ const TEMPLATE_PATH = path.join(REPO_ROOT, 'scripts', 'template-base.html');
 
 // 회차당 신규 카드 생성 상한. 수집을 ajax 로 고치자 밀려 있던 신규가 3,500건 넘게
 // 한 번에 잡혔는데(2026-07-29), 그대로 두면 45분 워크플로 타임아웃을 넘긴다.
-// 번호 큰(최근 등록) 순으로 이만큼씩 처리해 며칠에 걸쳐 따라잡는다.
-const MAX_NEW_PER_RUN = Number(process.env.MAX_NEW_PER_RUN || 300);
+// 번호 큰(최근 등록) 순으로 이만큼씩 처리한다.
+//
+// 150인 이유: 300으로 돌려보니 138건만 저장되고 162건이 page.goto 타임아웃으로 실패했다.
+// 사이트가 한 창에 대략 140건 언저리에서 막는다 — 더 시도해봐야 실패만 쌓이고 사이트에
+// 부담만 준다. 대신 워크플로를 3시간마다 돌려 총량을 확보한다(실패분은 다음 회차 자동 재시도).
+const MAX_NEW_PER_RUN = Number(process.env.MAX_NEW_PER_RUN || 150);
 
 // 카테고리 prod_list URLs (메인 1depth, 2depth는 site map에서 동적 발견)
 const CATEGORY_SEED = [
