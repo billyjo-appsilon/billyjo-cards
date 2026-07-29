@@ -91,6 +91,32 @@ function buildCateMap(html) {
   return map;
 }
 
+/** 카테고리 목록 ajax — 카테고리 하나의 상품 HTML 을 통째로 받는다. */
+function postList(cateNo) {
+  const body = 'ajax=1&param=' + encodeURIComponent(`cate_no=${cateNo}&orderb=new`);
+  return new Promise((resolve, reject) => {
+    const req = https.request({
+      hostname: 'www.billyjo.co.kr', path: '/html/dh_prod/ajax_prod_list', method: 'POST',
+      headers: {
+        'User-Agent': UA, 'X-Requested-With': 'XMLHttpRequest',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Length': Buffer.byteLength(body),
+        Referer: `https://www.billyjo.co.kr/html/dh_prod/prod_list/${cateNo}`,
+      },
+    }, (r) => {
+      let d = '';
+      r.on('data', (c) => (d += c));
+      r.on('end', () => {
+        try { resolve((JSON.parse(d) || {}).chg_prod_list || ''); }
+        catch (e) { resolve(''); }
+      });
+    });
+    req.on('error', reject);
+    req.write(body);
+    req.end();
+  });
+}
+
 async function pool(items, n, fn) {
   let i = 0;
   let done = 0;
@@ -126,12 +152,27 @@ async function main() {
   }
   console.log(`[info] 상품명 키워드 분류: ${byName}, cate_no 스크랩 필요: ${needScrape.length}`);
 
-  // 2) 나머지는 cate_no 스크랩 → 맵 적용
+  // 2) 나머지는 '카테고리 목록'으로 한 번에 해결한다.
+  //    예전에는 상품마다 prod_view 를 열어 cate_no 를 읽었는데(수천 요청), 사이트가
+  //    짧은 시간에 몰린 요청을 막아 대량 실패한다(2026-07-29 실측: 순차 1건/1초에도
+  //    143건에서 차단). 목록 ajax 는 카테고리 하나를 통째로 주므로 126요청이면 끝난다.
+  console.log('[info] 카테고리 목록으로 pid→cate_no 수집...');
+  const pidCate = {};
+  for (const cateNo of Object.keys(cateMap)) {
+    try {
+      const listHtml = await postList(cateNo);
+      for (const m of listHtml.matchAll(/prod_view\/(\d+)/g)) {
+        if (!pidCate[m[1]]) pidCate[m[1]] = cateNo;   // 먼저 만난 카테고리를 대표로
+      }
+    } catch (e) { console.log('  cate err ' + cateNo); }
+    await new Promise((r) => setTimeout(r, 300));
+  }
+  console.log(`[info] 목록에서 확보한 상품 ${Object.keys(pidCate).length}개`);
+
   const targets = needScrape.slice(0, LIMIT);
   let scraped = 0; let assigned = 0; let stillNull = 0;
-  await pool(targets, CONCURRENCY, async (pid) => {
-    const html = await get(PROD_VIEW + pid);
-    const cateNo = extractCateNo(html);
+  await pool(targets, 1, async (pid) => {
+    const cateNo = pidCate[pid];
     if (cateNo) {
       scraped++;
       products[pid].cateNo = cateNo;

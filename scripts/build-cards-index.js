@@ -54,8 +54,21 @@ function extractMeta(html, prodNo) {
   const m1 = html.match(/class="model-num">([^<]+)</);
   if (m1) out.modelCode = stripTags(m1[1]);
 
+  // .name — 카드 표시 이름. 결합상품은 "(보람피플 올인원598 1구좌) 쿠쿠 에코웨일 …" 처럼
+  // 앞에 판매 패키지 표기가 붙는다. 실제 제품은 괄호 뒤쪽이므로 분리해 둔다.
+  const nm = html.match(/class="name">([^<]*)</);
+  if (nm) {
+    out.displayName = stripTags(nm[1]);
+    const bm = out.displayName.match(/^\s*\(([^)]*)\)\s*(.+)$/);
+    if (bm) { out.bundleLabel = bm[1].trim(); out.innerName = bm[2].trim(); }
+    else { out.innerName = out.displayName; }
+  }
+
   // .head .meta — "모델명: CHPI-7400N · 컴팩트형 · 240 x 473 x 465 mm"
-  const m2 = html.match(/class="meta">([^<]+(?:<[^>]+>[^<]*)*)<\/div>/);
+  // ⚠ 탐욕적 캡처 금지: 예전 패턴([^<]+(?:<[^>]+>[^<]*)*)은 </div> 를 넘어 카드 평가표까지
+  // 삼켰다. 거기 "정수성능" 문구가 있어 차량·캠핑용품까지 category='정수기' 로 찍혔다
+  // (2026-07-29 실측: 정수기 229 → 1,209). 첫 </div> 에서 끊는다.
+  const m2 = html.match(/class="meta">([\s\S]*?)<\/div>/);
   if (m2) {
     const meta = stripTags(m2[1]);
     out.productNameMeta = meta;
@@ -113,7 +126,13 @@ function extractMeta(html, prodNo) {
   // 카테고리 키워드 추정 (확장 — admin2 CATEGORY_HINTS와 정렬).
   // ※ 이름이 모델코드뿐이면 여기서 null → build 후 `node scripts/enrich-categories.js`가
   //   prod_view cate_no(사이트 자체 카테고리 ID)로 권위 있게 보강한다 (룰북 #20).
-  const productName = out.productNameMeta || '';
+  // 분류 근거는 '구조화된 필드'만 쓴다. 카드 본문을 통째로 넣으면 평가표·설명문의
+  // 단어에 걸려 엉뚱하게 분류된다(예전 탐욕 캡처가 정확히 그 사고였다).
+  // 실제 제품명(innerName)이 1순위 — 결합상품도 여기서 '음식물처리기' 같은 품목이 잡힌다.
+  const productName = [
+    out.innerName, out.displayName, out.productNameMeta,
+    specs['종류'], specs['타입'], specs['방식'], specs['제품정보'],
+  ].filter(Boolean).join(' ');
   const fnText = specs['기능'] || '';
   if (/냉온정수기|얼음정수기|직수정수기|정수전용|정수기|정수/.test(productName) || /정수/.test(fnText)) out.category = '정수기';
   else if (/공기청정기|공기청정|청정기|에어워셔/.test(productName)) out.category = '공기청정기';
@@ -140,6 +159,50 @@ function extractMeta(html, prodNo) {
   return out;
 }
 
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 브랜드 폴백 (2026-07-29)
+//   상세페이지 스펙표에 '브랜드' 행이 없는 상품이 1,054건이라 인덱스에서 통째로 빠졌고,
+//   그만큼 추천 후보로도 못 올라갔다. 상품명에서 브랜드를 유추해 되살린다.
+//
+//   정확도 실측(정답 있는 60건 역검증): 이름 어휘매칭 65% · 첫 토큰 60% ·
+//   공급사(supname) 52% · 어휘매칭에 표기 정규화를 더한 결합 규칙 95%.
+//   오답은 대부분 표기 흔들림(청호↔청호나이스, SI PAY↔에스아이페이)이라 별칭으로 잡는다.
+//   LG↔LG구독은 원본 자체가 갈려(동일 신호에 14:2) 유추하지 않고 이름값을 쓴다.
+//
+//   결합상품("(보람피플 올인원598 1구좌) 쿠쿠 에코웨일 …")은 제외하지 않는다 —
+//   실제 제품(괄호 뒤)을 기준으로 브랜드·품목을 잡아 그 제품으로 보이게 한다.
+// ─────────────────────────────────────────────────────────────────────────────
+const BRAND_ALIAS = {
+  '청호': '청호나이스', '교원': '웰스', '교원웰스': '웰스', 'SK매직': 'SK',
+  '현대큐밍': '현대렌탈케어', '쿠쿠홈시스': '쿠쿠', 'SI PAY': '에스아이페이', 'SI': '에스아이페이',
+};
+
+function canonBrand(b) {
+  if (!b) return null;
+  const t = String(b).trim();
+  return BRAND_ALIAS[t] || t;
+}
+
+/** 스펙표 '브랜드'가 있는 카드들에서 브랜드 어휘를 모은다(긴 이름 우선 매칭용). */
+function buildBrandVocab(metas) {
+  const set = new Set();
+  metas.forEach(m => { if (m && m.brand) set.add(m.brand); });
+  return Array.from(set).sort((a, b) => b.length - a.length);
+}
+
+/** 상품명 → 브랜드. 어휘 매칭 우선, 없으면 첫 토큰. */
+function inferBrand(meta, vocab) {
+  const name = (meta.innerName || meta.displayName || '').trim();
+  if (!name) return null;
+  for (const b of vocab) {
+    if (b && name.includes(b)) return canonBrand(b);
+  }
+  const first = name.split(/\s+/)[0];
+  if (!first || first.length < 2 || /^[0-9(]/.test(first)) return null;
+  return canonBrand(first);
+}
+
 function isBusinessGrade(meta) {
   // 업소용/대용량 표기 감지 — formFactor/sizeType/specs만 (productNameMeta는
   // 본문 누출 위험 있어 제외). '스탠드'는 정수기 가정용 분류에도 사용되어 키워드에서 제거.
@@ -161,17 +224,43 @@ function main() {
 
   const products = {};
   let failed = 0;
+  // 1패스: 메타 추출
+  const metas = [];
   files.forEach((f, i) => {
     const prodNo = f.replace('.html', '');
     const html = readSafe(path.join(CARDS_DIR, f));
     try {
       const meta = extractMeta(html, prodNo);
-      if (!meta || !meta.brand) { failed++; return; }
-      meta.isBusinessGrade = isBusinessGrade(meta);
-      products[prodNo] = meta;
+      if (!meta) { failed++; return; }
+      metas.push(meta);
     } catch (e) { failed++; }
     if ((i + 1) % 500 === 0) console.log(`  processed ${i + 1}/${files.length}`);
   });
+
+  // 2패스: 스펙표에 브랜드가 없던 카드를 상품명으로 되살린다
+  const vocab = buildBrandVocab(metas);
+  let recovered = 0, stillNone = 0;
+  metas.forEach(meta => {
+    if (meta.brand) {
+      meta.brand = canonBrand(meta.brand);
+    } else {
+      const guess = inferBrand(meta, vocab);
+      if (!guess) { stillNone++; failed++; return; }
+      meta.brand = guess;
+      meta.brandInferred = true;          // 유추값 표시 — 운영/디버깅용
+      recovered++;
+    }
+    // 표시 이름: 되살린 카드는 productName 이 "모델명: 75QNED85A1P · " 같은 메타 문자열로
+    // 잡혀 있다(브랜드가 없어 이름 조립을 못 했다). 카드에 있는 실제 상품명으로 바꾼다.
+    // 결합상품도 같은 규칙 — 괄호 뒤 실제 제품명(innerName)이 곧 표시 이름이다.
+    if ((meta.brandInferred || meta.bundleLabel) && meta.innerName) meta.productName = meta.innerName;
+    meta.isBusinessGrade = isBusinessGrade(meta);
+    // productNameMeta 는 카테고리 판정용 내부 값이고 소비처가 없는데 파일의 대부분을 차지한다
+    // (admin2 는 추천 때마다 이 파일을 받는다). 출력에서 뺀다 — 22MB → 6MB.
+    delete meta.productNameMeta;
+    products[meta.prodNo] = meta;
+  });
+  console.log(`[brand] 유추로 되살림 ${recovered}건 · 유추 실패 ${stillNone}건`);
 
   const out = {
     generated_at: new Date().toISOString(),

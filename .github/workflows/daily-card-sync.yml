@@ -53,6 +53,12 @@ jobs:
       - name: Rebuild cards-index.json
         run: node scripts/build-cards-index.js
 
+      # 상품명 키워드로 분류 안 되는 상품에 사이트 자체 카테고리(cate_no)를 입힌다.
+      # 이 단계를 빼면 category=null 이 2,000건대로 늘어 룰북 #20(동일 카테고리 ≥2)이 무너진다.
+      # 목록 ajax 기반이라 126요청·수십 초.
+      - name: Enrich categories (cate_no)
+        run: node scripts/enrich-categories.js
+
       - name: Commit & push if changed
         run: |
           git config user.name "billyjo-daily-sync[bot]"
