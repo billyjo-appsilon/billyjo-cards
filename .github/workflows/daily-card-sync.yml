@@ -71,5 +71,17 @@ jobs:
             COUNT=$(git diff --cached --name-only -- 'cards/*.html' | wc -l | tr -d ' ')
             IDX=$(node -e "console.log(require('./cards-index.json').count)")
             git commit -m "auto: daily card sync $(date -u +%Y-%m-%d) — ${COUNT} cards updated/added, index ${IDX}"
-            git push
+            # 실행 중에 누가 main 에 푸시하면 fast-forward 가 막혀 회차 작업이 통째로 버려진다
+            # (2026-07-29 실측: 137장 생성분이 push 거절로 유실). rebase 후 재시도한다.
+            for i in 1 2 3; do
+              if git push; then
+                echo "pushed (attempt $i)"
+                exit 0
+              fi
+              echo "push rejected — rebase 후 재시도 ($i/3)"
+              git pull --rebase --autostash origin main || exit 1
+              sleep 5
+            done
+            echo "3회 재시도 실패"
+            exit 1
           fi
