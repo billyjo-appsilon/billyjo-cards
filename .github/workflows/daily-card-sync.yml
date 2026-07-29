@@ -6,10 +6,11 @@ name: Daily Card Sync
 # 실측 — 한 회차에 300건을 시도하면 138건만 성공하고 162건이 page.goto 타임아웃으로 밀렸다
 # (약 140건이 한 창(window)의 한계). 한 번에 많이 긁는 대신 자주 조금씩 가져와
 # 밀린 물량(3,000건대)을 며칠에 걸쳐 소화한다. 신규 등록분은 최대 3시간이면 카드가 생긴다.
+# 트리거는 admin2 오토 스케쥴러(/collections 의 card_sync 잡)가 단독으로 쥔다 —
+# 켜고 끄기·수동 실행·최근 결과를 한 화면에서 보기 위해서다(2026-07-29).
+# 여기 자체 cron 을 같이 두면 이중 실행이라 제거. 스케줄 변경은 /collections 에서.
 on:
-  schedule:
-    - cron: '0 */3 * * *'
-  workflow_dispatch:  # 수동 트리거 허용
+  workflow_dispatch:
 
 permissions:
   contents: write
