@@ -60,6 +60,7 @@ async function collectAllIds(browser) {
   // 수집은 3,908개에서 멈췄고, 로그는 "new: 0" 으로 정상처럼 보였다.
   // ajax 방식은 126요청·약 2분·실패 0 으로 전량을 가져온다.
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+  await blockNonEssential(ctx);
   const page = await ctx.newPage();
   const allIds = new Set();
 
@@ -99,6 +100,22 @@ async function collectAllIds(browser) {
 
 // 홈 접속은 한 번 실패하면 전체 동기화가 FATAL 로 끝난다(2026-10-13 12:55 run 38343946543:
 // 사이트가 잠깐 느려 30초 타임아웃 → 그 회차 전체 실패). 일시 지연이면 잠시 뒤 다시 열면 된다.
+// 수집 브라우저는 상품 본문(DOM)만 필요하다. 빌리조 페이지에 붙은 우리 inject.js 가 실행되면 페이지마다
+// admin2 API(추천·직접혜택·페르소나·패키지)를 여러 번 부르고, 광고 픽셀까지 쏜다.
+// 2026-10-12·13 신규 56·99건 수집 2분 동안 그 호출이 몰려 admin2 DB 연결(15개)이 차서 운영 API 가
+// 2~3분간 500 이었다. 그래서 admin2 API·광고/분석 픽셀·이미지·폰트를 막는다.
+// inject.js 자체는 둔다 — 상단 가격(.top_min_price)을 위젯 기준 약정가로 바꿔 주는데(고객이 보는 값),
+// 막으면 정가 최저가가 수집돼 카드 가격 기준이 달라진다. admin2 응답이 없어도 그 동기화는 동작함(확인).
+const BLOCK_URL = /(admin2-api\.billyjo\.co\.kr|billyjo-admin2[\w-]*\.vercel\.app|googletagmanager\.com|google-analytics\.com|googleadservices\.com|doubleclick\.net|connect\.facebook\.net|facebook\.com\/tr|analytics\.tiktok\.com|karrot-pixel|daangn\.com|wcs\.naver\.net|developers\.kakao\.com|daumcdn\.net\/kas|hackle|clarity\.ms)/i;
+const BLOCK_TYPES = new Set(['image', 'font', 'media']);
+async function blockNonEssential(ctx) {
+  await ctx.route('**/*', (route) => {
+    const req = route.request();
+    if (BLOCK_TYPES.has(req.resourceType()) || BLOCK_URL.test(req.url())) return route.abort();
+    return route.continue();
+  });
+}
+
 async function gotoWithRetry(page, url, attempts = 3, waitMs = 20000) {
   for (let i = 1; i <= attempts; i++) {
     try {
@@ -144,6 +161,7 @@ async function scrapeNew(browser, missingIds) {
   let idx = 0;
   async function worker() {
     const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+    await blockNonEssential(ctx);
     const page = await ctx.newPage();
     while (idx < missingIds.length) {
       const i = idx++;
