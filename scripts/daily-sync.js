@@ -64,7 +64,7 @@ async function collectAllIds(browser) {
   const allIds = new Set();
 
   // 1) 홈에서 전 카테고리(cate_no) 수집 — 숨김 카테고리도 DOM 에는 있다
-  await page.goto('https://www.billyjo.co.kr/', { waitUntil: 'domcontentloaded', timeout: 30000 });
+  await gotoWithRetry(page, 'https://www.billyjo.co.kr/');
   const cates = await page.evaluate(() => Array.from(new Set(
     Array.from(document.querySelectorAll('a'))
       .map(a => ((a.getAttribute('href') || '').match(/prod_list\/(\d+-\d+)/) || [])[1])
@@ -95,6 +95,20 @@ async function collectAllIds(browser) {
   await ctx.close();
   log('catalog: ' + allIds.size + ' unique IDs found');
   return Array.from(allIds);
+}
+
+// 홈 접속은 한 번 실패하면 전체 동기화가 FATAL 로 끝난다(2026-10-13 12:55 run 38343946543:
+// 사이트가 잠깐 느려 30초 타임아웃 → 그 회차 전체 실패). 일시 지연이면 잠시 뒤 다시 열면 된다.
+async function gotoWithRetry(page, url, attempts = 3, waitMs = 20000) {
+  for (let i = 1; i <= attempts; i++) {
+    try {
+      return await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
+    } catch (e) {
+      if (i === attempts) throw e;
+      log(`goto 실패(${i}/${attempts}) ${url} — ${e.message.split('\n')[0].slice(0, 80)} · ${waitMs / 1000}s 후 재시도`);
+      await page.waitForTimeout(waitMs);
+    }
+  }
 }
 
 async function scrapeOne(page, pid) {
